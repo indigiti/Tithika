@@ -1,1 +1,1 @@
-pyswisseph==2.10.3.2
+# No external Python runtime dependencies are required for the current engines.
