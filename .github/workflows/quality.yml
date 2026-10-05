@@ -45,3 +45,6 @@ jobs:
 
       - name: Month Panchang regression fixture
         run: python scripts/test-panchang-month.py
+
+      - name: Lunar occurrence regression fixtures
+        run: python scripts/test-lunar-occurrences.py
