@@ -51,3 +51,6 @@ jobs:
 
       - name: Equinox and solstice regression fixture
         run: python scripts/test-seasons.py
+
+      - name: Sankranti ingress regression fixture
+        run: python scripts/test-sankranti.py
