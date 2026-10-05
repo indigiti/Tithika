@@ -130,6 +130,10 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <span><i class="purnima"></i>Purnima</span>
           <span><i class="amavasya"></i>Amavasya</span>
         </div>
+        <div class="tk-month-actions">
+          <span id="tkMonthSelection">Select a day for details</span>
+          <a id="tkMonthDailyLink" href="<?= htmlspecialchars(tithika_pretty_url('panchang/daily')) ?>">Open selected day in Daily Panchang →</a>
+        </div>
       <?php elseif ($page['slug'] === 'panchang/daily'): ?>
         <div class="tk-panchang-live-head">
           <div>
