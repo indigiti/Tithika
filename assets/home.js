@@ -54,6 +54,8 @@ function render(d){
   $('#heroDate').textContent=d.date_label;
   $('#sunrise').textContent=d.sunrise_label;
   $('#sunset').textContent=d.sunset_label;
+  if($('#sunrise2')) $('#sunrise2').textContent=d.sunrise_label;
+  if($('#sunset2')) $('#sunset2').textContent=d.sunset_label;
   $('#rahu').textContent=`${d.rahu_kaal.start_label} – ${d.rahu_kaal.end_label}`;
   $('#nextGood').textContent=d.next_auspicious ? `${d.next_auspicious.name} · ${d.next_auspicious.start_label}` : 'View tomorrow';
   $('#nextGoodSub').textContent=d.next_auspicious ? `${d.next_auspicious.start_label} – ${d.next_auspicious.end_label}` : 'No later favourable window';
