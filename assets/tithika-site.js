@@ -104,7 +104,7 @@
     set('#tkPurnimantaMonth',d.lunar_month?.purnimanta||'—');
     set('#tkMoonrise',d.moonrise_label||'—');
     set('#tkMoonset',d.moonset_label||'—');
-    set('#tkEngineMeta',`${d.engine?.ayanamsha||'Lahiri'} · ${d.engine?.ephemeris||'Swiss Ephemeris'}`);
+    set('#tkEngineMeta',`${d.engine?.ayanamsha||'Lahiri'} · ${d.engine?.astronomy||d.engine?.ephemeris||'Astronomy Engine'}`);
     const range=v=>v ? `${v.start_label} – ${v.end_label}` : '—';
     set('#tkMuhuratAbhijit',range(d.muhurtas?.abhijit));
     set('#tkMuhuratVijaya',range(d.muhurtas?.vijaya));
