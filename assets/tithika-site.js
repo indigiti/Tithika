@@ -9,6 +9,7 @@
     'vrat/purnima':'purnima',
     'vrat/amavasya':'amavasya'
   };
+  const sankrantiPages=['vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti'];
   const seasonKinds={
     'astronomy/vernal-equinox':'vernal_equinox',
     'astronomy/summer-solstice':'summer_solstice',
@@ -20,7 +21,7 @@
     lat:19.076,lon:72.8777,city:'Mumbai, Maharashtra, India',
     timezone:'Asia/Kolkata',
     data:null,panchang:null,searchTimer:null,dateTouched:false,
-    monthData:null,monthKey:'',lunarCache:new Map()
+    monthData:null,monthKey:'',lunarCache:new Map(),sankrantiCache:new Map()
   };
 
   function isoToday(timeZone=state.timezone){
@@ -85,6 +86,7 @@
       if(panchangPages.includes(pageSlug)) await calculatePanchang();
       if(monthPages.includes(pageSlug)) await calculateMonth();
       if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
+      if(sankrantiPages.includes(pageSlug)) await calculateSankranti();
       if(seasonKinds[pageSlug]) await calculateSeasons();
     }catch(e){toast(e.message||'Unable to load location context')}
   }
@@ -108,6 +110,58 @@
       set('#tkCurrent','Solar day');
       set('#tkCurrentRange',`${d.sunrise_label} – ${d.sunset_label}`);
     }
+  }
+
+  async function calculateSankranti(){
+    const loading=$('#tkSankrantiLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating yearly Sankranti moments…'}
+    try{
+      const p=payload();
+      const cacheKey=`${p.date.slice(0,4)}|${Number(p.lat).toFixed(5)}|${Number(p.lon).toFixed(5)}|${p.timezone}`;
+      if(state.sankrantiCache.has(cacheKey)){
+        renderSankranti(state.sankrantiCache.get(cacheKey));
+        return;
+      }
+      const r=await fetch(`${base}api.php?action=sankranti`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Unable to calculate Sankranti');
+      state.sankrantiCache.set(cacheKey,j);
+      renderSankranti(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Sankranti engine unavailable'}
+      toast(e.message||'Sankranti engine unavailable');
+    }
+  }
+
+  function renderSankranti(d){
+    const loading=$('#tkSankrantiLoading');if(loading)loading.hidden=true;
+    const title=$('#tkSankrantiTitle');
+    if(title)title.textContent=`${pageSlug==='festivals/makar-sankranti'?'Makar Sankranti':'Sankranti'} ${d.year}`;
+    const note=$('#tkSankrantiNote');if(note)note.textContent=d.note||'';
+    const list=$('#tkSankrantiList');if(!list)return;
+
+    let rows=d.events||[];
+    if(pageSlug==='festivals/makar-sankranti'){
+      const makara=rows.find(row=>row.rashi==='Makara');
+      rows=makara?[makara]:[];
+    }
+    if(!rows.length){
+      list.innerHTML='<div class="tk-panchang-empty">No Sankranti events found for this year.</div>';
+      return;
+    }
+
+    list.innerHTML=rows.map(row=>`<article class="tk-sankranti-event${row.rashi==='Makara'?' is-makara':''}">
+      <div class="tk-sankranti-rashi"><small>${esc(row.from_rashi)} →</small><strong>${esc(row.to_rashi)}</strong></div>
+      <div class="tk-sankranti-main">
+        <h4>${esc(row.name)}</h4>
+        <p>${esc(row.weekday)} · ${esc(row.date_label)} · ${esc(row.time_label||'—')}</p>
+        <small>${row.daylight_ingress?'Ingress during local daylight':'Ingress outside local daylight'} · Sunrise ${esc(row.sunrise_label||'—')} · Sunset ${esc(row.sunset_label||'—')}</small>
+      </div>
+      <a href="${base}panchang/daily/?date=${encodeURIComponent(row.date)}">Panchang →</a>
+    </article>`).join('');
   }
 
   async function calculateSeasons(){
@@ -406,7 +460,7 @@
     if(pageSlug==='panchang/month'){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]||seasonKinds[pageSlug]){
+    }else if(lunarKinds[pageSlug]||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
