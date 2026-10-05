@@ -2,6 +2,7 @@
   const $=s=>document.querySelector(s);
   const base=window.TITHIKA_BASE||'/';
   const pageSlug=window.TITHIKA_PAGE_SLUG||'';
+  const panchangPages=['panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'];
   const state={
     lat:19.076,lon:72.8777,city:'Mumbai, Maharashtra, India',
     timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata',
@@ -45,7 +46,7 @@
       const j=await r.json();
       if(!j.ok)throw new Error(j.error||'Unable to calculate solar context');
       state.data=j;renderSolar(j);
-      if(pageSlug==='panchang/daily') await calculatePanchang();
+      if(panchangPages.includes(pageSlug)) await calculatePanchang();
     }catch(e){toast(e.message||'Unable to load location context')}
   }
 
@@ -115,10 +116,31 @@
     set('#tkMuhuratYamaganda',range(d.muhurtas?.yamaganda));
     set('#tkMuhuratGulika',range(d.muhurtas?.gulika));
 
+    renderSinglePage(d);
     renderTransitions('#tkTithiTransitions',d.tithi,'Tithi');
     renderTransitions('#tkNakshatraTransitions',d.nakshatra,'Nakshatra');
     renderTransitions('#tkYogaTransitions',d.yoga,'Yoga');
     renderTransitions('#tkKaranaTransitions',d.karana,'Karana');
+  }
+
+  function renderSinglePage(d){
+    const set=(id,val)=>{const el=$(id);if(el)el.textContent=val};
+    const range=v=>v ? `${v.start_label} – ${v.end_label}` : '—';
+    if(pageSlug==='panchang/moonrise-moonset'){
+      set('#tkSinglePrimary','Moonrise & Moonset');
+      set('#tkSingleSecondary',`Moonrise ${d.moonrise_label||'—'} · Moonset ${d.moonset_label||'—'}`);
+      set('#tkSingleMeta',`${d.date_label} · ${d.location?.city||'Selected location'}`);
+    }
+    if(pageSlug==='panchang/rahu-kala'||pageSlug==='muhurat/rahu-kala'){
+      set('#tkSinglePrimary','Rahu Kala');
+      set('#tkSingleSecondary',range(d.muhurtas?.rahu_kaal));
+      set('#tkSingleMeta','Sunrise-to-sunset period divided into eight weekday-specific segments.');
+    }
+    if(pageSlug==='muhurat/abhijit'){
+      set('#tkSinglePrimary','Abhijit Muhurat');
+      set('#tkSingleSecondary',range(d.muhurtas?.abhijit));
+      set('#tkSingleMeta','The central daytime Muhurta, calculated from the local sunrise-to-sunset span.');
+    }
   }
 
   function renderTransitions(selector,rows,label){
