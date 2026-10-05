@@ -1,15 +1,23 @@
 (()=> {
   const $=s=>document.querySelector(s);
   const base=window.TITHIKA_BASE||'/';
+  const pageSlug=window.TITHIKA_PAGE_SLUG||'';
   const state={
     lat:19.076,lon:72.8777,city:'Mumbai, Maharashtra, India',
     timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata',
-    data:null,searchTimer:null
+    data:null,panchang:null,searchTimer:null
   };
 
   function isoToday(){
     const d=new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function payload(){
+    return {
+      lat:state.lat,lon:state.lon,city:state.city,
+      date:$('#tkDate')?.value||isoToday(),timezone:state.timezone,hour24:false
+    };
   }
 
   function toast(msg){
@@ -29,22 +37,19 @@
   }
 
   async function calculate(){
-    const dateInput=$('#tkDate');
     try{
       const r=await fetch(`${base}api.php?action=calculate`,{
         method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          lat:state.lat,lon:state.lon,city:state.city,
-          date:dateInput?.value||isoToday(),timezone:state.timezone,hour24:false
-        })
+        body:JSON.stringify(payload())
       });
       const j=await r.json();
       if(!j.ok)throw new Error(j.error||'Unable to calculate solar context');
-      state.data=j;render(j);
+      state.data=j;renderSolar(j);
+      if(pageSlug==='panchang/daily') await calculatePanchang();
     }catch(e){toast(e.message||'Unable to load location context')}
   }
 
-  function render(d){
+  function renderSolar(d){
     const short=(d.location.city||'Current location').split(',').slice(0,2).join(',');
     const set=(id,val)=>{const el=$(id);if(el)el.textContent=val};
     set('#tkPlaceText',short);
@@ -63,6 +68,53 @@
       set('#tkCurrent','Solar day');
       set('#tkCurrentRange',`${d.sunrise_label} – ${d.sunset_label}`);
     }
+  }
+
+  async function calculatePanchang(){
+    const loading=$('#tkPanchangLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating sidereal Panchang…'}
+    try{
+      const r=await fetch(`${base}api.php?action=panchang`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload())
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Unable to calculate Panchang');
+      state.panchang=j;renderPanchang(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Panchang engine unavailable'}
+      toast(e.message||'Panchang engine unavailable');
+    }
+  }
+
+  function renderPanchang(d){
+    const set=(id,val)=>{const el=$(id);if(el)el.textContent=val};
+    const loading=$('#tkPanchangLoading');if(loading)loading.hidden=true;
+    const s=d.sunrise_state||{};
+    set('#tkTithiName',s.tithi||'—');
+    set('#tkTithiMeta',`${s.paksha||''} · Tithi ${s.tithi_number||''}`);
+    set('#tkNakshatraName',s.nakshatra||'—');
+    set('#tkYogaName',s.yoga||'—');
+    set('#tkKaranaName',s.karana||'—');
+    set('#tkPakshaName',d.paksha||'—');
+    set('#tkMoonRashi',d.moon_rashi||'—');
+    set('#tkSunRashi',d.sun_rashi||'—');
+    set('#tkEngineMeta',`${d.engine?.ayanamsha||'Lahiri'} · ${d.engine?.ephemeris||'Swiss Ephemeris'}`);
+
+    renderTransitions('#tkTithiTransitions',d.tithi,'Tithi');
+    renderTransitions('#tkNakshatraTransitions',d.nakshatra,'Nakshatra');
+    renderTransitions('#tkYogaTransitions',d.yoga,'Yoga');
+    renderTransitions('#tkKaranaTransitions',d.karana,'Karana');
+  }
+
+  function renderTransitions(selector,rows,label){
+    const el=$(selector);if(!el)return;
+    if(!rows?.length){el.innerHTML='<div class="tk-panchang-empty">No transition data</div>';return}
+    el.innerHTML=rows.map((row,i)=>`
+      <div class="tk-panchang-transition">
+        <div><small>${i===0?'At sunrise':label}</small><strong>${esc(row.name)}</strong></div>
+        <span>${esc(row.end_label||'continues')}</span>
+      </div>`).join('');
   }
 
   async function locate(silent=false){
