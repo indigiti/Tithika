@@ -82,6 +82,21 @@ try {
         out(['ok'=>true,'label'=>$label ?: ($r['display_name'] ?? 'Current location')]);
     }
 
+    if ($action === 'timezone') {
+        $lat = filter_input(INPUT_GET, 'lat', FILTER_VALIDATE_FLOAT);
+        $lon = filter_input(INPUT_GET, 'lon', FILTER_VALIDATE_FLOAT);
+        if ($lat === false || $lon === false || $lat === null || $lon === null) {
+            out(['ok'=>false,'error'=>'Invalid coordinates'], 422);
+        }
+        $url = 'https://timeapi.io/api/timezone/coordinate?latitude=' . rawurlencode((string)$lat) . '&longitude=' . rawurlencode((string)$lon);
+        $r = curlJson($url);
+        $timezone = trim((string)($r['timeZone'] ?? $r['timezone'] ?? ''));
+        if ($timezone === '' || !in_array($timezone, timezone_identifiers_list(), true)) {
+            out(['ok'=>false,'error'=>'Timezone could not be resolved'], 502);
+        }
+        out(['ok'=>true,'timezone'=>$timezone], 200, true);
+    }
+
     if ($action === 'search') {
         $q = trim((string)($_GET['q'] ?? ''));
         if (mb_strlen($q) < 2) out(['ok'=>true,'results'=>[]]);
