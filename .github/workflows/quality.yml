@@ -42,3 +42,6 @@ jobs:
 
       - name: Panchang regression fixture
         run: python scripts/test-panchang.py
+
+      - name: Month Panchang regression fixture
+        run: python scripts/test-panchang-month.py
