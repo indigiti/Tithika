@@ -55,6 +55,40 @@ The first full Panchang astronomy surface is now engine-backed with:
 
 The same engine is reused by `/panchang/moonrise-moonset/`, `/panchang/rahu-kala/`, `/muhurat/rahu-kala/` and `/muhurat/abhijit/`.
 
+### Month Panchang — `/panchang/month/`
+
+- real sunrise-state Tithi/Nakshatra/Yoga/Karana data for every civil date
+- month/year navigation
+- Ekadashi/Purnima/Amavasya highlighting
+- selected-day drill-down into Daily Panchang
+- shared month-result browser cache
+- backend reuse of adjacent-day solar events
+
+### Vrat occurrence foundation
+
+Live astronomical occurrence calendars:
+
+- `/vrat/ekadashi/`
+- `/vrat/purnima/`
+- `/vrat/amavasya/`
+
+Ekadashi candidates also include next-day Parana constraints derived from sunrise, Hari Vasara end and Dwadashi end. Smarta/Vaishnava fasting-date selection remains a separate rule layer.
+
+### Sankranti / solar ingress
+
+The Lahiri sidereal solar-ingress engine powers:
+
+- `/vrat/sankranti/`
+- `/calendars/sankranti/`
+- `/festivals/sankranti/`
+- `/festivals/makar-sankranti/`
+
+It calculates all twelve Nirayana Rashi ingresses with exact local timestamps. Punya Kaal/festival rules remain separate from the astronomical ingress.
+
+### Equinox & solstice
+
+Verified Astronomy Engine events are live for the vernal/autumnal equinoxes and summer/winter solstices, rendered in the selected location's timezone.
+
 ### Choghadiya — `choghadiya.php`
 
 Verified calculation surface with:
@@ -83,6 +117,10 @@ assets/tithika-site.js        shared location/date context
 api.php                       PHP API / geocoding bridge
 python/choghadiya.py          solar + Choghadiya engine
 python/panchang.py            Daily Panchang astronomy/rule engine
+python/panchang_month.py      Month Panchang engine
+python/lunar_occurrences.py   lunar Vrat occurrence/Parana substrate
+python/sankranti.py           Nirayana solar-ingress engine
+python/seasons.py             equinox/solstice engine
 python/vendor/astronomy.py    vendored Astronomy Engine (MIT)
 
 docs/DRIKPANCHANG_AUDIT.md    benchmark/product audit
@@ -137,9 +175,13 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 3. Paksha and base Amanta/Purnimanta lunar month. ✓
 4. Moonrise/moonset. ✓
 5. Core daily auspicious/in-auspicious timings. ✓
-6. Festival/Vrat rule engine.
-7. Muhurat rule engine.
-8. Planet ephemeris/transit/retrograde/combustion.
-9. Birth/Jyotish calculators.
+6. Base lunar Vrat occurrence engine. ✓
+7. Nirayana Sankranti ingress engine. ✓
+8. Equinox/solstice astronomy pages. ✓
+9. Smarta/Vaishnava Ekadashi observance selection + complete Parana rules.
+10. Festival rule engine.
+11. Extended Muhurat rule engine.
+12. Planet ephemeris/transit/retrograde/combustion.
+13. Birth/Jyotish calculators.
 
 See `docs/DRIKPANCHANG_AUDIT.md` and `docs/TITHIKA_PAGE_MAP.md` for the full implementation plan.
