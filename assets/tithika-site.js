@@ -99,6 +99,10 @@
     set('#tkPakshaName',d.paksha||'—');
     set('#tkMoonRashi',d.moon_rashi||'—');
     set('#tkSunRashi',d.sun_rashi||'—');
+    set('#tkAmantaMonth',d.lunar_month?.amanta||'—');
+    set('#tkPurnimantaMonth',d.lunar_month?.purnimanta||'—');
+    set('#tkMoonrise',d.moonrise_label||'—');
+    set('#tkMoonset',d.moonset_label||'—');
     set('#tkEngineMeta',`${d.engine?.ayanamsha||'Lahiri'} · ${d.engine?.ephemeris||'Swiss Ephemeris'}`);
 
     renderTransitions('#tkTithiTransitions',d.tithi,'Tithi');
