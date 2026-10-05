@@ -17,8 +17,8 @@ import panchang
 
 KINDS = {
     "ekadashi": [
-        {"name": "Shukla Ekadashi", "tithi_id": 10, "start_angle": 120.0, "end_angle": 132.0, "paksha": "Shukla Paksha"},
-        {"name": "Krishna Ekadashi", "tithi_id": 25, "start_angle": 300.0, "end_angle": 312.0, "paksha": "Krishna Paksha"},
+        {"name": "Shukla Ekadashi", "tithi_id": 10, "start_angle": 120.0, "end_angle": 132.0, "dwadashi_end_angle": 144.0, "paksha": "Shukla Paksha"},
+        {"name": "Krishna Ekadashi", "tithi_id": 25, "start_angle": 300.0, "end_angle": 312.0, "dwadashi_end_angle": 324.0, "paksha": "Krishna Paksha"},
     ],
     "purnima": [
         {"name": "Purnima", "tithi_id": 14, "start_angle": 168.0, "end_angle": 180.0, "paksha": "Shukla Paksha"},
@@ -50,6 +50,51 @@ def candidate_sunrises(start_dt, end_dt, target_id, lat, lon, tz):
         d += timedelta(days=1)
     return rows
 
+def add_ekadashi_parana(candidates, dwadashi_start, dwadashi_end, lat, lon, tz, hour24):
+    """Attach astronomical Parana constraints without selecting a sectarian fasting date."""
+    hari_vasara_end = dwadashi_start + (dwadashi_end - dwadashi_start) / 4
+
+    for row in candidates:
+        fasting_date = datetime.strptime(row["date"], "%Y-%m-%d").date()
+        parana_date = fasting_date + timedelta(days=1)
+        next_sunrise = panchang.rise_set(
+            parana_date, lat, lon, tz,
+            panchang.astronomy.Body.Sun, panchang.astronomy.Direction.Rise
+        )
+        if next_sunrise is None:
+            row["parana"] = None
+            continue
+
+        earliest = max(next_sunrise, hari_vasara_end)
+        dwadashi_after_sunrise = dwadashi_end > next_sunrise
+        deadline = dwadashi_end if dwadashi_after_sunrise else None
+        valid_window = deadline is None or earliest < deadline
+
+        row["parana"] = {
+            "date": parana_date.isoformat(),
+            "next_sunrise": next_sunrise.isoformat(),
+            "next_sunrise_label": panchang.transition_label(next_sunrise, parana_date, hour24),
+            "hari_vasara_end": hari_vasara_end.isoformat(),
+            "hari_vasara_end_label": panchang.transition_label(hari_vasara_end, parana_date, hour24),
+            "earliest": earliest.isoformat(),
+            "earliest_label": panchang.transition_label(earliest, parana_date, hour24),
+            "dwadashi_end": dwadashi_end.isoformat(),
+            "dwadashi_end_label": panchang.transition_label(dwadashi_end, parana_date, hour24),
+            "deadline": deadline.isoformat() if deadline else None,
+            "deadline_label": (
+                panchang.transition_label(deadline, parana_date, hour24) if deadline else None
+            ),
+            "status": (
+                "candidate-window"
+                if valid_window and deadline
+                else "dwadashi-ended-before-sunrise"
+                if deadline is None
+                else "requires-special-rule"
+            ),
+        }
+
+    return candidates
+
 def events_for_rule(year, rule, lat, lon, tz, hour24):
     search_local = datetime(year - 1, 12, 10, 0, 0, tzinfo=tz)
     cursor = panchang.astronomy_time(search_local)
@@ -67,6 +112,17 @@ def events_for_rule(year, rule, lat, lon, tz, hour24):
         end_dt = panchang.datetime_from_astronomy(end_event, tz)
 
         candidates = candidate_sunrises(start_dt, end_dt, rule["tithi_id"], lat, lon, tz)
+
+        if "dwadashi_end_angle" in rule:
+            dwadashi_end_event = panchang.astronomy.SearchMoonPhase(
+                rule["dwadashi_end_angle"], end_event, 3.0
+            )
+            if dwadashi_end_event is not None:
+                dwadashi_end_dt = panchang.datetime_from_astronomy(dwadashi_end_event, tz)
+                candidates = add_ekadashi_parana(
+                    candidates, end_dt, dwadashi_end_dt, lat, lon, tz, hour24
+                )
+
         intersects_year = (
             start_dt.year == year or end_dt.year == year or
             any(int(row["date"][:4]) == year for row in candidates)
@@ -137,7 +193,7 @@ def main():
             "candidate-only" if kind == "ekadashi" else "astronomical-occurrence"
         ),
         "note": (
-            "Ekadashi sunrise candidates are astronomical inputs. Smarta/Vaishnava observance and Parana rules are not yet applied."
+            "Ekadashi sunrise candidates are astronomical inputs. Parana timing constraints are calculated from next sunrise, Hari Vasara and Dwadashi end; Smarta/Vaishnava fasting-date selection is not yet applied."
             if kind == "ekadashi"
             else "These are exact Tithi occurrence windows with local sunrise candidates; festival-specific rules may choose a date differently."
         ),
