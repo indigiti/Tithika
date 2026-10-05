@@ -40,7 +40,7 @@ except ImportError:
     }))
     sys.exit(2)
 
-ENGINE_VERSION = "0.2.0"
+ENGINE_VERSION = "0.3.0"
 ASTRONOMY_ENGINE_BLOB = "1a48fdf620540df22fcf421d0df0c2c016999e52"
 
 TITHI_NAMES = [
@@ -74,6 +74,11 @@ LUNAR_MONTH_NAMES = [
 ]
 
 KARANA_CYCLE = ["Bava", "Balava", "Kaulava", "Taitila", "Garaja", "Vanija", "Vishti"]
+
+# Weekday keys use Python datetime.weekday(): Monday=0 ... Sunday=6.
+RAHU_SEGMENT = {6: 8, 0: 2, 1: 7, 2: 5, 3: 6, 4: 4, 5: 3}
+YAMAGANDA_SEGMENT = {6: 5, 0: 4, 1: 3, 2: 2, 3: 1, 4: 7, 5: 6}
+GULIKA_SEGMENT = {6: 7, 0: 6, 1: 5, 2: 4, 3: 3, 4: 2, 5: 1}
 
 # Lahiri mean ayanamsha at J2000 (23°51'25.53") in arcseconds.
 LAHIRI_J2000_ARCSEC = 85885.53
@@ -367,6 +372,114 @@ def lunar_month_info(reference: datetime, sunrise_state: dict) -> dict:
     }
 
 
+def interval(start: datetime, end: datetime, anchor_date: date, hour24: bool = False) -> dict:
+    return {
+        "start": start.isoformat(),
+        "end": end.isoformat(),
+        "start_label": transition_label(start, anchor_date, hour24),
+        "end_label": transition_label(end, anchor_date, hour24),
+    }
+
+
+def daily_muhurtas(
+    d: date,
+    sunrise: datetime,
+    sunset: datetime,
+    next_sunrise: datetime,
+    lat: float,
+    lon: float,
+    tz: ZoneInfo,
+    hour24: bool = False,
+) -> dict:
+    """Core sunrise/sunset-derived Muhurta windows used by Daily Panchang."""
+    previous_sunset = rise_set(
+        d - timedelta(days=1), lat, lon, tz, astronomy.Body.Sun, astronomy.Direction.Set
+    )
+    if previous_sunset and previous_sunset >= sunrise:
+        previous_sunset -= timedelta(days=1)
+
+    day_span = sunset - sunrise
+    day_muhurta = day_span / 15
+    day_eighth = day_span / 8
+    night_span = next_sunrise - sunset
+    night_muhurta = night_span / 15
+
+    weekday = d.weekday()
+    rahu_idx = RAHU_SEGMENT[weekday] - 1
+    yamaganda_idx = YAMAGANDA_SEGMENT[weekday] - 1
+    gulika_idx = GULIKA_SEGMENT[weekday] - 1
+
+    values = {
+        "abhijit": interval(
+            sunrise + day_muhurta * 7,
+            sunrise + day_muhurta * 8,
+            d,
+            hour24,
+        ),
+        "vijaya": interval(
+            sunrise + day_muhurta * 10,
+            sunrise + day_muhurta * 11,
+            d,
+            hour24,
+        ),
+        "godhuli": interval(
+            sunset,
+            sunset + day_muhurta / 2,
+            d,
+            hour24,
+        ),
+        "pratah_sandhya": interval(
+            sunrise - day_muhurta * 1.5,
+            sunrise,
+            d,
+            hour24,
+        ),
+        "sayahna_sandhya": interval(
+            sunset,
+            sunset + night_muhurta * 1.5,
+            d,
+            hour24,
+        ),
+        "nishita": interval(
+            sunset + night_muhurta * 7,
+            sunset + night_muhurta * 8,
+            d,
+            hour24,
+        ),
+        "rahu_kaal": interval(
+            sunrise + day_eighth * rahu_idx,
+            sunrise + day_eighth * (rahu_idx + 1),
+            d,
+            hour24,
+        ),
+        "yamaganda": interval(
+            sunrise + day_eighth * yamaganda_idx,
+            sunrise + day_eighth * (yamaganda_idx + 1),
+            d,
+            hour24,
+        ),
+        "gulika": interval(
+            sunrise + day_eighth * gulika_idx,
+            sunrise + day_eighth * (gulika_idx + 1),
+            d,
+            hour24,
+        ),
+    }
+
+    if previous_sunset:
+        previous_night_muhurta = (sunrise - previous_sunset) / 15
+        values["brahma"] = interval(
+            sunrise - previous_night_muhurta * 2,
+            sunrise - previous_night_muhurta,
+            d,
+            hour24,
+        )
+    else:
+        values["brahma"] = None
+
+    return values
+
+
 def main() -> None:
     payload = json.loads(sys.stdin.read() or "{}")
     lat = float(payload.get("lat", 19.0760))
@@ -430,6 +543,7 @@ def main() -> None:
     yogas = sequence_for(sunrise, next_sunrise, "yoga_id", "yoga", hour24, 4)
     karanas = sequence_for(sunrise, next_sunrise, "karana_id", "karana", hour24, 6)
     lunar_month = lunar_month_info(sunrise, sunrise_state)
+    muhurtas = daily_muhurtas(selected_date, sunrise, sunset, next_sunrise, lat, lon, tz, hour24)
 
     output = {
         "ok": True,
@@ -473,6 +587,7 @@ def main() -> None:
         "sun_rashi": sunrise_state["sun_rashi"],
         "sun_nakshatra": sunrise_state["sun_nakshatra"],
         "lunar_month": lunar_month,
+        "muhurtas": muhurtas,
         "generated_at": now_local.isoformat(),
         "method": (
             "Astronomy Engine apparent Sun/Moon true-ecliptic positions converted to "
