@@ -3,6 +3,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from datetime import datetime
 
 ROOT=Path(__file__).resolve().parents[1]
 ENGINE=ROOT/"python"/"lunar_occurrences.py"
@@ -28,11 +29,19 @@ def run(kind):
 
 ek=run("ekadashi")
 assert ek["observance_status"]=="candidate-only"
-assert any(
-    c["date"]=="2026-10-06"
+candidate=next(
+    c
     for event in ek["events"]
     for c in event.get("sunrise_candidates",[])
-), "Expected Oct 6, 2026 Ekadashi sunrise candidate"
+    if c["date"]=="2026-10-06"
+)
+assert candidate["parana"] is not None
+parana=candidate["parana"]
+assert parana["date"]=="2026-10-07"
+assert datetime.fromisoformat(parana["earliest"]) >= datetime.fromisoformat(parana["next_sunrise"])
+assert datetime.fromisoformat(parana["earliest"]) >= datetime.fromisoformat(parana["hari_vasara_end"])
+if parana["deadline"]:
+    assert datetime.fromisoformat(parana["earliest"]) < datetime.fromisoformat(parana["deadline"])
 
 pu=run("purnima")
 assert all(event["tithi_id"]==14 for event in pu["events"])
