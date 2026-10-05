@@ -35,6 +35,26 @@ Modern product-style daily dashboard with:
 - responsive day timeline
 - links into the broader Tithika product map
 
+### Daily Panchang — `/panchang/daily/`
+
+The first full Panchang astronomy surface is now engine-backed with:
+
+- local sunrise, sunset, moonrise and moonset
+- Lahiri / Chitrapaksha sidereal Sun and Moon longitudes
+- Tithi and transition time
+- Nakshatra, Pada and transition time
+- Yoga and transition time
+- Karana and transition time
+- Paksha
+- Sun and Moon Rashi
+- Amanta and Purnimanta lunar month
+- Adhika month detection
+- Abhijit, Vijaya, Brahma, Godhuli, Pratah/Sayahna Sandhya and Nishita
+- Rahu Kala, Yamaganda and Gulika
+- date/location-aware recomputation
+
+The same engine is reused by `/panchang/moonrise-moonset/`, `/panchang/rahu-kala/`, `/muhurat/rahu-kala/` and `/muhurat/abhijit/`.
+
 ### Choghadiya — `choghadiya.php`
 
 Verified calculation surface with:
@@ -61,7 +81,9 @@ assets/tithika.css            shared production UI system
 assets/tithika-site.js        shared location/date context
 
 api.php                       PHP API / geocoding bridge
-python/choghadiya.py          current solar + Choghadiya engine
+python/choghadiya.py          solar + Choghadiya engine
+python/panchang.py            Daily Panchang astronomy/rule engine
+python/vendor/astronomy.py    vendored Astronomy Engine (MIT)
 
 docs/DRIKPANCHANG_AUDIT.md    benchmark/product audit
 docs/TITHIKA_PAGE_MAP.md      implementation map
@@ -106,7 +128,7 @@ The current Panchang engine vendors its astronomy core, so no Python pip install
 
 ## Current calculation model
 
-The existing Python solar engine calculates sunrise and sunset using a 90.833° solar zenith, divides sunrise→sunset into eight equal local day periods and sunset→next sunrise into eight equal local night periods, then applies weekday-specific Choghadiya sequences and Rahu Kaal segments.
+The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night sequences. The Daily Panchang engine uses the vendored MIT-licensed Astronomy Engine for apparent geocentric Sun/Moon positions, converts them to Lahiri/Chitrapaksha sidereal longitude, evaluates Panchang state at local sunrise, and refines Tithi/Nakshatra/Yoga/Karana boundaries by binary search.
 
 ## Next calculation-engine layers
 
