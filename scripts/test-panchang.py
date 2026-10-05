@@ -40,6 +40,10 @@ assert data["lunar_month"]["amanta"] == "Bhadrapada"
 assert data["lunar_month"]["purnimanta"] == "Ashwina"
 assert data["moonrise_label"]
 assert data["moonset_label"]
+assert data["muhurtas"]["abhijit"]["start_label"].startswith("12:03")
+assert data["muhurtas"]["vijaya"]["start_label"].startswith("2:25")
+assert data["muhurtas"]["yamaganda"]["start_label"].startswith("9:28")
+assert data["muhurtas"]["gulika"]["start_label"].startswith("12:27")
 
 def minutes(iso):
     dt = datetime.fromisoformat(iso)
