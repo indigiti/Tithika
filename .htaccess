@@ -1,4 +1,30 @@
 Options -Indexes
-<FilesMatch "^(README\.md)$">
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# Keep private implementation/docs out of the public surface.
+RewriteRule ^(?:config|includes|docs|python)/ - [F,L]
+
+# Existing files and asset directories are served directly.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Canonical live tool.
+RewriteRule ^muhurat/choghadiya/?$ choghadiya.php [L,QSA]
+
+# Every mapped Tithika page resolves through the shared renderer.
+RewriteRule ^(.+?)/?$ page.php?slug=$1 [L,QSA]
+</IfModule>
+
+<FilesMatch "^(README\.md|sample\.json)$">
   Require all denied
 </FilesMatch>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "public, max-age=604800, immutable"
+  </FilesMatch>
+</IfModule>
