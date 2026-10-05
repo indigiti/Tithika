@@ -152,6 +152,13 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'seasons') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/seasons.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     out(['ok'=>false,'error'=>'Unknown action'], 404);
 } catch (Throwable $e) {
     out(['ok'=>false,'error'=>$e->getMessage()], 500);
