@@ -13,7 +13,8 @@
   const state={
     lat:19.076,lon:72.8777,city:'Mumbai, Maharashtra, India',
     timezone:'Asia/Kolkata',
-    data:null,panchang:null,searchTimer:null,dateTouched:false
+    data:null,panchang:null,searchTimer:null,dateTouched:false,
+    monthData:null,monthKey:'',lunarCache:new Map()
   };
 
   function isoToday(timeZone=state.timezone){
@@ -107,12 +108,19 @@
     if(loading){loading.hidden=false;loading.textContent='Calculating yearly lunar occurrences…'}
     try{
       const kind=lunarKinds[pageSlug];
+      const p=payload();
+      const cacheKey=`${kind}|${p.date.slice(0,4)}|${Number(p.lat).toFixed(5)}|${Number(p.lon).toFixed(5)}|${p.timezone}`;
+      if(state.lunarCache.has(cacheKey)){
+        renderLunarOccurrences(state.lunarCache.get(cacheKey));
+        return;
+      }
       const r=await fetch(`${base}api.php?action=lunar-occurrences&kind=${encodeURIComponent(kind)}`,{
         method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(payload())
+        body:JSON.stringify(p)
       });
       const j=await r.json();
       if(!j.ok)throw new Error(j.error||'Unable to calculate lunar occurrences');
+      state.lunarCache.set(cacheKey,j);
       renderLunarOccurrences(j);
     }catch(e){
       if(loading){loading.hidden=false;loading.textContent=e.message||'Lunar occurrence engine unavailable'}
@@ -149,12 +157,20 @@
     const loading=$('#tkMonthLoading');
     if(loading){loading.hidden=false;loading.textContent='Building month Panchang…'}
     try{
+      const p=payload();
+      const cacheKey=`${p.date.slice(0,7)}|${Number(p.lat).toFixed(5)}|${Number(p.lon).toFixed(5)}|${p.timezone}`;
+      if(state.monthData&&state.monthKey===cacheKey){
+        renderMonth(state.monthData);
+        return;
+      }
       const r=await fetch(`${base}api.php?action=panchang-month`,{
         method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(payload())
+        body:JSON.stringify(p)
       });
       const j=await r.json();
       if(!j.ok)throw new Error(j.error||'Unable to calculate Month Panchang');
+      state.monthData=j;
+      state.monthKey=cacheKey;
       renderMonth(j);
     }catch(e){
       if(loading){loading.hidden=false;loading.textContent=e.message||'Month Panchang unavailable'}
@@ -167,12 +183,20 @@
     const title=$('#tkMonthTitle');if(title)title.textContent=`${d.month_name} ${d.year}`;
     const engine=$('#tkMonthEngine');if(engine)engine.textContent=`${d.engine?.ayanamsha||'Lahiri'} · Month engine`;
     const grid=$('#tkMonthGrid');if(!grid)return;
+    const selectedDate=payload().date;
+    const selectedRow=(d.days||[]).find(row=>row.date===selectedDate);
+    const selection=$('#tkMonthSelection');
+    if(selection)selection.textContent=selectedRow?.available
+      ? `${selectedRow.weekday}, ${selectedRow.date} · ${selectedRow.tithi} · ${selectedRow.nakshatra}`
+      : `Selected date: ${selectedDate}`;
+    const dailyLink=$('#tkMonthDailyLink');
+    if(dailyLink)dailyLink.href=`${base}panchang/daily/?date=${encodeURIComponent(selectedDate)}`;
     const blanks=Math.max(0,Number(d.first_weekday||0));
     let html=Array.from({length:blanks},()=>'<div class="tk-month-day is-empty"></div>').join('');
     html+=(d.days||[]).map(row=>{
       if(!row.available)return `<div class="tk-month-day is-unavailable"><b>${row.day}</b><small>Unavailable</small></div>`;
       const special=row.tithi==='Ekadashi'?' ekadashi':row.tithi==='Purnima'?' purnima':row.tithi==='Amavasya'?' amavasya':'';
-      const selected=payload().date===row.date?' is-selected':'';
+      const selected=selectedDate===row.date?' is-selected':'';
       return `<button type="button" class="tk-month-day${special}${selected}" data-month-date="${esc(row.date)}">
         <span class="tk-month-day-top"><b>${row.day}</b><em>${esc(row.weekday_short||'')}</em></span>
         <strong>${esc(row.tithi||'—')}</strong>
@@ -341,6 +365,13 @@
   }));
   $('#tkToday')?.addEventListener('click',()=>{const input=$('#tkDate');state.dateTouched=false;if(input)input.value=isoToday(state.timezone);calculate()});
 
-  const input=$('#tkDate');if(input&&!input.value)input.value=isoToday(state.timezone);
+  const input=$('#tkDate');
+  const queryDate=new URLSearchParams(window.location.search).get('date');
+  if(input&&queryDate&&/^\d{4}-\d{2}-\d{2}$/.test(queryDate)&&!Number.isNaN(Date.parse(queryDate+'T12:00:00Z'))){
+    input.value=queryDate;
+    state.dateTouched=true;
+  }else if(input&&!input.value){
+    input.value=isoToday(state.timezone);
+  }
   locate(true);
 })();
