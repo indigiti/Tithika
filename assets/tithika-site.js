@@ -9,6 +9,12 @@
     'vrat/purnima':'purnima',
     'vrat/amavasya':'amavasya'
   };
+  const seasonKinds={
+    'astronomy/vernal-equinox':'vernal_equinox',
+    'astronomy/summer-solstice':'summer_solstice',
+    'astronomy/autumnal-equinox':'autumnal_equinox',
+    'astronomy/winter-solstice':'winter_solstice'
+  };
   const browserTimezone=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata';
   const state={
     lat:19.076,lon:72.8777,city:'Mumbai, Maharashtra, India',
@@ -79,6 +85,7 @@
       if(panchangPages.includes(pageSlug)) await calculatePanchang();
       if(monthPages.includes(pageSlug)) await calculateMonth();
       if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
+      if(seasonKinds[pageSlug]) await calculateSeasons();
     }catch(e){toast(e.message||'Unable to load location context')}
   }
 
@@ -101,6 +108,42 @@
       set('#tkCurrent','Solar day');
       set('#tkCurrentRange',`${d.sunrise_label} – ${d.sunset_label}`);
     }
+  }
+
+  async function calculateSeasons(){
+    const loading=$('#tkSeasonLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating equinoxes and solstices…'}
+    try{
+      const r=await fetch(`${base}api.php?action=seasons`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload())
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Unable to calculate seasonal events');
+      renderSeasons(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Season engine unavailable'}
+      toast(e.message||'Season engine unavailable');
+    }
+  }
+
+  function renderSeasons(d){
+    const loading=$('#tkSeasonLoading');if(loading)loading.hidden=true;
+    const key=seasonKinds[pageSlug];
+    const event=d.events?.[key];
+    const set=(id,val)=>{const el=$(id);if(el)el.textContent=val};
+    if(event){
+      set('#tkSeasonTitle',event.name);
+      set('#tkSeasonWeekday',event.weekday);
+      set('#tkSeasonResult',`${event.date_label} · ${event.time_label}`);
+      set('#tkSeasonMeta',`Displayed in ${d.timezone} for the selected location.`);
+    }
+    const all=$('#tkSeasonAll');if(!all)return;
+    all.innerHTML=Object.entries(d.events||{}).map(([k,row])=>`
+      <div class="tk-season-row${k===key?' is-current':''}">
+        <div><small>${esc(row.weekday)}</small><strong>${esc(row.name)}</strong></div>
+        <span>${esc(row.date_label)} · ${esc(row.time_label)}</span>
+      </div>`).join('');
   }
 
   async function calculateLunarOccurrences(){
@@ -354,7 +397,7 @@
     if(pageSlug==='panchang/month'){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]){
+    }else if(lunarKinds[pageSlug]||seasonKinds[pageSlug]){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
