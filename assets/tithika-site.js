@@ -3,15 +3,19 @@
   const base=window.TITHIKA_BASE||'/';
   const pageSlug=window.TITHIKA_PAGE_SLUG||'';
   const panchangPages=['panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'];
+  const browserTimezone=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata';
   const state={
     lat:19.076,lon:72.8777,city:'Mumbai, Maharashtra, India',
-    timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata',
-    data:null,panchang:null,searchTimer:null
+    timezone:'Asia/Kolkata',
+    data:null,panchang:null,searchTimer:null,dateTouched:false
   };
 
-  function isoToday(){
-    const d=new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  function isoToday(timeZone=state.timezone){
+    const parts=new Intl.DateTimeFormat('en-CA',{
+      timeZone,year:'numeric',month:'2-digit',day:'2-digit'
+    }).formatToParts(new Date());
+    const v=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+    return `${v.year}-${v.month}-${v.day}`;
   }
 
   function payload(){
@@ -35,6 +39,25 @@
       const j=await r.json();
       if(j.ok&&j.label)state.city=j.label;
     }catch(e){}
+  }
+
+  async function resolveTimezone(lat,lon,{fallback=null}={}){
+    try{
+      const r=await fetch(`${base}api.php?action=timezone&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
+      const j=await r.json();
+      if(!j.ok||!j.timezone)throw new Error(j.error||'Timezone unavailable');
+      state.timezone=j.timezone;
+      if(!state.dateTouched&&$('#tkDate')) $('#tkDate').value=isoToday(state.timezone);
+      return true;
+    }catch(e){
+      if(fallback){
+        state.timezone=fallback;
+        if(!state.dateTouched&&$('#tkDate')) $('#tkDate').value=isoToday(state.timezone);
+        return true;
+      }
+      toast('Could not resolve the selected city timezone. Please try again.');
+      return false;
+    }
   }
 
   async function calculate(){
@@ -157,7 +180,10 @@
     if(!navigator.geolocation){calculate();return}
     navigator.geolocation.getCurrentPosition(async p=>{
       state.lat=p.coords.latitude;state.lon=p.coords.longitude;state.city='Current location';
-      await reverse(state.lat,state.lon);
+      await Promise.all([
+        reverse(state.lat,state.lon),
+        resolveTimezone(state.lat,state.lon,{fallback:browserTimezone})
+      ]);
       calculate();
     },()=>{
       if(!silent)toast('Location permission unavailable. Using Mumbai as fallback.');
@@ -186,14 +212,22 @@
       if(!j.ok||!j.results?.length){box.innerHTML='<div class="tk-search-item"><span>No places found</span></div>';return}
       box.innerHTML=j.results.map((x,i)=>`<button class="tk-search-item" data-i="${i}"><strong>${esc(x.label)}</strong><span>${esc(x.display_name)}</span></button>`).join('');
       box._rows=j.results;
-      box.querySelectorAll('.tk-search-item[data-i]').forEach(btn=>btn.addEventListener('click',()=>{
+      box.querySelectorAll('.tk-search-item[data-i]').forEach(btn=>btn.addEventListener('click',async()=>{
         const x=box._rows[Number(btn.dataset.i)];
-        state.lat=x.lat;state.lon=x.lon;state.city=x.label;panel.hidden=true;calculate();
+        const old={lat:state.lat,lon:state.lon,city:state.city,timezone:state.timezone};
+        state.lat=x.lat;state.lon=x.lon;state.city=x.label;
+        const resolved=await resolveTimezone(state.lat,state.lon);
+        if(!resolved){
+          Object.assign(state,old);
+          return;
+        }
+        panel.hidden=true;
+        calculate();
       }));
     }catch(e){toast('City search is temporarily unavailable')}
   }
 
-  $('#tkDate')?.addEventListener('change',calculate);
+  $('#tkDate')?.addEventListener('change',()=>{state.dateTouched=true;calculate()});
   document.querySelectorAll('[data-shift-date]').forEach(btn=>btn.addEventListener('click',()=>{
     const input=$('#tkDate');if(!input)return;
     const d=new Date((input.value||isoToday())+'T12:00:00');
@@ -201,8 +235,8 @@
     input.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     calculate();
   }));
-  $('#tkToday')?.addEventListener('click',()=>{const input=$('#tkDate');if(input)input.value=isoToday();calculate()});
+  $('#tkToday')?.addEventListener('click',()=>{const input=$('#tkDate');state.dateTouched=false;if(input)input.value=isoToday(state.timezone);calculate()});
 
-  const input=$('#tkDate');if(input&&!input.value)input.value=isoToday();
+  const input=$('#tkDate');if(input&&!input.value)input.value=isoToday(state.timezone);
   locate(true);
 })();
