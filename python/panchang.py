@@ -51,6 +51,8 @@ LUNAR_MONTH_BY_NEW_MOON_SUN_SIGN = [
     "Kartika","Margashirsha","Pausha","Magha","Phalguna","Chaitra"
 ]
 KARANA_CYCLE = ["Bava","Balava","Kaulava","Taitila","Garaja","Vanija","Vishti"]
+YAMAGANDA_SEGMENT = {6:5, 0:4, 1:3, 2:2, 3:1, 4:7, 5:6}
+GULIKA_SEGMENT = {6:7, 0:6, 1:5, 2:4, 3:3, 4:2, 5:1}
 
 def norm(v, m=360.0):
     return v % m
@@ -200,6 +202,46 @@ def fmt(dt: datetime, hour24=False):
     rounded = (dt + timedelta(seconds=30)).replace(second=0, microsecond=0)
     return rounded.strftime("%H:%M" if hour24 else "%I:%M %p").lstrip("0")
 
+def interval(start: datetime, end: datetime, anchor_date: date, hour24=False):
+    return {
+        "start": start.isoformat(),
+        "end": end.isoformat(),
+        "start_label": transition_label(start, anchor_date, hour24),
+        "end_label": transition_label(end, anchor_date, hour24),
+    }
+
+def daily_muhurtas(d: date, sunrise: datetime, sunset: datetime, next_sunrise: datetime, lat: float, lon: float, tz: ZoneInfo, hour24=False):
+    prev_sunset = solar_event(d - timedelta(days=1), lat, lon, tz, False)
+    if prev_sunset and prev_sunset >= sunrise:
+        prev_sunset -= timedelta(days=1)
+
+    day_span = sunset - sunrise
+    day_muhurta = day_span / 15
+    day_eighth = day_span / 8
+    night_span = next_sunrise - sunset
+    night_muhurta = night_span / 15
+
+    wd = d.weekday()
+    yam_idx = YAMAGANDA_SEGMENT[wd] - 1
+    gul_idx = GULIKA_SEGMENT[wd] - 1
+
+    values = {
+        "abhijit": interval(sunrise + day_muhurta * 7, sunrise + day_muhurta * 8, d, hour24),
+        "vijaya": interval(sunrise + day_muhurta * 10, sunrise + day_muhurta * 11, d, hour24),
+        "godhuli": interval(sunset, sunset + day_muhurta / 2, d, hour24),
+        "pratah_sandhya": interval(sunrise - day_muhurta * 1.5, sunrise, d, hour24),
+        "sayahna_sandhya": interval(sunset, sunset + night_muhurta * 1.5, d, hour24),
+        "nishita": interval(sunset + night_muhurta * 7, sunset + night_muhurta * 8, d, hour24),
+        "yamaganda": interval(sunrise + day_eighth * yam_idx, sunrise + day_eighth * (yam_idx + 1), d, hour24),
+        "gulika": interval(sunrise + day_eighth * gul_idx, sunrise + day_eighth * (gul_idx + 1), d, hour24),
+    }
+    if prev_sunset:
+        prev_night_muhurta = (sunrise - prev_sunset) / 15
+        values["brahma"] = interval(sunrise - prev_night_muhurta * 2, sunrise - prev_night_muhurta, d, hour24)
+    else:
+        values["brahma"] = None
+    return values
+
 def transition_label(dt: datetime, anchor_date: date, hour24=False):
     base = fmt(dt, hour24)
     if dt.date() != anchor_date:
@@ -283,6 +325,7 @@ def main():
 
     sunrise_state = state_at(sunrise)
     months = lunar_months(sunrise, sunrise_state["paksha"])
+    muhurtas = daily_muhurtas(d, sunrise, sunset, next_sunrise, lat, lon, tz, hour24)
     moonrise = moon_event(sunrise, lat, lon, tz, True)
     moonset = moon_event(sunrise, lat, lon, tz, False)
     if moonrise and moonrise > next_sunrise:
@@ -303,7 +346,7 @@ def main():
         "ok": True,
         "engine": {
             "name": "tithika-panchang",
-            "version": "0.2.0",
+            "version": "0.3.0",
             "ephemeris": "Swiss Ephemeris / Moshier",
             "ayanamsha": "Lahiri",
             "sidereal": True
@@ -332,6 +375,7 @@ def main():
         "moonrise_label": transition_label(moonrise, d, hour24) if moonrise else None,
         "moonset": moonset.isoformat() if moonset else None,
         "moonset_label": transition_label(moonset, d, hour24) if moonset else None,
+        "muhurtas": muhurtas,
         "generated_at": now_local.isoformat(),
         "method": "Sidereal Sun/Moon positions from Swiss Ephemeris with Lahiri ayanamsha; Hindu day evaluated sunrise to next sunrise."
     }
