@@ -46,7 +46,8 @@
     .utility-icon{box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 10px 24px rgba(52,65,98,.08)}
     .place-result{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:14px;transition:background .15s}
     .place-result:hover{background:#f4f7fb}.place-result strong{display:block;font-size:13px}.place-result span{display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;color:#8b94a6}
-    @media (max-width:1023px){#locationPanel{position:fixed!important;left:12px!important;right:12px!important;top:auto!important;bottom:86px!important;width:auto!important}}\n    @media (max-width:640px){
+    @media (max-width:1023px){#locationPanel{position:fixed!important;left:12px!important;right:12px!important;top:auto!important;bottom:86px!important;width:auto!important}}
+    @media (max-width:640px){
       body{background:#fff}.shell{border-radius:0!important;box-shadow:none}.pixel{width:48px;height:48px;border-radius:14px}
       .hero-grid{background-size:44px 44px}
     }
