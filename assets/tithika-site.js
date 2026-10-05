@@ -184,13 +184,22 @@
       timeZone:state.timezone,month:'short',day:'numeric',weekday:'short'
     }).format(new Date(iso));
     list.innerHTML=d.events.map(row=>{
-      const candidates=(row.sunrise_candidates||[]).map(x=>`${esc(x.weekday.slice(0,3))} ${esc(x.date)}`).join(' · ');
+      const candidateRows=(row.sunrise_candidates||[]).map(x=>{
+        const parana=x.parana;
+        const paranaText=parana
+          ? `Parana: after ${esc(parana.earliest_label||parana.next_sunrise_label||'sunrise')}${parana.deadline_label ? ` · before ${esc(parana.deadline_label)}` : ' · Dwadashi ended before sunrise'}`
+          : '';
+        return `<div class="tk-lunar-candidate">
+          <div><b>${esc(x.weekday.slice(0,3))} ${esc(x.date)}</b><span>Sunrise ${esc(x.sunrise_label||'—')}</span></div>
+          ${paranaText ? `<small>${paranaText}</small>` : ''}
+        </div>`;
+      }).join('');
       return `<article class="tk-lunar-event">
         <div class="tk-lunar-event-date"><b>${esc(fmtDate(row.start))}</b><span>${esc(row.paksha||'')}</span></div>
         <div class="tk-lunar-event-main">
           <h4>${esc(row.name)}</h4>
           <p>${esc(row.amanta_month||'')} · ${esc(row.start_label)} → ${esc(row.end_label)}</p>
-          <small>${candidates ? 'Tithi at sunrise: '+esc(candidates) : 'No sunrise falls inside this Tithi window'}</small>
+          ${candidateRows ? `<div class="tk-lunar-candidates">${candidateRows}</div>` : '<small>No sunrise falls inside this Tithi window</small>'}
         </div>
       </article>`;
     }).join('');
