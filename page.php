@@ -143,6 +143,22 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <section class="tk-panchang-block"><header><span>◎</span><div><small>Combined longitude</small><h4>Yoga</h4></div></header><div id="tkYogaTransitions"></div></section>
           <section class="tk-panchang-block"><header><span>◇</span><div><small>Half lunar day</small><h4>Karana</h4></div></header><div id="tkKaranaTransitions"></div></section>
         </div>
+
+        <div class="tk-panchang-subhead">
+          <div><small>Daily Muhurat</small><h3>Auspicious & caution windows</h3></div>
+          <span>Sunrise-derived</span>
+        </div>
+        <div class="tk-muhurat-grid">
+          <div class="tk-muhurat-item good"><small>Abhijit</small><strong id="tkMuhuratAbhijit">—</strong></div>
+          <div class="tk-muhurat-item good"><small>Vijaya</small><strong id="tkMuhuratVijaya">—</strong></div>
+          <div class="tk-muhurat-item good"><small>Brahma</small><strong id="tkMuhuratBrahma">—</strong></div>
+          <div class="tk-muhurat-item good"><small>Godhuli</small><strong id="tkMuhuratGodhuli">—</strong></div>
+          <div class="tk-muhurat-item"><small>Pratah Sandhya</small><strong id="tkMuhuratPratah">—</strong></div>
+          <div class="tk-muhurat-item"><small>Sayahna Sandhya</small><strong id="tkMuhuratSayahna">—</strong></div>
+          <div class="tk-muhurat-item"><small>Nishita</small><strong id="tkMuhuratNishita">—</strong></div>
+          <div class="tk-muhurat-item avoid"><small>Yamaganda</small><strong id="tkMuhuratYamaganda">—</strong></div>
+          <div class="tk-muhurat-item avoid"><small>Gulika</small><strong id="tkMuhuratGulika">—</strong></div>
+        </div>
       <?php elseif ($page['template'] === 'calendar' || $page['template'] === 'festival'): ?>
         <span class="tk-card-tag">Calendar interface</span>
         <h3>Month-first navigation</h3>
