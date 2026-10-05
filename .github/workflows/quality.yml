@@ -48,3 +48,6 @@ jobs:
 
       - name: Lunar occurrence regression fixtures
         run: python scripts/test-lunar-occurrences.py
+
+      - name: Equinox and solstice regression fixture
+        run: python scripts/test-seasons.py
