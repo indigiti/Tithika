@@ -118,7 +118,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
             <h3>Daily Panchang at sunrise</h3>
             <p>Sidereal Sun and Moon positions use Lahiri ayanamsha. Each row shows the state at local sunrise and its next transition.</p>
           </div>
-          <div class="tk-panchang-engine" id="tkEngineMeta">Swiss Ephemeris · Lahiri</div>
+          <div class="tk-panchang-engine" id="tkEngineMeta">Astronomy Engine · Lahiri</div>
         </div>
 
         <div id="tkPanchangLoading" class="tk-panchang-loading">Calculating sidereal Panchang…</div>
@@ -166,7 +166,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
             <h3 id="tkSinglePrimary">Calculating…</h3>
             <p id="tkSingleMeta">Using the shared Tithika astronomy engine and selected local date.</p>
           </div>
-          <div class="tk-panchang-engine" id="tkEngineMeta">Swiss Ephemeris · Lahiri</div>
+          <div class="tk-panchang-engine" id="tkEngineMeta">Astronomy Engine · Lahiri</div>
         </div>
         <div class="tk-single-result">
           <small>Local timing</small>
