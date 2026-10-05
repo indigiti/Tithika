@@ -104,6 +104,16 @@
     set('#tkMoonrise',d.moonrise_label||'—');
     set('#tkMoonset',d.moonset_label||'—');
     set('#tkEngineMeta',`${d.engine?.ayanamsha||'Lahiri'} · ${d.engine?.ephemeris||'Swiss Ephemeris'}`);
+    const range=v=>v ? `${v.start_label} – ${v.end_label}` : '—';
+    set('#tkMuhuratAbhijit',range(d.muhurtas?.abhijit));
+    set('#tkMuhuratVijaya',range(d.muhurtas?.vijaya));
+    set('#tkMuhuratBrahma',range(d.muhurtas?.brahma));
+    set('#tkMuhuratGodhuli',range(d.muhurtas?.godhuli));
+    set('#tkMuhuratPratah',range(d.muhurtas?.pratah_sandhya));
+    set('#tkMuhuratSayahna',range(d.muhurtas?.sayahna_sandhya));
+    set('#tkMuhuratNishita',range(d.muhurtas?.nishita));
+    set('#tkMuhuratYamaganda',range(d.muhurtas?.yamaganda));
+    set('#tkMuhuratGulika',range(d.muhurtas?.gulika));
 
     renderTransitions('#tkTithiTransitions',d.tithi,'Tithi');
     renderTransitions('#tkNakshatraTransitions',d.nakshatra,'Nakshatra');
