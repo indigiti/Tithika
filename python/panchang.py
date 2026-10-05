@@ -146,15 +146,7 @@ def state_at(dt: datetime):
 
 def datetime_from_jd(jd_value: float, tz: ZoneInfo):
     y, m, d, hour = swe.revjul(jd_value, swe.GREG_CAL)
-    hh = int(hour)
-    mf = (hour - hh) * 60.0
-    mm = int(mf)
-    secf = (mf - mm) * 60.0
-    ss = int(secf)
-    micro = int(round((secf - ss) * 1_000_000))
-    if micro >= 1_000_000:
-        micro -= 1_000_000; ss += 1
-    utc_dt = datetime(y, m, d, hh, mm, ss, micro, tzinfo=timezone.utc)
+    utc_dt = datetime(y, m, d, tzinfo=timezone.utc) + timedelta(hours=hour)
     return utc_dt.astimezone(tz)
 
 def moon_event(start: datetime, lat: float, lon: float, tz: ZoneInfo, rise: bool):
