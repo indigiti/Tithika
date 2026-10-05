@@ -131,6 +131,10 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <div class="tk-panchang-metric"><small>Paksha</small><strong id="tkPakshaName">—</strong><span>Waxing / waning half</span></div>
           <div class="tk-panchang-metric"><small>Moon Rashi</small><strong id="tkMoonRashi">—</strong><span>Sidereal Moon sign</span></div>
           <div class="tk-panchang-metric"><small>Sun Rashi</small><strong id="tkSunRashi">—</strong><span>Sidereal Sun sign</span></div>
+          <div class="tk-panchang-metric"><small>Amanta Month</small><strong id="tkAmantaMonth">—</strong><span>Lunar month</span></div>
+          <div class="tk-panchang-metric"><small>Purnimanta Month</small><strong id="tkPurnimantaMonth">—</strong><span>Lunar month</span></div>
+          <div class="tk-panchang-metric"><small>Moonrise</small><strong id="tkMoonrise">—</strong><span>Within Hindu day</span></div>
+          <div class="tk-panchang-metric"><small>Moonset</small><strong id="tkMoonset">—</strong><span>Within Hindu day</span></div>
         </div>
 
         <div class="tk-panchang-columns">
