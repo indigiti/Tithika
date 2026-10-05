@@ -46,6 +46,10 @@ RASHI_NAMES = [
     "Mesha","Vrishabha","Mithuna","Karka","Simha","Kanya",
     "Tula","Vrishchika","Dhanu","Makara","Kumbha","Meena"
 ]
+LUNAR_MONTH_BY_NEW_MOON_SUN_SIGN = [
+    "Vaishakha","Jyeshtha","Ashadha","Shravana","Bhadrapada","Ashwina",
+    "Kartika","Margashirsha","Pausha","Magha","Phalguna","Chaitra"
+]
 KARANA_CYCLE = ["Bava","Balava","Kaulava","Taitila","Garaja","Vanija","Vishti"]
 
 def norm(v, m=360.0):
@@ -140,6 +144,66 @@ def state_at(dt: datetime):
         "sun_rashi": RASHI_NAMES[int(sun // 30.0)],
     }
 
+def datetime_from_jd(jd_value: float, tz: ZoneInfo):
+    y, m, d, hour = swe.revjul(jd_value, swe.GREG_CAL)
+    hh = int(hour)
+    mf = (hour - hh) * 60.0
+    mm = int(mf)
+    secf = (mf - mm) * 60.0
+    ss = int(secf)
+    micro = int(round((secf - ss) * 1_000_000))
+    if micro >= 1_000_000:
+        micro -= 1_000_000; ss += 1
+    utc_dt = datetime(y, m, d, hh, mm, ss, micro, tzinfo=timezone.utc)
+    return utc_dt.astimezone(tz)
+
+def moon_event(start: datetime, lat: float, lon: float, tz: ZoneInfo, rise: bool):
+    mode = swe.CALC_RISE if rise else swe.CALC_SET
+    result, times = swe.rise_trans(
+        julian_day(start), swe.MOON, mode,
+        (lon, lat, 0.0), 0.0, 15.0, swe.FLG_MOSEPH
+    )
+    if result != 0:
+        return None
+    return datetime_from_jd(times[0], tz)
+
+def previous_new_moon(before: datetime):
+    scan_start = before - timedelta(days=35)
+    prev_dt = scan_start
+    prev_id = state_at(prev_dt)["tithi_id"]
+    probe = prev_dt + timedelta(hours=3)
+    boundary = None
+    while probe <= before:
+        probe_id = state_at(probe)["tithi_id"]
+        if prev_id == 29 and probe_id == 0:
+            lo, hi = prev_dt, probe
+            for _ in range(32):
+                mid = lo + (hi - lo) / 2
+                if state_at(mid)["tithi_id"] == 29:
+                    lo = mid
+                else:
+                    hi = mid
+            boundary = hi
+        prev_dt, prev_id = probe, probe_id
+        probe += timedelta(hours=3)
+    return boundary
+
+def lunar_months(at_sunrise: datetime, paksha: str):
+    new_moon = previous_new_moon(at_sunrise)
+    if not new_moon:
+        return {"amanta": None, "purnimanta": None, "new_moon": None}
+    sun, _ = sidereal_longitudes(new_moon + timedelta(minutes=2))
+    sign = int(sun // 30.0)
+    amanta = LUNAR_MONTH_BY_NEW_MOON_SUN_SIGN[sign]
+    month_index = LUNAR_MONTH_BY_NEW_MOON_SUN_SIGN.index(amanta)
+    purnimanta = LUNAR_MONTH_BY_NEW_MOON_SUN_SIGN[(month_index + 1) % 12] if paksha == "Krishna Paksha" else amanta
+    return {
+        "amanta": amanta,
+        "purnimanta": purnimanta,
+        "new_moon": new_moon.isoformat(),
+        "basis_sun_rashi": RASHI_NAMES[sign]
+    }
+
 def fmt(dt: datetime, hour24=False):
     rounded = (dt + timedelta(seconds=30)).replace(second=0, microsecond=0)
     return rounded.strftime("%H:%M" if hour24 else "%I:%M %p").lstrip("0")
@@ -226,6 +290,14 @@ def main():
         next_sunrise += timedelta(days=1)
 
     sunrise_state = state_at(sunrise)
+    months = lunar_months(sunrise, sunrise_state["paksha"])
+    moonrise = moon_event(sunrise, lat, lon, tz, True)
+    moonset = moon_event(sunrise, lat, lon, tz, False)
+    if moonrise and moonrise > next_sunrise:
+        moonrise = None
+    if moonset and moonset > next_sunrise:
+        moonset = None
+
     now_local = datetime.now(tz)
     reference = now_local if d == now_local.date() else sunrise
     current_state = state_at(reference)
@@ -239,7 +311,7 @@ def main():
         "ok": True,
         "engine": {
             "name": "tithika-panchang",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "ephemeris": "Swiss Ephemeris / Moshier",
             "ayanamsha": "Lahiri",
             "sidereal": True
@@ -261,8 +333,13 @@ def main():
         "yoga": yogas,
         "karana": karanas,
         "paksha": sunrise_state["paksha"],
+        "lunar_month": months,
         "moon_rashi": sunrise_state["moon_rashi"],
         "sun_rashi": sunrise_state["sun_rashi"],
+        "moonrise": moonrise.isoformat() if moonrise else None,
+        "moonrise_label": transition_label(moonrise, d, hour24) if moonrise else None,
+        "moonset": moonset.isoformat() if moonset else None,
+        "moonset_label": transition_label(moonset, d, hour24) if moonset else None,
         "generated_at": now_local.isoformat(),
         "method": "Sidereal Sun/Moon positions from Swiss Ephemeris with Lahiri ayanamsha; Hindu day evaluated sunrise to next sunrise."
     }
