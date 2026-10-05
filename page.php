@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/daily','panchang/rahu-kala','muhurat/rahu-kala'], true);
+$isComputed = in_array($page['slug'], ['panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -158,6 +158,19 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <div class="tk-muhurat-item"><small>Nishita</small><strong id="tkMuhuratNishita">—</strong></div>
           <div class="tk-muhurat-item avoid"><small>Yamaganda</small><strong id="tkMuhuratYamaganda">—</strong></div>
           <div class="tk-muhurat-item avoid"><small>Gulika</small><strong id="tkMuhuratGulika">—</strong></div>
+        </div>
+      <?php elseif (in_array($page['slug'], ['panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Live calculation</span>
+            <h3 id="tkSinglePrimary">Calculating…</h3>
+            <p id="tkSingleMeta">Using the shared Tithika astronomy engine and selected local date.</p>
+          </div>
+          <div class="tk-panchang-engine" id="tkEngineMeta">Swiss Ephemeris · Lahiri</div>
+        </div>
+        <div class="tk-single-result">
+          <small>Local timing</small>
+          <strong id="tkSingleSecondary">—</strong>
         </div>
       <?php elseif ($page['template'] === 'calendar' || $page['template'] === 'festival'): ?>
         <span class="tk-card-tag">Calendar interface</span>
