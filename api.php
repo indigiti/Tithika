@@ -140,6 +140,18 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'lunar-occurrences') {
+        $payload = readPayload();
+        $kind = strtolower(trim((string)($_GET['kind'] ?? 'ekadashi')));
+        if (!in_array($kind, ['ekadashi','purnima','amavasya'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported occurrence kind'], 422);
+        }
+        $payload['kind'] = $kind;
+        $data = runPythonEngine('python/lunar_occurrences.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     out(['ok'=>false,'error'=>'Unknown action'], 404);
 } catch (Throwable $e) {
     out(['ok'=>false,'error'=>$e->getMessage()], 500);
