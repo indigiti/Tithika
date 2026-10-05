@@ -197,17 +197,17 @@
             <a href="panchang/daily/" class="tool-card spectrum-soft rounded-[2rem] border border-violet-100 p-6 lg:col-span-5">
               <div class="flex items-center justify-between"><span class="utility-icon grid h-12 w-12 place-items-center rounded-2xl bg-white text-2xl">☸</span><span class="rounded-full bg-white/70 px-3 py-1 text-[9px] font-black uppercase tracking-[.12em] text-violet-600">Next module</span></div>
               <h3 class="mt-10 text-2xl font-black tracking-[-.035em]">Daily Panchang</h3><p class="mt-2 text-sm font-medium leading-6 text-slate-500">Tithi, Nakshatra, Yoga, Karana, Paksha, lunar month, sunrise/moonrise and auspicious timings in one structured view.</p>
-            </div>
+            </a>
 
-            <div class="tool-card rounded-[2rem] border border-slate-200 bg-white p-6 lg:col-span-4">
+            <a href="muhurat/" class="tool-card rounded-[2rem] border border-slate-200 bg-white p-6 lg:col-span-4">
               <span class="utility-icon grid h-12 w-12 place-items-center rounded-2xl bg-amber-100 text-2xl">🪔</span><h3 class="mt-8 text-xl font-black">Muhurat</h3><p class="mt-2 text-sm font-medium leading-6 text-slate-500">Abhijit, Brahma, Godhuli, Vijay and activity-specific auspicious windows.</p>
-            </div>
-            <div class="tool-card rounded-[2rem] border border-slate-200 bg-white p-6 lg:col-span-4">
+            </a>
+            <a href="festivals/" class="tool-card rounded-[2rem] border border-slate-200 bg-white p-6 lg:col-span-4">
               <span class="utility-icon grid h-12 w-12 place-items-center rounded-2xl bg-rose-100 text-2xl">🪷</span><h3 class="mt-8 text-xl font-black">Festivals & Vrat</h3><p class="mt-2 text-sm font-medium leading-6 text-slate-500">Upcoming Ekadashi, Purnima, Sankashti, Pradosh and major Hindu festival calendars.</p>
-            </div>
-            <div class="tool-card rounded-[2rem] border border-slate-200 bg-white p-6 lg:col-span-4">
+            </a>
+            <a href="planets/" class="tool-card rounded-[2rem] border border-slate-200 bg-white p-6 lg:col-span-4">
               <span class="utility-icon grid h-12 w-12 place-items-center rounded-2xl bg-sky-100 text-2xl">◎</span><h3 class="mt-8 text-xl font-black">Planetary events</h3><p class="mt-2 text-sm font-medium leading-6 text-slate-500">Transits, retrogrades, combustion, zodiac entries and other astronomical markers.</p>
-            </div>
+            </a>
           </div>
         </section>
 
