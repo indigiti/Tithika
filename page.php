@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','vrat/ekadashi','vrat/purnima','vrat/amavasya'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','vrat/ekadashi','vrat/purnima','vrat/amavasya','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -194,6 +194,21 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <div id="tkLunarLoading" class="tk-panchang-loading">Calculating yearly lunar occurrences…</div>
         <div id="tkLunarNote" class="tk-lunar-note"></div>
         <div id="tkLunarList" class="tk-lunar-list"></div>
+      <?php elseif (in_array($page['slug'], ['astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Verified astronomy event</span>
+            <h3 id="tkSeasonTitle">Calculating seasonal event…</h3>
+            <p id="tkSeasonMeta">The astronomical instant is global and displayed in the selected location's local timezone.</p>
+          </div>
+          <div class="tk-panchang-engine">Astronomy Engine</div>
+        </div>
+        <div id="tkSeasonLoading" class="tk-panchang-loading">Calculating equinoxes and solstices…</div>
+        <div class="tk-single-result">
+          <small id="tkSeasonWeekday">Local date & time</small>
+          <strong id="tkSeasonResult">—</strong>
+        </div>
+        <div id="tkSeasonAll" class="tk-season-all"></div>
       <?php elseif (in_array($page['slug'], ['panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
