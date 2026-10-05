@@ -56,8 +56,9 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/rahu-kala','muhurat/rahu-kala'], true);
+$isComputed = in_array($page['slug'], ['panchang/daily','panchang/rahu-kala','muhurat/rahu-kala'], true);
 tithika_render_header($page['title'], $page);
+echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
 <section class="tk-page-hero">
   <div class="tk-hero-inner">
@@ -95,7 +96,7 @@ tithika_render_header($page['title'], $page);
     <button type="button" data-shift-date="1" aria-label="Next day">›</button>
     <span class="tk-spacer"></span>
     <a href="<?= htmlspecialchars(tithika_pretty_url($page['group'])) ?>">All <?= htmlspecialchars($group['title']) ?></a>
-    <span class="tk-engine-state<?= $isComputed ? ' is-live' : '' ?>"><?= $isComputed ? 'Solar calculation live' : 'Page shell mapped' ?></span>
+    <span class="tk-engine-state<?= $isComputed ? ' is-live' : '' ?>"><?= $page['slug'] === 'panchang/daily' ? 'Panchang engine live' : ($isComputed ? 'Solar calculation live' : 'Page shell mapped') ?></span>
   </div>
 </div>
 
@@ -110,7 +111,35 @@ tithika_render_header($page['title'], $page);
 
   <div class="tk-grid">
     <div class="tk-card span-8">
-      <?php if ($page['template'] === 'calendar' || $page['template'] === 'festival'): ?>
+      <?php if ($page['slug'] === 'panchang/daily'): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Verified astronomy</span>
+            <h3>Daily Panchang at sunrise</h3>
+            <p>Sidereal Sun and Moon positions use Lahiri ayanamsha. Each row shows the state at local sunrise and its next transition.</p>
+          </div>
+          <div class="tk-panchang-engine" id="tkEngineMeta">Swiss Ephemeris · Lahiri</div>
+        </div>
+
+        <div id="tkPanchangLoading" class="tk-panchang-loading">Calculating sidereal Panchang…</div>
+
+        <div class="tk-panchang-summary">
+          <div class="tk-panchang-metric"><small>Tithi</small><strong id="tkTithiName">—</strong><span id="tkTithiMeta">—</span></div>
+          <div class="tk-panchang-metric"><small>Nakshatra</small><strong id="tkNakshatraName">—</strong><span>Moon's sidereal mansion</span></div>
+          <div class="tk-panchang-metric"><small>Yoga</small><strong id="tkYogaName">—</strong><span>Sun + Moon longitude</span></div>
+          <div class="tk-panchang-metric"><small>Karana</small><strong id="tkKaranaName">—</strong><span>Half-Tithi division</span></div>
+          <div class="tk-panchang-metric"><small>Paksha</small><strong id="tkPakshaName">—</strong><span>Waxing / waning half</span></div>
+          <div class="tk-panchang-metric"><small>Moon Rashi</small><strong id="tkMoonRashi">—</strong><span>Sidereal Moon sign</span></div>
+          <div class="tk-panchang-metric"><small>Sun Rashi</small><strong id="tkSunRashi">—</strong><span>Sidereal Sun sign</span></div>
+        </div>
+
+        <div class="tk-panchang-columns">
+          <section class="tk-panchang-block"><header><span>◐</span><div><small>Lunar day</small><h4>Tithi</h4></div></header><div id="tkTithiTransitions"></div></section>
+          <section class="tk-panchang-block"><header><span>✦</span><div><small>Lunar mansion</small><h4>Nakshatra</h4></div></header><div id="tkNakshatraTransitions"></div></section>
+          <section class="tk-panchang-block"><header><span>◎</span><div><small>Combined longitude</small><h4>Yoga</h4></div></header><div id="tkYogaTransitions"></div></section>
+          <section class="tk-panchang-block"><header><span>◇</span><div><small>Half lunar day</small><h4>Karana</h4></div></header><div id="tkKaranaTransitions"></div></section>
+        </div>
+      <?php elseif ($page['template'] === 'calendar' || $page['template'] === 'festival'): ?>
         <span class="tk-card-tag">Calendar interface</span>
         <h3>Month-first navigation</h3>
         <p>Compact calendar cells, event badges and drill-down replace long page tables. Location and selected date stay in shared context.</p>
