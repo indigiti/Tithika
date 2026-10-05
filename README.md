@@ -98,12 +98,11 @@ Unsupported Tithi, Nakshatra, Yoga, Karana, planetary and Jyotish values are **n
 - PHP cURL extension
 - PHP mbstring extension
 - Python 3.9+ with `zoneinfo`
-- Python packages from `requirements.txt` (currently `pyswisseph`)
 - Apache `mod_rewrite`
 - HTTPS in production for browser geolocation
 - internet access for OpenStreetMap Nominatim geocoding
 
-Install Python dependencies during deployment with `python3 -m pip install -r requirements.txt`. No database is currently required.
+The current Panchang engine vendors its astronomy core, so no Python pip install is required. No database is currently required.
 
 ## Current calculation model
 
