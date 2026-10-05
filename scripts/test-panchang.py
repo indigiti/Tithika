@@ -29,6 +29,9 @@ if proc.returncode != 0:
 
 data = json.loads(proc.stdout)
 assert data["ok"] is True
+assert data["engine"]["astronomy"].startswith("Astronomy Engine")
+assert data["engine"]["ayanamsha"] == "Lahiri / Chitrapaksha"
+assert 24.22 < data["sunrise_state"]["ayanamsha"] < 24.25
 assert data["sunrise_state"]["tithi"] == "Ekadashi"
 assert data["sunrise_state"]["paksha"] == "Krishna Paksha"
 assert data["sunrise_state"]["nakshatra"] == "Ashlesha"
@@ -40,6 +43,8 @@ assert data["lunar_month"]["amanta"] == "Bhadrapada"
 assert data["lunar_month"]["purnimanta"] == "Ashwina"
 assert data["moonrise_label"]
 assert data["moonset_label"]
+assert datetime.fromisoformat(data["moonrise"]) >= datetime.fromisoformat(data["sunrise"])
+assert datetime.fromisoformat(data["moonrise"]) <= datetime.fromisoformat(data["next_sunrise"])
 assert data["muhurtas"]["abhijit"]["start_label"].startswith("12:03")
 assert data["muhurtas"]["vijaya"]["start_label"].startswith("2:25")
 assert data["muhurtas"]["yamaganda"]["start_label"].startswith("9:28")
