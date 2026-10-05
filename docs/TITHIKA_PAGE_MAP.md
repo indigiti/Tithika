@@ -2,7 +2,7 @@
 
 The executable source of truth is `config/routes.php`.
 
-Current mapped logical pages: **213**.
+Current mapped logical pages: **277**.
 
 ## Product families
 
