@@ -13,16 +13,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
       - name: PHP syntax
         run: find . -type f -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
+
       - name: JavaScript syntax
         run: |
           node --check assets/app.js
           node --check assets/home.js
           node --check assets/tithika-site.js
+
       - name: Validate route map
         run: php scripts/validate-routes.php
+
+      - name: Panchang regression fixture
+        run: python scripts/test-panchang.py
