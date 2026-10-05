@@ -3,6 +3,7 @@
   const base=window.TITHIKA_BASE||'/';
   const pageSlug=window.TITHIKA_PAGE_SLUG||'';
   const panchangPages=['panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'];
+  const monthPages=['panchang/month'];
   const browserTimezone=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata';
   const state={
     lat:19.076,lon:72.8777,city:'Mumbai, Maharashtra, India',
@@ -70,6 +71,7 @@
       if(!j.ok)throw new Error(j.error||'Unable to calculate solar context');
       state.data=j;renderSolar(j);
       if(panchangPages.includes(pageSlug)) await calculatePanchang();
+      if(monthPages.includes(pageSlug)) await calculateMonth();
     }catch(e){toast(e.message||'Unable to load location context')}
   }
 
@@ -92,6 +94,50 @@
       set('#tkCurrent','Solar day');
       set('#tkCurrentRange',`${d.sunrise_label} – ${d.sunset_label}`);
     }
+  }
+
+  async function calculateMonth(){
+    const loading=$('#tkMonthLoading');
+    if(loading){loading.hidden=false;loading.textContent='Building month Panchang…'}
+    try{
+      const r=await fetch(`${base}api.php?action=panchang-month`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload())
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Unable to calculate Month Panchang');
+      renderMonth(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Month Panchang unavailable'}
+      toast(e.message||'Month Panchang unavailable');
+    }
+  }
+
+  function renderMonth(d){
+    const loading=$('#tkMonthLoading');if(loading)loading.hidden=true;
+    const title=$('#tkMonthTitle');if(title)title.textContent=`${d.month_name} ${d.year}`;
+    const engine=$('#tkMonthEngine');if(engine)engine.textContent=`${d.engine?.ayanamsha||'Lahiri'} · Month engine`;
+    const grid=$('#tkMonthGrid');if(!grid)return;
+    const blanks=Math.max(0,Number(d.first_weekday||0));
+    let html=Array.from({length:blanks},()=>'<div class="tk-month-day is-empty"></div>').join('');
+    html+=(d.days||[]).map(row=>{
+      if(!row.available)return `<div class="tk-month-day is-unavailable"><b>${row.day}</b><small>Unavailable</small></div>`;
+      const special=row.tithi==='Ekadashi'?' ekadashi':row.tithi==='Purnima'?' purnima':row.tithi==='Amavasya'?' amavasya':'';
+      const selected=payload().date===row.date?' is-selected':'';
+      return `<button type="button" class="tk-month-day${special}${selected}" data-month-date="${esc(row.date)}">
+        <span class="tk-month-day-top"><b>${row.day}</b><em>${esc(row.weekday_short||'')}</em></span>
+        <strong>${esc(row.tithi||'—')}</strong>
+        <small>${esc(row.paksha||'')}</small>
+        <span class="tk-month-nak">${esc(row.nakshatra||'—')}</span>
+      </button>`;
+    }).join('');
+    grid.innerHTML=html;
+    grid.querySelectorAll('[data-month-date]').forEach(btn=>btn.addEventListener('click',()=>{
+      const input=$('#tkDate');if(!input)return;
+      input.value=btn.dataset.monthDate;
+      state.dateTouched=true;
+      calculate();
+    }));
   }
 
   async function calculatePanchang(){
@@ -231,8 +277,15 @@
   document.querySelectorAll('[data-shift-date]').forEach(btn=>btn.addEventListener('click',()=>{
     const input=$('#tkDate');if(!input)return;
     const d=new Date((input.value||isoToday())+'T12:00:00');
-    d.setDate(d.getDate()+Number(btn.dataset.shiftDate||0));
+    const shift=Number(btn.dataset.shiftDate||0);
+    if(pageSlug==='panchang/month'){
+      d.setDate(1);
+      d.setMonth(d.getMonth()+shift);
+    }else{
+      d.setDate(d.getDate()+shift);
+    }
     input.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    state.dateTouched=true;
     calculate();
   }));
   $('#tkToday')?.addEventListener('click',()=>{const input=$('#tkDate');state.dateTouched=false;if(input)input.value=isoToday(state.timezone);calculate()});
