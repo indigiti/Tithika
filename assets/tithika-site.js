@@ -4,6 +4,11 @@
   const pageSlug=window.TITHIKA_PAGE_SLUG||'';
   const panchangPages=['panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'];
   const monthPages=['panchang/month'];
+  const lunarKinds={
+    'vrat/ekadashi':'ekadashi',
+    'vrat/purnima':'purnima',
+    'vrat/amavasya':'amavasya'
+  };
   const browserTimezone=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata';
   const state={
     lat:19.076,lon:72.8777,city:'Mumbai, Maharashtra, India',
@@ -72,6 +77,7 @@
       state.data=j;renderSolar(j);
       if(panchangPages.includes(pageSlug)) await calculatePanchang();
       if(monthPages.includes(pageSlug)) await calculateMonth();
+      if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
     }catch(e){toast(e.message||'Unable to load location context')}
   }
 
@@ -94,6 +100,49 @@
       set('#tkCurrent','Solar day');
       set('#tkCurrentRange',`${d.sunrise_label} – ${d.sunset_label}`);
     }
+  }
+
+  async function calculateLunarOccurrences(){
+    const loading=$('#tkLunarLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating yearly lunar occurrences…'}
+    try{
+      const kind=lunarKinds[pageSlug];
+      const r=await fetch(`${base}api.php?action=lunar-occurrences&kind=${encodeURIComponent(kind)}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload())
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Unable to calculate lunar occurrences');
+      renderLunarOccurrences(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Lunar occurrence engine unavailable'}
+      toast(e.message||'Lunar occurrence engine unavailable');
+    }
+  }
+
+  function renderLunarOccurrences(d){
+    const loading=$('#tkLunarLoading');if(loading)loading.hidden=true;
+    const note=$('#tkLunarNote');if(note)note.textContent=d.note||'';
+    const title=$('#tkLunarTitle');if(title)title.textContent=`${title.textContent.replace(/\s+\d{4}$/,'')} ${d.year}`;
+    const list=$('#tkLunarList');if(!list)return;
+    if(!d.events?.length){
+      list.innerHTML='<div class="tk-panchang-empty">No occurrences found for this year.</div>';
+      return;
+    }
+    const fmtDate=iso=>new Intl.DateTimeFormat('en-US',{
+      timeZone:state.timezone,month:'short',day:'numeric',weekday:'short'
+    }).format(new Date(iso));
+    list.innerHTML=d.events.map(row=>{
+      const candidates=(row.sunrise_candidates||[]).map(x=>`${esc(x.weekday.slice(0,3))} ${esc(x.date)}`).join(' · ');
+      return `<article class="tk-lunar-event">
+        <div class="tk-lunar-event-date"><b>${esc(fmtDate(row.start))}</b><span>${esc(row.paksha||'')}</span></div>
+        <div class="tk-lunar-event-main">
+          <h4>${esc(row.name)}</h4>
+          <p>${esc(row.amanta_month||'')} · ${esc(row.start_label)} → ${esc(row.end_label)}</p>
+          <small>${candidates ? 'Tithi at sunrise: '+esc(candidates) : 'No sunrise falls inside this Tithi window'}</small>
+        </div>
+      </article>`;
+    }).join('');
   }
 
   async function calculateMonth(){
@@ -281,6 +330,8 @@
     if(pageSlug==='panchang/month'){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
+    }else if(lunarKinds[pageSlug]){
+      d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
     }
