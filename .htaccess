@@ -5,7 +5,7 @@ DirectoryIndex index.php
 RewriteEngine On
 
 # Keep private implementation/docs out of the public surface.
-RewriteRule ^(?:config|includes|docs|python)/ - [F,L]
+RewriteRule ^(?:config|includes|docs|python|scripts)/ - [F,L]
 
 # Existing files and asset directories are served directly.
 RewriteCond %{REQUEST_FILENAME} -f [OR]
