@@ -133,6 +133,13 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'panchang-month') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/panchang_month.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     out(['ok'=>false,'error'=>'Unknown action'], 404);
 } catch (Throwable $e) {
     out(['ok'=>false,'error'=>$e->getMessage()], 500);
