@@ -24,6 +24,7 @@ import os
 import sys
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from typing import Optional
 
 VENDOR_DIR = os.path.join(os.path.dirname(__file__), "vendor")
 if VENDOR_DIR not in sys.path:
@@ -229,7 +230,7 @@ def rise_set(
     tz: ZoneInfo,
     body: astronomy.Body,
     direction: astronomy.Direction,
-) -> datetime | None:
+) -> Optional[datetime]:
     observer = astronomy.Observer(lat, lon, 0.0)
     start = astronomy_time(local_midnight(d, tz))
     found = astronomy.SearchRiseSet(body, observer, direction, start, 1.5)
@@ -242,7 +243,7 @@ def rise_set(
     return local
 
 
-def fmt(dt: datetime | None, hour24: bool = False) -> str | None:
+def fmt(dt: Optional[datetime], hour24: bool = False) -> Optional[str]:
     if dt is None:
         return None
     rounded = (dt + timedelta(seconds=30)).replace(second=0, microsecond=0)
@@ -262,7 +263,7 @@ def find_transition(
     key: str,
     start_id: int,
     step_minutes: int = 30,
-) -> datetime | None:
+) -> Optional[datetime]:
     """Find the first discrete Panchang-state boundary after start."""
     left = start
     probe = start + timedelta(minutes=step_minutes)
@@ -389,11 +390,24 @@ def main() -> None:
     sunrise = rise_set(selected_date, lat, lon, tz, astronomy.Body.Sun, astronomy.Direction.Rise)
     sunset = rise_set(selected_date, lat, lon, tz, astronomy.Body.Sun, astronomy.Direction.Set)
     next_sunrise = rise_set(selected_date + timedelta(days=1), lat, lon, tz, astronomy.Body.Sun, astronomy.Direction.Rise)
-    moonrise = rise_set(selected_date, lat, lon, tz, astronomy.Body.Moon, astronomy.Direction.Rise)
-    moonset = rise_set(selected_date, lat, lon, tz, astronomy.Body.Moon, astronomy.Direction.Set)
-
     if sunrise is None or sunset is None or next_sunrise is None:
         raise ValueError("Sunrise/sunset unavailable for this latitude/date")
+
+    observer = astronomy.Observer(lat, lon, 0.0)
+    sunrise_time = astronomy_time(sunrise)
+    moonrise_event = astronomy.SearchRiseSet(
+        astronomy.Body.Moon, observer, astronomy.Direction.Rise, sunrise_time, 1.2
+    )
+    moonset_event = astronomy.SearchRiseSet(
+        astronomy.Body.Moon, observer, astronomy.Direction.Set, sunrise_time, 1.2
+    )
+    moonrise = datetime_from_astronomy(moonrise_event, tz) if moonrise_event else None
+    moonset = datetime_from_astronomy(moonset_event, tz) if moonset_event else None
+
+    if moonrise and moonrise > next_sunrise:
+        moonrise = None
+    if moonset and moonset > next_sunrise:
+        moonset = None
 
     if sunset <= sunrise:
         sunset += timedelta(days=1)
