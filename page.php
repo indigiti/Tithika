@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','vrat/ekadashi','vrat/purnima','vrat/amavasya','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -194,6 +194,18 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <div id="tkLunarLoading" class="tk-panchang-loading">Calculating yearly lunar occurrences…</div>
         <div id="tkLunarNote" class="tk-lunar-note"></div>
         <div id="tkLunarList" class="tk-lunar-list"></div>
+      <?php elseif (in_array($page['slug'], ['vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Nirayana solar ingress</span>
+            <h3 id="tkSankrantiTitle">Sankranti <?= date('Y') ?></h3>
+            <p>Exact Lahiri sidereal Sun ingress moments for all twelve Rashis. Festival/Punya Kaal rules are kept separate from the astronomical ingress.</p>
+          </div>
+          <div class="tk-panchang-engine">Astronomy Engine · Lahiri</div>
+        </div>
+        <div id="tkSankrantiLoading" class="tk-panchang-loading">Calculating yearly Sankranti moments…</div>
+        <div id="tkSankrantiNote" class="tk-lunar-note"></div>
+        <div id="tkSankrantiList" class="tk-sankranti-list"></div>
       <?php elseif (in_array($page['slug'], ['astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
