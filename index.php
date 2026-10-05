@@ -256,9 +256,5 @@
   </div>
 
   <script src="assets/home.js?v=1"></script>
-  <script>
-    // mirror live solar values into the secondary summary cards
-    const mirror=()=>{const a=document.querySelector('#sunrise'),b=document.querySelector('#sunset'),a2=document.querySelector('#sunrise2'),b2=document.querySelector('#sunset2');if(a&&a2)a2.textContent=a.textContent;if(b&&b2)b2.textContent=b.textContent};setInterval(mirror,500);
-  </script>
 </body>
 </html>
