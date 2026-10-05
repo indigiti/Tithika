@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 function out(array $data, int $status = 200, bool $cacheable = false): never {
     http_response_code($status);
-    header($cacheable ? 'Cache-Control: public, max-age=300, stale-while-revalidate=600' : 'Cache-Control: no-store, max-age=0');
+    header($cacheable ? 'Cache-Control: private, max-age=300' : 'Cache-Control: no-store, max-age=0');
     echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     exit;
 }
