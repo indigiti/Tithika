@@ -38,18 +38,28 @@ def main() -> None:
     _, days_in_month = calendar.monthrange(selected.year, selected.month)
     rows = []
 
-    for day in range(1, days_in_month + 1):
-        d = selected.replace(day=day)
-        sunrise = panchang.rise_set(
+    # Solar events are shared by adjacent Panchang days. Precompute sunrise once
+    # for every date plus the following day instead of searching the same event
+    # again as both today's sunrise and yesterday's next sunrise.
+    dates = [selected.replace(day=day) for day in range(1, days_in_month + 1)]
+    sunrise_dates = dates + [dates[-1] + timedelta(days=1)]
+    sunrises = {
+        d: panchang.rise_set(
             d, lat, lon, tz, panchang.astronomy.Body.Sun, panchang.astronomy.Direction.Rise
         )
-        sunset = panchang.rise_set(
+        for d in sunrise_dates
+    }
+    sunsets = {
+        d: panchang.rise_set(
             d, lat, lon, tz, panchang.astronomy.Body.Sun, panchang.astronomy.Direction.Set
         )
-        next_sunrise = panchang.rise_set(
-            d + timedelta(days=1), lat, lon, tz,
-            panchang.astronomy.Body.Sun, panchang.astronomy.Direction.Rise
-        )
+        for d in dates
+    }
+
+    for day, d in enumerate(dates, start=1):
+        sunrise = sunrises.get(d)
+        sunset = sunsets.get(d)
+        next_sunrise = sunrises.get(d + timedelta(days=1))
         if sunrise is None or sunset is None or next_sunrise is None:
             rows.append({"date": d.isoformat(), "day": day, "available": False})
             continue
