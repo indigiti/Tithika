@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -96,7 +96,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
     <button type="button" data-shift-date="1" aria-label="Next day">›</button>
     <span class="tk-spacer"></span>
     <a href="<?= htmlspecialchars(tithika_pretty_url($page['group'])) ?>">All <?= htmlspecialchars($group['title']) ?></a>
-    <span class="tk-engine-state<?= $isComputed ? ' is-live' : '' ?>"><?= $page['slug'] === 'panchang/daily' ? 'Panchang engine live' : ($isComputed ? 'Solar calculation live' : 'Page shell mapped') ?></span>
+    <span class="tk-engine-state<?= $isComputed ? ' is-live' : '' ?>"><?= in_array($page['slug'], ['panchang/daily','panchang/month'], true) ? 'Panchang engine live' : ($isComputed ? 'Solar calculation live' : 'Page shell mapped') ?></span>
   </div>
 </div>
 
@@ -111,7 +111,26 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
 
   <div class="tk-grid">
     <div class="tk-card span-8">
-      <?php if ($page['slug'] === 'panchang/daily'): ?>
+      <?php if ($page['slug'] === 'panchang/month'): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Live month engine</span>
+            <h3 id="tkMonthTitle">Month Panchang</h3>
+            <p>Each civil date shows the Panchang state at local sunrise. Select any day to move the shared Tithika date context.</p>
+          </div>
+          <div class="tk-panchang-engine" id="tkMonthEngine">Astronomy Engine · Lahiri</div>
+        </div>
+        <div id="tkMonthLoading" class="tk-panchang-loading">Building month Panchang…</div>
+        <div class="tk-month-weekdays" aria-hidden="true">
+          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        </div>
+        <div id="tkMonthGrid" class="tk-month-grid" aria-live="polite"></div>
+        <div class="tk-month-legend">
+          <span><i class="ekadashi"></i>Ekadashi</span>
+          <span><i class="purnima"></i>Purnima</span>
+          <span><i class="amavasya"></i>Amavasya</span>
+        </div>
+      <?php elseif ($page['slug'] === 'panchang/daily'): ?>
         <div class="tk-panchang-live-head">
           <div>
             <span class="tk-card-tag">Verified astronomy</span>
