@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','vrat/ekadashi','vrat/purnima','vrat/amavasya'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -178,6 +178,18 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <div class="tk-muhurat-item avoid"><small>Yamaganda</small><strong id="tkMuhuratYamaganda">—</strong></div>
           <div class="tk-muhurat-item avoid"><small>Gulika</small><strong id="tkMuhuratGulika">—</strong></div>
         </div>
+      <?php elseif (in_array($page['slug'], ['vrat/ekadashi','vrat/purnima','vrat/amavasya'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Astronomical occurrence engine</span>
+            <h3 id="tkLunarTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Exact Tithi windows are calculated first; observance-specific rules are layered separately so the site does not guess a religious date.</p>
+          </div>
+          <div class="tk-panchang-engine">Moon phase + sunrise state</div>
+        </div>
+        <div id="tkLunarLoading" class="tk-panchang-loading">Calculating yearly lunar occurrences…</div>
+        <div id="tkLunarNote" class="tk-lunar-note"></div>
+        <div id="tkLunarList" class="tk-lunar-list"></div>
       <?php elseif (in_array($page['slug'], ['panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
