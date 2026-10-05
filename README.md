@@ -98,11 +98,12 @@ Unsupported Tithi, Nakshatra, Yoga, Karana, planetary and Jyotish values are **n
 - PHP cURL extension
 - PHP mbstring extension
 - Python 3.9+ with `zoneinfo`
+- Python packages from `requirements.txt` (currently `pyswisseph`)
 - Apache `mod_rewrite`
 - HTTPS in production for browser geolocation
 - internet access for OpenStreetMap Nominatim geocoding
 
-No database or Python pip package is currently required.
+Install Python dependencies during deployment with `python3 -m pip install -r requirements.txt`. No database is currently required.
 
 ## Current calculation model
 
@@ -110,11 +111,11 @@ The existing Python solar engine calculates sunrise and sunset using a 90.833° 
 
 ## Next calculation-engine layers
 
-1. Sun/Moon longitude + ayanamsha.
-2. Tithi, Nakshatra, Yoga and Karana transitions.
-3. Paksha and lunar month.
-4. Moonrise/moonset.
-5. Daily auspicious/in-auspicious timings.
+1. Sun/Moon longitude + Lahiri ayanamsha. ✓
+2. Tithi, Nakshatra, Yoga and Karana transitions. ✓
+3. Paksha and base Amanta/Purnimanta lunar month. ✓
+4. Moonrise/moonset. ✓
+5. Core daily auspicious/in-auspicious timings. ✓
 6. Festival/Vrat rule engine.
 7. Muhurat rule engine.
 8. Planet ephemeris/transit/retrograde/combustion.
