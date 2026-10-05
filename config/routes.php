@@ -45,6 +45,9 @@ return [
             ['slug'=>'panchang/sankalpa','title'=>'Sankalpa','template'=>'calculator'],
             ['slug'=>'panchang/nakshatra','title'=>'Nakshatra','template'=>'list'],
             ['slug'=>'panchang/utilities','title'=>'Panchang Utilities','template'=>'collection'],
+            ['slug'=>'panchang/lagna-kundali','title'=>'Lagna Kundali','template'=>'astronomy'],
+            ['slug'=>'panchang/vedic-clock','title'=>'Vedic Clock','template'=>'daily'],
+            ['slug'=>'panchang/moonrise-moonset','title'=>'Moonrise & Moonset','template'=>'daily'],
         ]
     ],
     'calendars' => [
@@ -106,6 +109,13 @@ return [
             ['slug'=>'muhurat/do-ghati','title'=>'Do Ghati Muhurat','template'=>'muhurat'],
             ['slug'=>'muhurat/shubha-dates','title'=>'Shubha Dates','template'=>'calendar'],
             ['slug'=>'muhurat/pancha-pakshi','title'=>'Pancha Pakshi Activities','template'=>'calculator'],
+            ['slug'=>'muhurat/guru-pushya','title'=>'Guru Pushya Yoga','template'=>'calendar'],
+            ['slug'=>'muhurat/sarvartha-siddhi','title'=>'Sarvartha Siddhi Yoga','template'=>'calendar'],
+            ['slug'=>'muhurat/amrit-siddhi','title'=>'Amrit Siddhi Yoga','template'=>'calendar'],
+            ['slug'=>'muhurat/dwipushkar','title'=>'Dwipushkar Yoga','template'=>'calendar'],
+            ['slug'=>'muhurat/tripushkar','title'=>'Tripushkar Yoga','template'=>'calendar'],
+            ['slug'=>'muhurat/ravi-pushya','title'=>'Ravi Pushya Yoga','template'=>'calendar'],
+            ['slug'=>'muhurat/ravi-yoga','title'=>'Ravi Yoga','template'=>'calendar'],
         ]
     ],
     'vrat' => [
@@ -148,6 +158,10 @@ return [
             ['slug'=>'vrat/jivit-putrika','title'=>'Jivit Putrika Vrat','template'=>'calendar'],
             ['slug'=>'vrat/shitala-saptami','title'=>'Shitala Saptami','template'=>'calendar'],
             ['slug'=>'vrat/katha','title'=>'Vrat Katha','template'=>'article'],
+            ['slug'=>'vrat/katha/satyanarayana','title'=>'Satyanarayana Vrat Katha','template'=>'article'],
+            ['slug'=>'vrat/katha/ekadashi','title'=>'Ekadashi Vrat Katha','template'=>'article'],
+            ['slug'=>'vrat/katha/karwa-chauth','title'=>'Karwa Chauth Vrat Katha','template'=>'article'],
+            ['slug'=>'vrat/katha/ahoi-ashtami','title'=>'Ahoi Ashtami Vrat Katha','template'=>'article'],
         ]
     ],
     'festivals' => [
@@ -182,6 +196,21 @@ return [
             ['slug'=>'festivals/regional-deities','title'=>'Regional Deities','template'=>'collection'],
             ['slug'=>'festivals/pilgrim-places','title'=>'Hindu Pilgrim Places','template'=>'collection'],
             ['slug'=>'festivals/vishnu-avatars','title'=>'24 Vishnu Avatara','template'=>'article'],
+            ['slug'=>'festivals/diwali','title'=>'Diwali','template'=>'festival'],
+            ['slug'=>'festivals/raksha-bandhan','title'=>'Raksha Bandhan','template'=>'festival'],
+            ['slug'=>'festivals/maha-shivaratri','title'=>'Maha Shivaratri','template'=>'festival'],
+            ['slug'=>'festivals/holi','title'=>'Holi','template'=>'festival'],
+            ['slug'=>'festivals/ganesha-chaturthi','title'=>'Ganesha Chaturthi','template'=>'festival'],
+            ['slug'=>'festivals/durga-puja','title'=>'Durga Puja','template'=>'festival'],
+            ['slug'=>'festivals/navratri','title'=>'Navratri','template'=>'festival'],
+            ['slug'=>'festivals/dussehra','title'=>'Dussehra','template'=>'festival'],
+            ['slug'=>'festivals/makar-sankranti','title'=>'Makar Sankranti','template'=>'festival'],
+            ['slug'=>'festivals/karwa-chauth','title'=>'Karwa Chauth','template'=>'festival'],
+            ['slug'=>'festivals/janmashtami','title'=>'Janmashtami','template'=>'festival'],
+            ['slug'=>'festivals/puja/ganesha','title'=>'Ganesha Puja Vidhi','template'=>'article'],
+            ['slug'=>'festivals/puja/lakshmi','title'=>'Lakshmi Puja Vidhi','template'=>'article'],
+            ['slug'=>'festivals/puja/shivaratri','title'=>'Shivaratri Puja Vidhi','template'=>'article'],
+            ['slug'=>'festivals/puja/holi','title'=>'Holi Puja Vidhi','template'=>'article'],
         ]
     ],
     'jyotish' => [
@@ -209,6 +238,11 @@ return [
             ['slug'=>'jyotish/shraddha-tithi','title'=>'Shraddha Tithi Calculator','template'=>'calculator'],
             ['slug'=>'jyotish/name-initials','title'=>'Name Initials','template'=>'calculator'],
             ['slug'=>'jyotish/prashnavali','title'=>'Prashnavali','template'=>'calculator'],
+            ['slug'=>'jyotish/rashifal/daily','title'=>'Daily Rashifal','template'=>'list'],
+            ['slug'=>'jyotish/rashifal/weekly','title'=>'Weekly Rashifal','template'=>'list'],
+            ['slug'=>'jyotish/rashifal/monthly','title'=>'Monthly Rashifal','template'=>'list'],
+            ['slug'=>'jyotish/rashifal/yearly','title'=>'Yearly Rashifal','template'=>'list'],
+            ['slug'=>'jyotish/rashi-by-name','title'=>'Find Rashi by Name','template'=>'calculator'],
         ]
     ],
     'planets' => [
@@ -233,6 +267,8 @@ return [
             ['slug'=>'astronomy/summer-solstice','title'=>'Summer Solstice','template'=>'astronomy'],
             ['slug'=>'astronomy/autumnal-equinox','title'=>'Autumnal Equinox','template'=>'astronomy'],
             ['slug'=>'astronomy/winter-solstice','title'=>'Winter Solstice','template'=>'astronomy'],
+            ['slug'=>'planets/sidereal-zodiac','title'=>'Sidereal Zodiac','template'=>'article'],
+            ['slug'=>'planets/tropical-zodiac','title'=>'Tropical Zodiac','template'=>'article'],
         ]
     ],
     'devotion' => [
@@ -255,6 +291,32 @@ return [
             ['slug'=>'devotion/nama-ramayanam','title'=>'Nama Ramayanam','template'=>'devotion'],
             ['slug'=>'devotion/eka-shloki-ramayana','title'=>'Eka Shloki Ramayana','template'=>'devotion'],
             ['slug'=>'devotion/yantra','title'=>'Vedic Yantra','template'=>'collection'],
+            ['slug'=>'devotion/gods/ashta-vinayaka','title'=>'Ashta Vinayaka','template'=>'article'],
+            ['slug'=>'devotion/gods/lord-vishnu','title'=>'Lord Vishnu','template'=>'article'],
+            ['slug'=>'devotion/gods/navagraha','title'=>'Navagraha','template'=>'article'],
+            ['slug'=>'devotion/gods/lord-kubera','title'=>'Lord Kubera','template'=>'article'],
+            ['slug'=>'devotion/gods/lord-ganesha','title'=>'Lord Ganesha','template'=>'article'],
+            ['slug'=>'devotion/gods/lord-shiva','title'=>'Lord Shiva','template'=>'article'],
+            ['slug'=>'devotion/goddesses/mahalakshmi','title'=>'Maha Lakshmi','template'=>'article'],
+            ['slug'=>'devotion/goddesses/ashta-lakshmi','title'=>'Ashta Lakshmi','template'=>'article'],
+            ['slug'=>'devotion/goddesses/dasha-mahavidya','title'=>'Dasha Mahavidya','template'=>'article'],
+            ['slug'=>'devotion/goddesses/saraswati','title'=>'Saraswati','template'=>'article'],
+            ['slug'=>'devotion/goddesses/gayatri','title'=>'Gayatri','template'=>'article'],
+            ['slug'=>'devotion/mantra/mahalakshmi','title'=>'Mahalakshmi Mantras','template'=>'devotion'],
+            ['slug'=>'devotion/mantra/diwali','title'=>'Diwali Mantras','template'=>'devotion'],
+            ['slug'=>'devotion/mantra/ganesha','title'=>'Shri Ganesha Mantra','template'=>'devotion'],
+            ['slug'=>'devotion/mantra/gayatri','title'=>'Gayatri Mantra','template'=>'devotion'],
+            ['slug'=>'devotion/mantra/shanti-path','title'=>'Shanti Path','template'=>'devotion'],
+            ['slug'=>'devotion/yantra/puja','title'=>'Yantra Puja Vidhi','template'=>'article'],
+            ['slug'=>'devotion/yantra/lakshmi-ganesha','title'=>'Lakshmi Ganesha Yantra','template'=>'article'],
+            ['slug'=>'devotion/yantra/ganesha','title'=>'Shri Ganesha Yantra','template'=>'article'],
+            ['slug'=>'devotion/yantra/kubera','title'=>'Kubera Yantra','template'=>'article'],
+            ['slug'=>'devotion/yantra/mahavidya','title'=>'Mahavidya Yantra','template'=>'article'],
+            ['slug'=>'devotion/rituals/kumbha-mela','title'=>'Kumbha Mela','template'=>'article'],
+            ['slug'=>'devotion/rituals/shraddha-karma','title'=>'Shraddha Karma','template'=>'article'],
+            ['slug'=>'devotion/rituals/vivah-sanskar','title'=>'Vivah Sanskar','template'=>'article'],
+            ['slug'=>'devotion/rituals/upakarma','title'=>'Upakarma','template'=>'article'],
+            ['slug'=>'devotion/rituals/namakarana','title'=>'Namakarana Samskara','template'=>'article'],
         ]
     ],
     'gallery' => [
@@ -288,6 +350,8 @@ return [
             ['slug'=>'learn/rahu-kala','title'=>'Understanding Rahu Kala','template'=>'article'],
             ['slug'=>'learn/faq','title'=>'FAQ','template'=>'article'],
             ['slug'=>'learn/contact','title'=>'Contact','template'=>'article'],
+            ['slug'=>'learn/apps','title'=>'Mobile Apps','template'=>'collection'],
+            ['slug'=>'learn/wallpapers','title'=>'Mobile Wallpapers','template'=>'gallery'],
         ]
     ],
 ];
