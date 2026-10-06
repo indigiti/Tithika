@@ -120,13 +120,6 @@ expected_iskcon=[
     "2026-09-07","2026-09-22","2026-10-06","2026-10-22",
     "2026-11-05","2026-11-21","2026-12-04","2026-12-20",
 ]
-iskcon_debug=[{
-    "name": event.get("name"),
-    "start": event.get("start"),
-    "end": event.get("end"),
-    "iskcon": event.get("observance",{}).get("iskcon"),
-    "mahadwadashi": event.get("observance",{}).get("mahadwadashi"),
-} for event in iskcon_events if event.get("observance")]
-assert iskcon_dates==expected_iskcon,(iskcon_dates,expected_iskcon,iskcon_debug)
+assert iskcon_dates==expected_iskcon,(iskcon_dates,expected_iskcon)
 
 print("Vrat recurrence fixture passed")
