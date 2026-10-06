@@ -5,11 +5,11 @@ This document records the production-readiness contract enforced by CI. It is no
 ## Certified baseline
 
 - Product route contract: **292**
-- Verified calculation/live routes: **113**
+- Verified calculation/live routes: **123**
 - Structured editorial routes: **62**
 - Additional canonical live redirect: **1** (`muhurat/choghadiya`)
-- Total production-quality/indexable detail routes: **176**
-- Remaining mapped `noindex,follow` shells: **116**
+- Total production-quality/indexable detail routes: **186**
+- Remaining mapped `noindex,follow` shells: **106**
 
 The indexable set is generated from `config/live.php`, structured editorial coverage and explicit canonical live adapters. The XML sitemap uses the same quality state.
 
@@ -69,6 +69,27 @@ All eight are covered by `scripts/test-panchang-reuse.py`.
 
 `panchang/kranti-samya` also remains gated because Mahapat requires a dedicated declination-equality calculation rather than treating the full Vyatipata/Vaidhriti Yoga span as equivalent.
 
+## Newly certified Muhurat reuse routes
+
+The following routes reuse the verified Lahiri Panchang, local sunrise/sunset and Lagna geometry while keeping each Muhurat rule family explicit:
+
+- `/muhurat/shubha-hora/` — 12 daylight + 12 night planetary Horas with exact local solar boundaries.
+- `/muhurat/panchaka-rahita/` — modulo-9 Tithi + Vara + Nakshatra + Udaya Lagna classification with exact Lagna transitions.
+- `/muhurat/auspicious-yoga/` — aggregate yearly view across the seven certified Yoga families below.
+- `/muhurat/sarvartha-siddhi/` — weekday-specific Nakshatra combinations.
+- `/muhurat/amrit-siddhi/` — seven weekday/Nakshatra pairings.
+- `/muhurat/guru-pushya/` — Thursday + Pushya.
+- `/muhurat/ravi-pushya/` — Sunday + Pushya.
+- `/muhurat/dwipushkar/` — Sunday/Tuesday/Saturday + Bhadra Tithis + Dwi-Pada Nakshatras.
+- `/muhurat/tripushkar/` — Sunday/Tuesday/Saturday + Bhadra Tithis + Tri-Pada Nakshatras.
+- `/muhurat/ravi-yoga/` — explicit Sun-to-Moon Nakshatra distance rule.
+
+All ten are covered by `scripts/test-muhurat-reuse.py`, including 2026 Pune date-set benchmarks and formula invariants.
+
+### Deliberately gated Muhurat routes
+
+`muhurat/gowri` remains gated until its regional day/night cycle is versioned explicitly. `muhurat/jain-pachchakkhan` and `muhurat/pancha-pakshi` require separate tradition-specific engines. `muhurat/do-ghati` and generic `muhurat/shubha-dates` also remain mapped until their acceptance profiles are defined precisely.
+
 ## Data provenance
 
 Nepali Bikram Sambat civil month data is vendored from the MIT-licensed `sushilldhakal/nepali-calendar` project. Full attribution is in `docs/THIRD_PARTY_NOTICES.md`, and the upstream MIT license is retained beside the data file.
@@ -90,10 +111,10 @@ A release is certifiable only when all of the following pass on the exact merged
 
 ## Remaining shell-completion queue
 
-The remaining **116** mapped routes stay `noindex,follow`. They should be promoted in engine-reuse batches rather than route-by-route:
+The remaining **106** mapped routes stay `noindex,follow`. They should be promoted in engine-reuse batches rather than route-by-route:
 
 1. **Panchang rule-completion batch** — dedicated Manvadi/Yugadi/Kalpadi observance-day selectors plus Kranti Samya/Mahapat declination-equality calculation.
-2. **Muhurat reuse batch** — Shubha Hora, Gowri, Panchaka Rahita, auspicious Yoga and recurring Yoga-date calendars.
+2. **Muhurat rule-completion batch** — Gowri regional profiles, Jain Pachchakkhan, Pancha Pakshi, Do Ghati and generic Shubha Dates.
 3. **Vrat recurrence batch** — Vinayaka Chaturthi, Sawan Somwar, Skanda Sashti, Karthigai, Rohini, Chandra Darshan and related recurring rules.
 4. **Festival/calendar aggregation batch** — Hindu/Tamil/Malayalam month collections and festival-specific yearly calendars built from verified event rules.
 5. **Secondary Jyotish calculators** — Prashna, gemstone, Rudraksha, baby-name/name-initial and related evidence-based utilities.
