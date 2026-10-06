@@ -2,6 +2,7 @@
   const $=s=>document.querySelector(s);
   const base=window.TITHIKA_BASE||'/';
   const pageSlug=window.TITHIKA_PAGE_SLUG||'';
+  const completionProfile=window.TITHIKA_COMPLETION_PROFILE||null;
   const panchangPages=['panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'];
   const lagnaPages=['muhurat/lagna','panchang/lagna-kundali'];
   const monthPages=['panchang/month'];
@@ -248,6 +249,7 @@
       if(utilityModes[pageSlug]) await calculatePanchangUtility();
       if(panchangReuseModes[pageSlug]) await calculatePanchangReuse();
       if(regionalVariants[pageSlug]) await calculateRegionalCalendar();
+      if(completionProfile) await calculateCompletion();
     }catch(e){toast(e.message||'Unable to load location context')}
   }
 
@@ -1766,6 +1768,77 @@
     }
     renderReuseIntervals(rows);
   }
+  function completionScalar(value){
+    if(value===null||value===undefined||value==='')return '';
+    if(typeof value==='boolean')return value?'Yes':'No';
+    if(typeof value==='number')return Number.isInteger(value)?String(value):String(Math.round(value*10000)/10000);
+    if(typeof value==='string')return value;
+    if(Array.isArray(value))return value.filter(v=>typeof v!=='object').join(', ');
+    return '';
+  }
+
+  function renderCompletion(data){
+    const result=$('#tkCompletionResult');if(!result)return;
+    const note=$('#tkCompletionNote');
+    if(note)note.textContent=data.note||data.result?.disclaimer||data.result?.basis||'';
+    const rows=Array.isArray(data.events)?data.events:null;
+    if(rows){
+      if(!rows.length){
+        result.innerHTML='<div class="tk-lunar-note">No qualifying events were found for the selected year/date under this rule profile.</div>';
+        return;
+      }
+      result.innerHTML=rows.map(row=>{
+        const title=row.name||row.title||row.event||data.title||'Result';
+        const when=row.date||row.date_label||row.start_label||row.time_label||row.datetime||'';
+        const range=(row.start_label&&row.end_label)?`${row.start_label} – ${row.end_label}`:
+          (row.nishita_label||row.sunset_label||row.time_label||'');
+        const exclude=new Set(['name','title','date','date_label','weekday','start','end','datetime','start_label','end_label','basis','parana','mahadwadashi','events']);
+        const meta=Object.entries(row).filter(([k,v])=>!exclude.has(k)&&['string','number','boolean'].includes(typeof v)&&v!==''&&v!==null)
+          .slice(0,7).map(([k,v])=>`${k.replaceAll('_',' ')}: ${completionScalar(v)}`).join(' · ');
+        const parana=row.parana&&typeof row.parana==='object'
+          ? ` · Parana ${esc(row.parana.start_label||row.parana.earliest_label||row.parana.next_sunrise_label||'')} ${row.parana.end_label||row.parana.deadline_label?'– '+esc(row.parana.end_label||row.parana.deadline_label):''}`
+          :'';
+        return `<article class="tk-observance-event">
+          <div class="tk-observance-date"><b>${esc(when)}</b><span>${esc(row.weekday||row.period||row.category||'')}</span></div>
+          <div class="tk-observance-main"><h4>${esc(title)}</h4><p>${esc(range||meta||row.basis||'Verified rule result')}</p>
+          <small>${esc(meta)}${parana}${row.basis?' · '+esc(row.basis):''}</small></div>
+        </article>`;
+      }).join('');
+      return;
+    }
+    const obj=data.result||data;
+    const placements=Array.isArray(obj.placements)?obj.placements:[];
+    const exclude=new Set(['ok','engine','location','placements','result','events']);
+    const pairs=Object.entries(obj).filter(([k,v])=>!exclude.has(k)&&!Array.isArray(v)&&typeof v!=='object'&&v!==null&&v!=='')
+      .map(([k,v])=>`<div class="tk-single-result"><small>${esc(k.replaceAll('_',' '))}</small><strong>${esc(completionScalar(v))}</strong></div>`).join('');
+    const planets=placements.map(row=>`<article class="tk-observance-event"><div class="tk-observance-date"><b>${esc(row.name)}</b><span>${esc(row.rashi||'')}</span></div>
+      <div class="tk-observance-main"><h4>${esc(String(row.degree_in_rashi??''))}°</h4><small>${esc(String(row.longitude??''))}° sidereal</small></div></article>`).join('');
+    result.innerHTML=pairs+planets;
+  }
+
+  async function calculateCompletion(){
+    const loading=$('#tkCompletionLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating verified rule…'}
+    try{
+      const p=payload();
+      Object.assign(p,completionProfile?.params||{});
+      if(completionProfile?.input==='time')p.time=$('#tkCompletionTime')?.value||'12:00:00';
+      if(completionProfile?.input==='name')p.name=$('#tkCompletionName')?.value||'';
+      if(completionProfile?.input==='nakshatra')p.birth_nakshatra=$('#tkCompletionNakshatra')?.value||'Rohini';
+      if(completionProfile?.input==='birth-date')p.birth_date=p.date;
+      const r=await fetch(`${base}api.php?action=completion&mode=${encodeURIComponent(completionProfile.mode)}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Completion engine unavailable');
+      if(loading)loading.hidden=true;
+      renderCompletion(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Completion engine unavailable'}
+      toast(e.message||'Completion engine unavailable');
+    }
+  }
+
   async function calculateRegionalCalendar(){
     const loading=$('#tkRegionalLoading');
     if(loading){loading.hidden=false;loading.textContent='Building regional calendar…'}
@@ -1881,7 +1954,7 @@
     if(pageSlug==='panchang/month'||specializedMuhuratModes[pageSlug]||regionalVariants[pageSlug]||panchangReuseMonthly.has(pageSlug)){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)||muhuratReuseYearly.has(pageSlug)||vratReuseYearly.has(pageSlug)){
+    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)||muhuratReuseYearly.has(pageSlug)||vratReuseYearly.has(pageSlug)||(completionProfile&&completionProfile.scope==='year')){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
@@ -1891,6 +1964,9 @@
     calculate();
   }));
   $('#tkToday')?.addEventListener('click',()=>{const input=$('#tkDate');state.dateTouched=false;if(input)input.value=isoToday(state.timezone);calculate()});
+  $('#tkCompletionCalculate')?.addEventListener('click',()=>calculateCompletion());
+  $('#tkCompletionTime')?.addEventListener('change',()=>calculateCompletion());
+  $('#tkCompletionNakshatra')?.addEventListener('change',()=>calculateCompletion());
   $('#tkMatchCalculate')?.addEventListener('click',()=>calculateHoroscopeMatch());
   $('#tkMarriageCalculate')?.addEventListener('click',()=>calculateMarriageAnalysis());
   $('#tkNakMatchCalculate')?.addEventListener('click',()=>calculateNakshatraMatch());
