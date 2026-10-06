@@ -248,6 +248,7 @@
       if(utilityModes[pageSlug]) await calculatePanchangUtility();
       if(panchangReuseModes[pageSlug]) await calculatePanchangReuse();
       if(regionalVariants[pageSlug]) await calculateRegionalCalendar();
+      if($('#tkPhaseSections')) await calculatePhaseCompletion();
     }catch(e){toast(e.message||'Unable to load location context')}
   }
 
@@ -1766,6 +1767,58 @@
     }
     renderReuseIntervals(rows);
   }
+  async function calculatePhaseCompletion(){
+    const loading=$('#tkPhaseLoading');
+    if(loading){loading.hidden=false;loading.textContent='Building verified result…'}
+    try{
+      const p=payload();
+      p.slug=pageSlug;
+      const phaseTime=$('#tkPhaseTime')?.value;
+      if(phaseTime)p.time=phaseTime;
+      const phaseName=$('#tkPhaseName')?.value?.trim();
+      if(phaseName)p.name=phaseName;
+      const r=await fetch(`${base}api.php?action=phase-completion`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Completion engine unavailable');
+      if(loading)loading.hidden=true;
+      renderPhaseCompletion(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Completion engine unavailable'}
+      toast(e.message||'Completion engine unavailable');
+    }
+  }
+
+  function renderPhaseCompletion(d){
+    const engine=$('#tkPhaseEngine');
+    if(engine)engine.textContent=`${d.engine?.name||'Tithika engine'} · ${d.engine?.version||''}`;
+    const title=$('#tkPhaseTitle');if(title)title.textContent=d.title||title.textContent;
+    const summary=$('#tkPhaseSummary');if(summary)summary.textContent=d.summary||'';
+    const metrics=$('#tkPhaseMetrics');
+    if(metrics)metrics.innerHTML=(d.metrics||[]).map(x=>reuseMetric(x.label,x.value,x.note||'')).join('');
+    const host=$('#tkPhaseSections');if(!host)return;
+    const sections=d.sections||[];
+    host.innerHTML=sections.length?sections.map(section=>{
+      const items=section.items||[];
+      return `<section class="tk-vrat-profile">
+        <h4>${esc(section.title||d.title||'Results')}</h4>
+        ${section.note?`<div class="tk-lunar-note">${esc(section.note)}</div>`:''}
+        ${items.length?items.map(item=>{
+          const when=[item.date,item.time].filter(Boolean).join(' · ');
+          const meta=item.meta?esc(String(item.meta)):'';
+          const detail=item.detail?esc(String(item.detail)):'';
+          const link=item.link_date?`<a href="${base}panchang/daily/?date=${encodeURIComponent(item.link_date)}">Panchang →</a>`:'';
+          return `<article class="tk-observance-event">
+            <div class="tk-observance-date"><b>${esc(item.date||'Reference')}</b><span>${esc(item.time||'')}</span></div>
+            <div class="tk-observance-main"><h4>${esc(item.title||'Result')}</h4><p>${meta}</p><small>${detail||when}</small></div>
+            ${link}
+          </article>`;
+        }).join(''):'<div class="tk-panchang-empty">No matching result for the selected context.</div>'}
+      </section>`;
+    }).join(''):'<div class="tk-panchang-empty">No completion data available.</div>';
+  }
+
   async function calculateRegionalCalendar(){
     const loading=$('#tkRegionalLoading');
     if(loading){loading.hidden=false;loading.textContent='Building regional calendar…'}
@@ -1939,6 +1992,8 @@
   $('#tkBirthNakshatra')?.addEventListener('change',()=>{if(pageSlug==='panchang/tarabalam')calculatePanchangUtility()});
   $('#tkBirthRashi')?.addEventListener('change',()=>{if(pageSlug==='panchang/chandrabalam')calculatePanchangUtility()});
   $('#tkBirthTime')?.addEventListener('change',()=>{if(jyotishModes[pageSlug])calculateJyotish()});
+  $('#tkPhaseCalculate')?.addEventListener('click',()=>calculatePhaseCompletion());
+  $('#tkPhaseTime')?.addEventListener('change',()=>calculatePhaseCompletion());
 
   const input=$('#tkDate');
   const queryDate=new URLSearchParams(window.location.search).get('date');

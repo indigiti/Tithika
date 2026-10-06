@@ -18,9 +18,19 @@ $indexable = array_values(array_filter($flat, 'tithika_is_indexable_page'));
 $noindex = array_values(array_filter($flat, fn($p) => !tithika_is_indexable_page($p)));
 
 certify(count($flat) === 292, 'route contract must remain 292');
-certify(count($live) === 130, 'verified live route count must be 130');
-certify(count($indexable) === 193, 'production indexable route count must be 193');
-certify(count($noindex) === 99, 'mapped noindex route count must be 99');
+certify(count($live) === 229, 'verified live route count must be 229');
+certify(count($indexable) === 292, 'production indexable route count must be 292');
+certify(count($noindex) === 0, 'mapped noindex route count must be zero');
+
+$completion = require dirname(__DIR__) . '/config/completion.php';
+certify(count($completion) === 99, 'final completion route set must remain 99');
+certify(count(array_unique($completion)) === 99, 'final completion route set must be unique');
+foreach ($completion as $slug) {
+    certify(isset($flat[$slug]), "completion route missing from manifest: {$slug}");
+    certify(in_array($slug, $live, true), "completion route not promoted: {$slug}");
+    certify(tithika_is_indexable_page($flat[$slug]), "completion route is not indexable: {$slug}");
+}
+
 
 foreach (['panchang/nepali','calendars/nepali','calendars/jain','panchang/sunrise','panchang/nakshatra','panchang/ganda-moola','panchang/abhijit-nakshatra','panchang/vinchudo','panchang/jwalamukhi-yoga','panchang/sankalpa','panchang/vedic-clock','muhurat/shubha-hora','muhurat/panchaka-rahita','muhurat/auspicious-yoga','muhurat/guru-pushya','muhurat/sarvartha-siddhi','muhurat/amrit-siddhi','muhurat/dwipushkar','muhurat/tripushkar','muhurat/ravi-pushya','muhurat/ravi-yoga','vrat/satyanarayana','vrat/durgashtami','vrat/skanda-sashti','vrat/karthigai','vrat/rohini','vrat/sawan-somwar','vrat/mangala-gauri' ] as $slug) {
     certify(in_array($slug, $live, true), "certified route not promoted: {$slug}");
@@ -40,6 +50,19 @@ foreach ([
     'scripts/test-muhurat-reuse.py',
     'python/vrat_recurrence.py',
     'scripts/test-vrat-recurrence.py',
+    'config/completion.php',
+    'python/panchang_completion.py',
+    'python/muhurat_completion.py',
+    'python/vrat_completion.py',
+    'python/festival_calendar_completion.py',
+    'python/jyotish_secondary.py',
+    'python/astronomy_reference.py',
+    'scripts/test-panchang-completion.py',
+    'scripts/test-muhurat-completion.py',
+    'scripts/test-vrat-completion.py',
+    'scripts/test-festival-calendar-completion.py',
+    'scripts/test-jyotish-secondary.py',
+    'scripts/test-astronomy-reference.py',
 ] as $path) {
     certify(is_file(dirname(__DIR__) . '/' . $path), "certification file missing: {$path}");
 }
@@ -61,5 +84,5 @@ echo json_encode([
     'indexable'=>count($indexable),
     'mapped_noindex'=>count($noindex),
     'noindex_by_family'=>$queue,
-    'newly_certified'=>['panchang/nepali','calendars/nepali','calendars/jain','panchang/sunrise','panchang/nakshatra','panchang/ganda-moola','panchang/abhijit-nakshatra','panchang/vinchudo','panchang/jwalamukhi-yoga','panchang/sankalpa','panchang/vedic-clock','muhurat/shubha-hora','muhurat/panchaka-rahita','muhurat/auspicious-yoga','muhurat/guru-pushya','muhurat/sarvartha-siddhi','muhurat/amrit-siddhi','muhurat/dwipushkar','muhurat/tripushkar','muhurat/ravi-pushya','muhurat/ravi-yoga','vrat/satyanarayana','vrat/durgashtami','vrat/skanda-sashti','vrat/karthigai','vrat/rohini','vrat/sawan-somwar','vrat/mangala-gauri'],
+    'newly_certified'=>$completion,
 ], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) . PHP_EOL;
