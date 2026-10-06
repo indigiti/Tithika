@@ -52,6 +52,9 @@ jobs:
       - name: Vrat observance regression fixtures
         run: python scripts/test-observances.py
 
+      - name: Mahadwadashi regression fixture
+        run: python scripts/test-mahadwadashi.py
+
       - name: Equinox and solstice regression fixture
         run: python scripts/test-seasons.py
 
