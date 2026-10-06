@@ -67,5 +67,10 @@ assert full["groom"]["moon"]["nakshatra"]=="Ashlesha"
 assert full["bride"]["lagna"]["rashi"]=="Tula"
 assert full["groom"]["dasha"]["mahadasha"]=="Mercury"
 assert len(full["groom"]["placements"])==9
+deep=full["integration"]["deep_analysis"]
+assert deep["groom"]["d1"]["seventh_lord"]=="Mars"
+assert deep["groom"]["d9"]["seventh_lord"]=="Venus"
+assert deep["groom"]["mangal"]["effective_present"] is False
+assert deep["dasha_overlap"]["windows"]
 
 print("Matching fixture OK: Ashtakoota 36-point tables, Nadi/Bhakoot flags and Kundali/Dasha integration")
