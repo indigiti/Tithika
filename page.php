@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign','jyotish/janma-kundali','planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha','astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -182,6 +182,46 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <div class="tk-muhurat-item avoid"><small>Yamaganda</small><strong id="tkMuhuratYamaganda">—</strong></div>
           <div class="tk-muhurat-item avoid"><small>Gulika</small><strong id="tkMuhuratGulika">—</strong></div>
         </div>
+      <?php elseif (in_array($page['slug'], ['planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Planetary relationship engine</span>
+            <h3 id="tkAspectTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Exact sidereal longitude relationships are scan-bracketed and refined. Graha Yuddha uses the classical same-Rashi one-degree rule.</p>
+          </div>
+          <div class="tk-panchang-engine">Lahiri · geocentric longitude</div>
+        </div>
+        <div id="tkAspectLoading" class="tk-panchang-loading">Calculating planetary relationships…</div>
+        <div id="tkAspectNote" class="tk-lunar-note"></div>
+        <div id="tkAspectResult" class="tk-planetary-result"></div>
+      <?php elseif (in_array($page['slug'], ['astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Physical eclipse engine</span>
+            <h3 id="tkEclipseTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Global eclipse geometry comes from the Astronomy Engine; selected-location solar contacts and lunar altitude determine local visibility.</p>
+          </div>
+          <div class="tk-panchang-engine">Shadow geometry · local horizon</div>
+        </div>
+        <div id="tkEclipseLoading" class="tk-panchang-loading">Calculating eclipse events…</div>
+        <div id="tkEclipseNote" class="tk-lunar-note"></div>
+        <div id="tkEclipseResult" class="tk-eclipse-result"></div>
+      <?php elseif ($page['slug'] === 'jyotish/janma-kundali'): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Janma Kundali · D1 + D9</span>
+            <h3>Janma Kundali</h3>
+            <p>Whole-sign D1 houses from the birth Lagna, D9 Navamsha, Graha positions, birth Panchang, aspects and Graha Yuddha.</p>
+          </div>
+          <div class="tk-panchang-engine">Lahiri · Mean / True Rahu-Ketu</div>
+        </div>
+        <div class="tk-birth-controls">
+          <label><span>Birth time</span><input id="tkKundaliTime" type="time" step="1" value="12:00:00"></label>
+          <label><span>Rahu / Ketu</span><select id="tkKundaliNode"><option value="mean">Mean nodes</option><option value="true">True nodes</option></select></label>
+          <button id="tkKundaliCalculate" type="button">Build Kundali</button>
+        </div>
+        <div id="tkKundaliLoading" class="tk-panchang-loading">Calculating Janma Kundali…</div>
+        <div id="tkKundaliResult" class="tk-kundali-result"></div>
       <?php elseif (in_array($page['slug'], ['planets/positions','planets/transit','planets/combustion','planets/retrograde'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
@@ -194,6 +234,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <?php if ($page['slug'] === 'planets/positions'): ?>
         <div class="tk-birth-controls">
           <label><span>Local chart time</span><input id="tkPlanetTime" type="time" step="1" value="12:00:00"></label>
+          <label><span>Rahu / Ketu</span><select id="tkNodeModel"><option value="mean">Mean nodes</option><option value="true">True nodes</option></select></label>
           <button id="tkPlanetCalculate" type="button">Update positions</button>
         </div>
         <?php endif; ?>
