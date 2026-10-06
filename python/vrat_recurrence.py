@@ -253,6 +253,32 @@ def durgashtami(
     return rows
 
 
+def karthigai_days(
+    year: int, lat: float, lon: float, tz: ZoneInfo, hour24: bool
+) -> list[dict]:
+    rows = []
+    d = date(year, 1, 1)
+    while d.year == year:
+        sunrise = sunrise_for(d, lat, lon, tz)
+        sunset = sunset_for(d, lat, lon, tz)
+        if sunrise and sunset:
+            evening_state = panchang.state_at(sunset - timedelta(seconds=1))
+            if evening_state["nakshatra"] == "Krittika":
+                morning_state = panchang.state_at(sunrise + timedelta(seconds=1))
+                months = month_info_at(sunrise, morning_state)
+                row = display_day(d, sunrise, morning_state, months, hour24)
+                row.update({
+                    "name": "Karthigai",
+                    "sunset": sunset.isoformat(),
+                    "sunset_label": panchang.fmt(sunset, hour24),
+                    "evening_nakshatra": evening_state["nakshatra"],
+                    "selection_rule": "Krittika Nakshatra prevailing at local sunset",
+                })
+                rows.append(row)
+        d += timedelta(days=1)
+    return rows
+
+
 def nakshatra_vrat(
     year: int,
     lat: float,
@@ -340,11 +366,7 @@ def main():
     elif mode == "skanda-sashti":
         result = {"events": skanda_sashti(year, lat, lon, tz, hour24)}
     elif mode == "karthigai":
-        result = {
-            "events": nakshatra_vrat(
-                year, lat, lon, tz, hour24, "Krittika", "Karthigai"
-            )
-        }
+        result = {"events": karthigai_days(year, lat, lon, tz, hour24)}
     elif mode == "rohini":
         result = {
             "events": nakshatra_vrat(
