@@ -76,6 +76,9 @@ jobs:
       - name: Ashtakavarga regression fixture
         run: python scripts/test-ashtakavarga.py
 
+      - name: Shadbala foundation regression fixture
+        run: python scripts/test-shadbala.py
+
       - name: Planetary aspects and Yuddha regression fixtures
         run: python scripts/test-aspects.py
 
