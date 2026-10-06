@@ -8,6 +8,7 @@ ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0,os.path.join(ROOT,"python"))
 
 import panchang
+import lunar_occurrences
 import vrat_recurrence
 
 tz=ZoneInfo("Asia/Kolkata")
@@ -99,5 +100,26 @@ for profile,rows in gauri.items():
     for row in rows:
         assert date.fromisoformat(row["date"]).weekday()==1,row
         assert vrat_recurrence.normalize_month(row[f"{profile}_month"])=="Shravana",row
+
+# ISKCON/GCal-compatible 2026 Pune regression. Published ISKCON dates are
+# treated as a hard compatibility target, including Vriddhi and Mahadwadashi.
+iskcon_events=[]
+for rule in lunar_occurrences.KINDS["ekadashi"]:
+    iskcon_events.extend(lunar_occurrences.events_for_rule(2026,rule,lat,lon,tz,False))
+iskcon_dates=sorted({
+    event["observance"]["iskcon"]["date"]
+    for event in iskcon_events
+    if event.get("observance") and event["observance"].get("iskcon")
+    and event["observance"]["iskcon"].get("date","").startswith("2026-")
+})
+expected_iskcon=[
+    "2026-01-14","2026-01-29","2026-02-13","2026-02-27",
+    "2026-03-15","2026-03-29","2026-04-13","2026-04-27",
+    "2026-05-13","2026-05-27","2026-06-11","2026-06-25",
+    "2026-07-11","2026-07-25","2026-08-09","2026-08-24",
+    "2026-09-07","2026-09-22","2026-10-06","2026-10-22",
+    "2026-11-05","2026-11-21","2026-12-04","2026-12-20",
+]
+assert iskcon_dates==expected_iskcon,(iskcon_dates,expected_iskcon)
 
 print("Vrat recurrence fixture passed")
