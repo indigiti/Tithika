@@ -78,7 +78,14 @@ def test_vrat_completion():
     iskcon = completion.iskcon_ekadashi(YEAR, LAT, LON, TZ, False)
     expected_iskcon = ['2026-01-14','2026-01-29','2026-02-13','2026-02-27','2026-03-15','2026-03-29','2026-04-13','2026-04-27','2026-05-13','2026-05-27','2026-06-11','2026-06-25','2026-07-11','2026-07-25','2026-08-09','2026-08-24','2026-09-07','2026-09-22','2026-10-06','2026-10-22','2026-11-05','2026-11-21','2026-12-04','2026-12-20']
     actual_iskcon = sorted(dates(iskcon))
-    assert actual_iskcon == expected_iskcon, f"ISKCON Pune 2026 mismatch: {actual_iskcon}"
+    if actual_iskcon != expected_iskcon:
+        expected_set = set(expected_iskcon)
+        diagnostic = [
+            (r["date"], r.get("basis"), r.get("mahadwadashi", {}).get("yogas"), r.get("tithi_start"), r.get("tithi_end"))
+            for r in iskcon
+            if r["date"] not in expected_set
+        ]
+        raise AssertionError(f"ISKCON Pune 2026 mismatch: {actual_iskcon}; unexpected={diagnostic}")
     assert all(r.get("parana") for r in iskcon)
 
     chandra = completion.chandra_darshan(YEAR, LAT, LON, TZ, False)
