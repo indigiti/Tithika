@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign','jyotish/janma-kundali','jyotish/horoscope-analysis','jyotish/interpretation-report','jyotish/timing-timeline','jyotish/rashifal','jyotish/rashifal/daily','jyotish/rashifal/weekly','jyotish/rashifal/monthly','jyotish/rashifal/yearly','planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha','astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse','jyotish/vimshottari-dasha','jyotish/mangal-dosha','jyotish/kalasarpa','jyotish/shani-sadesati','jyotish/ashtakavarga','jyotish/shadbala','jyotish/horoscope-match','jyotish/marriage-analysis','jyotish/nakshatra-compatibility','jyotish/divisional-charts','jyotish/yogas'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign','jyotish/janma-kundali','jyotish/horoscope-analysis','jyotish/interpretation-report','jyotish/timing-timeline','jyotish/rashifal','jyotish/rashifal/daily','jyotish/rashifal/weekly','jyotish/rashifal/monthly','jyotish/rashifal/yearly','planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha','astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse','jyotish/vimshottari-dasha','jyotish/mangal-dosha','jyotish/kalasarpa','jyotish/shani-sadesati','jyotish/ashtakavarga','jyotish/shadbala','jyotish/horoscope-match','jyotish/marriage-analysis','jyotish/nakshatra-compatibility','jyotish/divisional-charts','jyotish/yogas','muhurat/vivah','muhurat/griha-pravesh','muhurat/property','muhurat/vehicle','panchang/tarabalam','panchang/chandrabalam','panchang/panchak','panchang/bhadra','panchang/hindi','panchang/tamil','panchang/telugu','panchang/kannada','panchang/malayalam','panchang/gujarati','panchang/marathi','panchang/bengali','panchang/odia','panchang/assamese','panchang/iskcon','calendars/tamil','calendars/telugu','calendars/kannada','calendars/malayalam','calendars/gujarati','calendars/marathi','calendars/bengali','calendars/odia','calendars/assamese','calendars/iskcon'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -96,7 +96,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
     <button type="button" data-shift-date="1" aria-label="Next day">›</button>
     <span class="tk-spacer"></span>
     <a href="<?= htmlspecialchars(tithika_pretty_url($page['group'])) ?>">All <?= htmlspecialchars($group['title']) ?></a>
-    <span class="tk-engine-state<?= $isComputed ? ' is-live' : '' ?>"><?= in_array($page['slug'], ['panchang/daily','panchang/month'], true) ? 'Panchang engine live' : ($isComputed ? 'Solar calculation live' : 'Page shell mapped') ?></span>
+    <span class="tk-engine-state<?= $isComputed ? ' is-live' : '' ?>"><?= in_array($page['slug'], ['panchang/daily','panchang/month'], true) ? 'Panchang engine live' : ($isComputed ? 'Calculation engine live' : 'Page shell mapped') ?></span>
   </div>
 </div>
 
@@ -625,6 +625,67 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         </div>
         <div id="tkLagnaLoading" class="tk-panchang-loading">Calculating Lagna periods…</div>
         <div id="tkLagnaList" class="tk-observance-list"></div>
+      <?php elseif (in_array($page['slug'], ['muhurat/vivah','muhurat/griha-pravesh','muhurat/property','muhurat/vehicle'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Specialized Muhurat profile</span>
+            <h3 id="tkSpecialMuhuratTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Candidate windows combine weekday, Tithi and Nakshatra Shuddhi with common Rahu/Yamaganda/Gulika, Bhadra and Yoga exclusions. Profiles that require it also reject Adhika month and Guru/Shukra combustion.</p>
+          </div>
+          <div class="tk-panchang-engine">Profile rules · Lahiri Panchang</div>
+        </div>
+        <div class="tk-birth-controls">
+          <label><span>Muhurat profile</span><select id="tkMuhuratProfile">
+            <option value="vivah">Vivah</option>
+            <option value="griha-pravesh">Griha Pravesh</option>
+            <option value="property">Property Purchase</option>
+            <option value="vehicle">Vehicle Purchase</option>
+            <option value="namakarana">Namakarana Sanskar</option>
+            <option value="annaprashana">Annaprashana Sanskar</option>
+            <option value="mundana">Mundana Sanskar</option>
+          </select></label>
+          <button id="tkMuhuratCalculate" type="button">Find Shubh Windows</button>
+        </div>
+        <div id="tkSpecialMuhuratLoading" class="tk-panchang-loading">Evaluating monthly Muhurat windows…</div>
+        <div id="tkSpecialMuhuratSummary" class="tk-lunar-note"></div>
+        <div id="tkSpecialMuhuratList" class="tk-observance-list"></div>
+      <?php elseif (in_array($page['slug'], ['panchang/tarabalam','panchang/chandrabalam','panchang/panchak','panchang/bhadra'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Panchang decision utility</span>
+            <h3 id="tkUtilityTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Exact Hindu-day intervals are calculated from local sunrise to next sunrise using the same Lahiri Moon/Nakshatra/Karana state as Daily Panchang.</p>
+          </div>
+          <div class="tk-panchang-engine">Sunrise → next sunrise</div>
+        </div>
+        <?php if ($page['slug'] === 'panchang/tarabalam'): ?>
+        <div class="tk-birth-controls">
+          <label><span>Janma Nakshatra</span><select id="tkBirthNakshatra"></select></label>
+          <button id="tkUtilityCalculate" type="button">Check Tarabalam</button>
+        </div>
+        <?php elseif ($page['slug'] === 'panchang/chandrabalam'): ?>
+        <div class="tk-birth-controls">
+          <label><span>Janma Rashi</span><select id="tkBirthRashi"></select></label>
+          <button id="tkUtilityCalculate" type="button">Check Chandrabalam</button>
+        </div>
+        <?php endif; ?>
+        <div id="tkUtilityLoading" class="tk-panchang-loading">Calculating Panchang utility…</div>
+        <div id="tkUtilityResult" class="tk-observance-list"></div>
+      <?php elseif (in_array($page['slug'], ['panchang/hindi','panchang/tamil','panchang/telugu','panchang/kannada','panchang/malayalam','panchang/gujarati','panchang/marathi','panchang/bengali','panchang/odia','panchang/assamese','panchang/iskcon','calendars/tamil','calendars/telugu','calendars/kannada','calendars/malayalam','calendars/gujarati','calendars/marathi','calendars/bengali','calendars/odia','calendars/assamese','calendars/iskcon'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Regional calendar engine</span>
+            <h3 id="tkRegionalTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>One Lahiri astronomy core with the regional month convention kept explicit—Nirayana solar, Amanta lunar or Purnimanta lunar.</p>
+          </div>
+          <div class="tk-panchang-engine" id="tkRegionalBasis">Regional convention</div>
+        </div>
+        <div id="tkRegionalLoading" class="tk-panchang-loading">Building regional calendar…</div>
+        <div class="tk-month-weekdays" aria-hidden="true">
+          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        </div>
+        <div id="tkRegionalGrid" class="tk-month-grid" aria-live="polite"></div>
+        <div id="tkRegionalNote" class="tk-lunar-note"></div>
       <?php elseif (in_array($page['slug'], ['panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
