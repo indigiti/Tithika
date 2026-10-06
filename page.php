@@ -96,7 +96,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
     <button type="button" data-shift-date="1" aria-label="Next day">›</button>
     <span class="tk-spacer"></span>
     <a href="<?= htmlspecialchars(tithika_pretty_url($page['group'])) ?>">All <?= htmlspecialchars($group['title']) ?></a>
-    <span class="tk-engine-state<?= $isComputed ? ' is-live' : '' ?>"><?= in_array($page['slug'], ['panchang/daily','panchang/month'], true) ? 'Panchang engine live' : ($isComputed ? 'Solar calculation live' : 'Page shell mapped') ?></span>
+    <span class="tk-engine-state<?= $isComputed ? ' is-live' : '' ?>"><?= in_array($page['slug'], ['panchang/daily','panchang/month'], true) ? 'Panchang engine live' : ($isComputed ? 'Calculation engine live' : 'Page shell mapped') ?></span>
   </div>
 </div>
 
