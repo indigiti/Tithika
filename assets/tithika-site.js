@@ -31,6 +31,9 @@
   };
   const ashtaPages=['jyotish/ashtakavarga'];
   const shadbalaPages=['jyotish/shadbala'];
+  const matchPages=['jyotish/horoscope-match'];
+  const nakMatchPages=['jyotish/nakshatra-compatibility'];
+  const NAKSHATRAS=['Ashwini','Bharani','Krittika','Rohini','Mrigashira','Ardra','Punarvasu','Pushya','Ashlesha','Magha','Purva Phalguni','Uttara Phalguni','Hasta','Chitra','Swati','Vishakha','Anuradha','Jyeshtha','Mula','Purva Ashadha','Uttara Ashadha','Shravana','Dhanishta','Shatabhisha','Purva Bhadrapada','Uttara Bhadrapada','Revati'];
   const jyotishModes={
     'jyotish/birthstar':'birthstar',
     'jyotish/janma-lagna':'janma-lagna',
@@ -78,6 +81,10 @@
     timezone:'Asia/Kolkata',
     data:null,panchang:null,searchTimer:null,dateTouched:false,
     monthData:null,monthKey:'',lunarCache:new Map(),observanceCache:new Map(),festivalCache:new Map(),dwadashiCache:new Map(),mahadwadashiCache:new Map(),sankrantiCache:new Map()
+  };
+  const matchState={
+    groom:{lat:null,lon:null,city:'',timezone:''},
+    bride:{lat:null,lon:null,city:'',timezone:''}
   };
 
   function isoToday(timeZone=state.timezone){
@@ -406,6 +413,102 @@
       const el=$('#tkShadbalaResult');if(!el)return;
       el.innerHTML=`<div class="tk-lunar-note">${esc(j.note||'')}</div><div class="tk-shadbala-grid">${(j.planets||[]).map(row=>`<article><header><b>${esc(row.planet)}</b><span>${esc(row.rashi)} · H${row.house}</span></header><div class="tk-shadbala-components"><span><small>Uchcha</small>${Number(row.components?.uchcha||0).toFixed(1)}</span><span><small>Dig</small>${Number(row.components?.dig||0).toFixed(1)}</span><span><small>Kendra</small>${Number(row.components?.kendra||0).toFixed(1)}</span><span><small>Drekkana</small>${Number(row.components?.drekkana||0).toFixed(1)}</span><span><small>Naisargika</small>${Number(row.components?.naisargika||0).toFixed(1)}</span><span><small>Chesta proxy</small>${row.components?.chesta_proxy===null?'—':Number(row.components?.chesta_proxy||0).toFixed(1)}</span></div></article>`).join('')}</div><div class="tk-rule-flag">Final Shadbala total withheld: ${esc((j.withheld||[]).join(' · '))}</div>`;
     }catch(e){if(loading)loading.textContent=e.message||'Shadbala foundation unavailable';toast(e.message||'Shadbala foundation unavailable')}
+  }
+
+  function matchProfile(role){
+    const cap=role[0].toUpperCase()+role.slice(1);
+    const loc=matchState[role];
+    const date=$('#tkMatch'+cap+'Date')?.value;
+    const time=$('#tkMatch'+cap+'Time')?.value||'12:00:00';
+    if(!date)throw new Error((role==='groom'?'Groom':'Bride')+' birth date is required');
+    return {
+      name:$('#tkMatch'+cap+'Name')?.value||'',
+      date,time,
+      lat:loc.lat??state.lat,lon:loc.lon??state.lon,
+      city:loc.city||$('#tkMatch'+cap+'City')?.value||state.city,
+      timezone:loc.timezone||state.timezone
+    };
+  }
+
+  function syncMatchLocation(role){
+    const cap=role[0].toUpperCase()+role.slice(1),loc=matchState[role];
+    loc.lat=state.lat;loc.lon=state.lon;loc.city=state.city;loc.timezone=state.timezone;
+    const input=$('#tkMatch'+cap+'City');if(input)input.value=state.city;
+    const meta=$('#tkMatch'+cap+'Meta');if(meta)meta.textContent=`${state.city} · ${state.timezone}`;
+  }
+
+  async function resolveMatchCity(role,row){
+    const cap=role[0].toUpperCase()+role.slice(1);
+    try{
+      const r=await fetch(`${base}api.php?action=timezone&lat=${encodeURIComponent(row.lat)}&lon=${encodeURIComponent(row.lon)}`);
+      const j=await r.json();
+      if(!j.ok||!j.timezone)throw new Error('Timezone unavailable');
+      Object.assign(matchState[role],{lat:row.lat,lon:row.lon,city:row.label,timezone:j.timezone});
+      const input=$('#tkMatch'+cap+'City');if(input)input.value=row.label;
+      const box=$('#tkMatch'+cap+'Results');if(box)box.innerHTML='';
+      const meta=$('#tkMatch'+cap+'Meta');if(meta)meta.textContent=`${row.label} · ${j.timezone}`;
+    }catch(e){toast('Could not resolve birth-city timezone')}
+  }
+
+  function bindMatchCity(role){
+    const cap=role[0].toUpperCase()+role.slice(1),input=$('#tkMatch'+cap+'City'),box=$('#tkMatch'+cap+'Results');
+    if(!input||!box)return;
+    input.addEventListener('input',()=>{
+      clearTimeout(input._timer);const q=input.value.trim();
+      if(q.length<2){box.innerHTML='';return}
+      input._timer=setTimeout(async()=>{
+        try{
+          const r=await fetch(`${base}api.php?action=search&q=${encodeURIComponent(q)}`);
+          const j=await r.json();
+          if(!j.ok||!j.results?.length){box.innerHTML='<span>No places found</span>';return}
+          box.innerHTML=j.results.map((x,i)=>`<button type="button" data-i="${i}"><b>${esc(x.label)}</b><small>${esc(x.display_name)}</small></button>`).join('');
+          box._rows=j.results;
+          box.querySelectorAll('button[data-i]').forEach(btn=>btn.addEventListener('click',()=>resolveMatchCity(role,box._rows[Number(btn.dataset.i)])));
+        }catch(e){box.innerHTML='<span>City search unavailable</span>'}
+      },260);
+    });
+  }
+
+  function renderKootaMatch(j,target){
+    const el=$(target);if(!el)return;
+    const m=j.match||{},rows=m.kootas||[];
+    const pct=Math.max(0,Math.min(100,(Number(m.total||0)/36)*100));
+    const flag=(name,obj)=>obj?.present?`<span class="tk-match-flag ${obj.cancelled?'cancelled':'warning'}">${name}: ${obj.cancelled?'Dosha cancelled':'Dosha present'}</span>`:`<span class="tk-match-flag good">${name}: clear</span>`;
+    const person=(title,p)=>p? `<article class="tk-match-chart"><header><small>${title}</small><strong>${esc(p.moon?.nakshatra||'—')} · ${esc(p.moon?.rashi||'—')}</strong></header>${p.lagna?`<p>Lagna <b>${esc(p.lagna.rashi)}</b> · Mangal <b>${p.mangal?.present?'Manglik':'Non-Manglik'}</b></p><p>Dasha <b>${esc(p.dasha?.mahadasha||'—')} / ${esc(p.dasha?.antardasha||'—')}</b></p>`:''}</article>`:'';
+    el.innerHTML=`<section class="tk-match-score"><div class="tk-match-score-ring" style="--score:${pct}%"><strong>${Number(m.total||0).toFixed(1)}</strong><span>/ 36</span></div><div><small>Ashtakoota result</small><h3>${esc(String(m.band||'').replaceAll('-',' '))}</h3><p>${esc(m.band_reason||'')}</p><div class="tk-match-flags">${flag('Bhakoot',m.bhakoot)}${flag('Nadi',m.nadi)}</div></div></section>
+      <div class="tk-koota-list">${rows.map(r=>`<article><div><b>${esc(r.name)}</b><small>${esc(r.basis||'')}</small></div><div class="tk-koota-meter"><i style="width:${Math.max(0,Math.min(100,(Number(r.earned||0)/Number(r.maximum||1))*100))}%"></i></div><strong>${Number(r.earned||0).toFixed(1)} / ${Number(r.maximum||0).toFixed(0)}</strong></article>`).join('')}</div>
+      ${j.mode==='horoscope'?`<div class="tk-match-charts">${person('Vara / Groom',j.groom)}${person('Kanya / Bride',j.bride)}</div><div class="tk-rule-flag ${j.integration?.mangal_compatible?'':'is-warning'}">Mangal compatibility: ${esc(j.integration?.mangal_note||'—')}</div>`:''}
+      <div class="tk-lunar-note">${esc(j.note||'')}</div>`;
+  }
+
+  async function calculateHoroscopeMatch(){
+    const loading=$('#tkMatchLoading');if(loading){loading.hidden=false;loading.textContent='Calculating both birth charts and Ashtakoota…'}
+    try{
+      const body={mode:'horoscope',groom:matchProfile('groom'),bride:matchProfile('bride')};
+      const r=await fetch(`${base}api.php?action=matching&mode=horoscope`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const j=await r.json();if(!j.ok)throw new Error(j.error||'Matching engine unavailable');
+      if(loading)loading.hidden=true;renderKootaMatch(j,'#tkMatchResult');
+    }catch(e){if(loading){loading.hidden=false;loading.textContent=e.message||'Matching engine unavailable'};toast(e.message||'Matching engine unavailable')}
+  }
+
+  async function calculateNakshatraMatch(){
+    const loading=$('#tkNakMatchLoading');if(loading){loading.hidden=false;loading.textContent='Calculating Nakshatra compatibility…'}
+    try{
+      const body={mode:'nakshatra',groom:{nakshatra:$('#tkNakGroom')?.value,pada:Number($('#tkNakGroomPada')?.value||1)},bride:{nakshatra:$('#tkNakBride')?.value,pada:Number($('#tkNakBridePada')?.value||1)}};
+      const r=await fetch(`${base}api.php?action=matching&mode=nakshatra`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const j=await r.json();if(!j.ok)throw new Error(j.error||'Nakshatra matching unavailable');
+      if(loading)loading.hidden=true;renderKootaMatch(j,'#tkNakMatchResult');
+    }catch(e){if(loading){loading.hidden=false;loading.textContent=e.message||'Nakshatra matching unavailable'};toast(e.message||'Nakshatra matching unavailable')}
+  }
+
+  function initMatching(){
+    if(matchPages.includes(pageSlug)){
+      bindMatchCity('groom');bindMatchCity('bride');
+      document.querySelectorAll('[data-match-use-current]').forEach(btn=>btn.addEventListener('click',()=>syncMatchLocation(btn.dataset.matchUseCurrent)));
+    }
+    if(nakMatchPages.includes(pageSlug)){
+      ['#tkNakGroom','#tkNakBride'].forEach(sel=>{const el=$(sel);if(el)el.innerHTML=NAKSHATRAS.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('')});
+    }
   }
 
   async function calculateLagna(){
@@ -1024,6 +1127,8 @@
     calculate();
   }));
   $('#tkToday')?.addEventListener('click',()=>{const input=$('#tkDate');state.dateTouched=false;if(input)input.value=isoToday(state.timezone);calculate()});
+  $('#tkMatchCalculate')?.addEventListener('click',()=>calculateHoroscopeMatch());
+  $('#tkNakMatchCalculate')?.addEventListener('click',()=>calculateNakshatraMatch());
   $('#tkPlanetCalculate')?.addEventListener('click',()=>calculatePlanetary());
   $('#tkPlanetTime')?.addEventListener('change',()=>{if(pageSlug==='planets/positions')calculatePlanetary()});
   $('#tkNodeModel')?.addEventListener('change',()=>{if(pageSlug==='planets/positions')calculatePlanetary()});
@@ -1050,5 +1155,6 @@
   }else if(input&&!input.value){
     input.value=isoToday(state.timezone);
   }
+  initMatching();
   locate(true);
 })();
