@@ -232,7 +232,6 @@ def graha_yuddha_events(year: int, tz: ZoneInfo):
 
 
 def snapshot(moment: datetime):
-    planets = [planetary.planet_state(x) for x in []]  # type guard placeholder
     states = {name: planetary.planet_state(name, moment) for name in ASPECT_PLANETS}
     rows = []
     for a, b in combinations(ASPECT_PLANETS, 2):
@@ -249,6 +248,31 @@ def snapshot(moment: datetime):
                 "orb_deg": round(orb, 5),
             })
     return sorted(rows, key=lambda x: x["orb_deg"])
+
+
+def graha_yuddha_snapshot(moment: datetime):
+    rows = []
+    states = {name: planetary.planet_state(name, moment) for name in YUDDHA_PLANETS}
+    for a, b in combinations(YUDDHA_PLANETS, 2):
+        pa, pb = states[a], states[b]
+        if pa["rashi_id"] != pb["rashi_id"]:
+            continue
+        sep = abs(pa["degree_in_rashi"] - pb["degree_in_rashi"])
+        if sep <= 1.0:
+            rows.append({
+                "planet1": a,
+                "planet2": b,
+                "rashi": pa["rashi"],
+                "separation_deg": round(sep, 8),
+                "winner": yuddha_winner(pa, pb),
+                "loser": (
+                    b if yuddha_winner(pa, pb) == a
+                    else a if yuddha_winner(pa, pb) == b
+                    else None
+                ),
+                "rule": "same-rashi-within-1-degree-lower-degree-wins",
+            })
+    return rows
 
 
 def main():
