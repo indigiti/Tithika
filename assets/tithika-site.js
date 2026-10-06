@@ -888,6 +888,86 @@
     }catch(e){if(loading)loading.textContent=e.message||'Lagna engine unavailable';toast(e.message||'Lagna engine unavailable')}
   }
 
+  async function calculateVratReuse(){
+    const loading=$('#tkVratReuseLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating yearly Vrat dates…'}
+    try{
+      const mode=vratReuseModes[pageSlug],p=payload();
+      const r=await fetch(`${base}api.php?action=vrat-recurrence&mode=${encodeURIComponent(mode)}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Vrat recurrence engine unavailable');
+      if(loading)loading.hidden=true;
+      renderVratReuse(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Vrat recurrence engine unavailable'}
+      toast(e.message||'Vrat recurrence engine unavailable');
+    }
+  }
+
+  function renderVratReuseRows(rows,profile=''){
+    return (rows||[]).map(row=>{
+      const parana=row.parana
+        ? ` · Parana ${esc(row.parana.start_label||row.parana.earliest_label||'—')} – ${esc(row.parana.end_label||row.parana.deadline_label||'—')}`
+        : '';
+      const interval=row.tithi_start&&row.tithi_end
+        ? `${esc(new Date(row.tithi_start).toLocaleString('en-IN',{timeZone:state.timezone,dateStyle:'medium',timeStyle:'short'}))} → ${esc(new Date(row.tithi_end).toLocaleString('en-IN',{timeZone:state.timezone,dateStyle:'medium',timeStyle:'short'}))}`
+        : `Sunrise ${esc(row.sunrise_label||'—')}`;
+      const evidence=[
+        profile?profile.toUpperCase():'',
+        row.purnimanta_month||row.amanta_month||'',
+        row.paksha||'',
+        row.tithi||'',
+        row.nakshatra||''
+      ].filter(Boolean).join(' · ');
+      return `<article class="tk-observance-event">
+        <div class="tk-observance-date"><b>${esc(row.date)}</b><span>${esc(row.weekday||'')}</span></div>
+        <div class="tk-observance-main">
+          <h4>${esc(row.name||'Vrat')}</h4>
+          <p>${interval}</p>
+          <small>${esc(evidence)}${parana}${row.basis?' · '+esc(row.basis):''}</small>
+        </div>
+        <a href="${base}panchang/daily/?date=${encodeURIComponent(row.date)}">Panchang →</a>
+      </article>`;
+    }).join('');
+  }
+
+  function renderVratReuse(d){
+    const engine=$('#tkVratReuseEngine');
+    if(engine)engine.textContent=`${d.engine?.ayanamsha||'Lahiri'} · reuse ${d.engine?.version||''}`;
+    const title=$('#tkVratReuseTitle');
+    if(title)title.textContent=`${d.title} ${d.year}`;
+    const summary=$('#tkVratReuseSummary'),metrics=$('#tkVratReuseMetrics'),list=$('#tkVratReuseList');
+    if(metrics)metrics.innerHTML='';
+    if(list)list.innerHTML='';
+
+    if(d.profiles){
+      const p=d.profiles.purnimanta||[],a=d.profiles.amanta||[];
+      if(summary)summary.textContent=`Shravana weekday profiles are separated by lunar-month convention; no regional convention is silently assumed.`;
+      if(metrics)metrics.innerHTML=[
+        reuseMetric('Purnimanta',String(p.length),'North Indian Shravana'),
+        reuseMetric('Amanta',String(a.length),'Maharashtra/South-West Shravana'),
+        reuseMetric('Total profile rows',String(p.length+a.length),String(d.year))
+      ].join('');
+      if(list)list.innerHTML=`
+        <section class="tk-vrat-profile"><h4>Purnimanta Shravana</h4>${p.length?renderVratReuseRows(p,'Purnimanta'):'<div class="tk-panchang-empty">No Purnimanta dates.</div>'}</section>
+        <section class="tk-vrat-profile"><h4>Amanta Shravana</h4>${a.length?renderVratReuseRows(a,'Amanta'):'<div class="tk-panchang-empty">No Amanta dates.</div>'}</section>`;
+      return;
+    }
+
+    const rows=d.events||[];
+    if(summary)summary.textContent=`${rows.length} verified recurrence dates · ${d.year} · ${d.location?.city||'selected location'}`;
+    if(metrics)metrics.innerHTML=[
+      reuseMetric('Occurrences',String(rows.length),d.title||'Vrat'),
+      reuseMetric('Year',String(d.year),d.engine?.ayanamsha||'Lahiri'),
+      reuseMetric('Timezone',d.location?.timezone||'—','Local sunrise rules')
+    ].join('');
+    if(list)list.innerHTML=rows.length
+      ? renderVratReuseRows(rows)
+      : '<div class="tk-panchang-empty">No recurrence dates found for this year.</div>';
+  }
+
   async function calculateObservances(){
     const loading=$('#tkObservanceLoading');
     if(loading){loading.hidden=false;loading.textContent='Calculating yearly observances…'}
