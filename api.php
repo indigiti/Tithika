@@ -228,6 +228,37 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'aspects') {
+        $payload = readPayload();
+        $mode = strtolower(trim((string)($_GET['mode'] ?? 'mutual')));
+        if (!in_array($mode, ['mutual','lunar','conjunctions','graha-yuddha'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported aspects mode'], 422);
+        }
+        $payload['mode'] = $mode;
+        $data = runPythonEngine('python/aspects.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
+    if ($action === 'eclipses') {
+        $payload = readPayload();
+        $mode = strtolower(trim((string)($_GET['mode'] ?? 'all')));
+        if (!in_array($mode, ['all','solar','lunar'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported eclipse mode'], 422);
+        }
+        $payload['mode'] = $mode;
+        $data = runPythonEngine('python/eclipses.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
+    if ($action === 'kundali') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/kundali.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'seasons') {
         $payload = readPayload();
         $data = runPythonEngine('python/seasons.py', $payload);
