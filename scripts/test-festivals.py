@@ -73,6 +73,17 @@ diwali = run("diwali")
 assert diwali["date"] == "2026-11-08", diwali
 assert within(diwali["pradosh"]["start"], "2026-11-08T18:02:00+05:30", 10)
 assert within(diwali["pradosh"]["end"], "2026-11-08T20:34:00+05:30", 10)
-assert diwali["vrishabha_lagna_status"] == "lagna-engine-pending"
+assert diwali["vrishabha_lagna_status"] == "verified"
+assert within(diwali["vrishabha_lagna"]["start"], "2026-11-08T18:27:00+05:30", 6)
+assert within(diwali["vrishabha_lagna"]["end"], "2026-11-08T20:27:00+05:30", 6)
+assert within(diwali["lakshmi_puja"]["start"], "2026-11-08T18:27:00+05:30", 6)
+assert within(diwali["lakshmi_puja"]["end"], "2026-11-08T20:27:00+05:30", 6)
+
+janmashtami = run("janmashtami")
+assert janmashtami["date"] == "2026-09-04", janmashtami
+assert within(janmashtami["nishita"]["start"], "2026-09-05T00:14:00+05:30", 7)
+assert within(janmashtami["nishita"]["end"], "2026-09-05T01:01:00+05:30", 7)
+assert janmashtami["dahi_handi_date"] == "2026-09-05"
+assert janmashtami["selection_status"] == "base-nishita-rule"
 
 print("Major festival fixtures OK: Mumbai 2026 batch 1")
