@@ -460,7 +460,7 @@ def masik_janmashtami(year,lat,lon,tz,hour24):
     for start,end in tithi_windows(year,22,tz):
         info=month_for_window(start,end); candidates=[]
         for d in (start.date()-timedelta(days=1),start.date(),end.date()):
-             sr=rise(d,lat,lon,tz); ns=rise(d+timedelta(days=1),lat,lon,tz)
+            sr=rise(d,lat,lon,tz); ns=rise(d+timedelta(days=1),lat,lon,tz)
             if sr and ns:
                 midnight=sr+(ns-sr)/2
                 # Nishita reference = middle two fifteenths around solar midnight.
