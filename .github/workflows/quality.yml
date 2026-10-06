@@ -136,6 +136,12 @@ jobs:
       - name: Regional calendar regression fixture
         run: python scripts/test-regional-calendar.py
 
+      - name: Nepali Bikram Sambat regression fixture
+        run: python scripts/test-nepali-calendar.py
+
+      - name: Jain Kartikadi calendar regression fixture
+        run: python scripts/test-jain-calendar.py
+
       - name: Equinox and solstice regression fixture
         run: python scripts/test-seasons.py
 
