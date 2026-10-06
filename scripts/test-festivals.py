@@ -86,4 +86,26 @@ assert within(janmashtami["nishita"]["end"], "2026-09-05T01:01:00+05:30", 7)
 assert janmashtami["dahi_handi_date"] == "2026-09-05"
 assert janmashtami["selection_status"] == "base-nishita-rule"
 
-print("Major festival fixtures OK: Mumbai 2026 batch 1")
+rama = run("rama-navami")
+assert rama["date"] == "2026-03-26", rama
+assert within(rama["puja"]["start"], "2026-03-26T11:30:00+05:30", 10)
+assert within(rama["puja"]["end"], "2026-03-26T13:57:00+05:30", 10)
+assert rama["vaishnava_date"] == "2026-03-27"
+
+hanuman = run("hanuman-jayanti")
+assert hanuman["date"] == "2026-04-02", hanuman
+
+akshaya = run("akshaya-tritiya")
+assert akshaya["date"] == "2026-04-19", akshaya
+assert within(akshaya["puja"]["start"], "2026-04-19T10:49:00+05:30", 10)
+assert within(akshaya["puja"]["end"], "2026-04-19T12:38:00+05:30", 10)
+
+vat = run("vat-savitri")
+assert vat["date"] == "2026-05-16", vat
+
+durga = run("durga-puja")
+assert durga["date"] == "2026-10-19", durga
+assert within(durga["sandhi_puja"]["start"], "2026-10-19T10:27:00+05:30", 5)
+assert within(durga["sandhi_puja"]["end"], "2026-10-19T11:15:00+05:30", 5)
+
+print("Major festival fixtures OK: Mumbai 2026 batches 1-2")
