@@ -1554,7 +1554,8 @@
         reuseMetric('Shaka Samvat',`${d.shaka_samvat} ${d.shaka_samvatsara||''}`,'Chaitradi rollover'),
         reuseMetric('Purnimanta month',d.purnimanta_month||'—',d.adhika_month?'Adhika month':'Sunrise-state'),
         reuseMetric('Amanta month',d.amanta_month||'—','Sunrise-state'),
-        reuseMetric('Ritu',d.ritu||'—',d.ayana||''),
+        reuseMetric('Drik Ritu / Ayana',d.drik_ritu||'—',d.drik_ayana||''),
+        reuseMetric('Vedic Ritu / Ayana',d.vedic_ritu||'—',d.vedic_ayana||''),
         reuseMetric('Tithi',d.tithi||'—',d.paksha||''),
         reuseMetric('Nakshatra',d.nakshatra||'—',`Pada ${d.nakshatra_pada||'—'}`),
         reuseMetric('Yoga / Karana',`${d.yoga||'—'} · ${d.karana||'—'}`,d.weekday_vedic||'')
