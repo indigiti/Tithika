@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign','jyotish/janma-kundali','jyotish/horoscope-analysis','jyotish/interpretation-report','jyotish/timing-timeline','jyotish/rashifal','jyotish/rashifal/daily','jyotish/rashifal/weekly','jyotish/rashifal/monthly','jyotish/rashifal/yearly','planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha','astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse','jyotish/vimshottari-dasha','jyotish/mangal-dosha','jyotish/kalasarpa','jyotish/shani-sadesati','jyotish/ashtakavarga','jyotish/shadbala','jyotish/horoscope-match','jyotish/marriage-analysis','jyotish/nakshatra-compatibility','jyotish/divisional-charts','jyotish/yogas','muhurat/vivah','muhurat/griha-pravesh','muhurat/property','muhurat/vehicle','panchang/tarabalam','panchang/chandrabalam','panchang/panchak','panchang/bhadra','panchang/hindi','panchang/tamil','panchang/telugu','panchang/kannada','panchang/malayalam','panchang/gujarati','panchang/marathi','panchang/bengali','panchang/odia','panchang/assamese','panchang/iskcon','calendars/tamil','calendars/telugu','calendars/kannada','calendars/malayalam','calendars/gujarati','calendars/marathi','calendars/bengali','calendars/odia','calendars/assamese','calendars/iskcon'], true);
+$isComputed = tithika_is_live_page($page['slug']) || tithika_has_editorial_content($page);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -105,7 +105,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
     <div>
       <span>Tithika <?= htmlspecialchars(tithika_template_label($page['template'])) ?></span>
       <h2><?= htmlspecialchars($page['title']) ?></h2>
-      <p>The visual system and URL are production-mapped. Specialized astronomical/Panchang outputs are only shown after their calculation module is verified.</p>
+      <p><?= htmlspecialchars(tithika_has_editorial_content($page) ? 'This route has structured editorial content and topic-aware links.' : ($isComputed ? 'This route is backed by a verified calculation or calendar engine.' : 'This route remains mapped but is intentionally not indexed until its specialized engine or editorial content is complete.')) ?></p>
     </div>
   </div>
 
@@ -699,6 +699,8 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <small>Local timing</small>
           <strong id="tkSingleSecondary">—</strong>
         </div>
+      <?php elseif (tithika_has_editorial_content($page)): ?>
+        <?php tithika_render_editorial_content($page); ?>
       <?php elseif ($page['template'] === 'calendar' || $page['template'] === 'festival'): ?>
         <span class="tk-card-tag">Calendar interface</span>
         <h3>Month-first navigation</h3>
@@ -766,7 +768,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
 
   <?php if ($related): ?>
   <section class="tk-related">
-    <div class="tk-section-head"><div><span>Keep exploring</span><h2>Related <?= htmlspecialchars($group['title']) ?> tools</h2></div></div>
+    <div class="tk-section-head"><div><span>Keep exploring</span><h2>Related Tithika tools</h2></div></div>
     <div class="tk-related-grid">
       <?php foreach ($related as $item): ?>
         <a href="<?= htmlspecialchars(tithika_pretty_url($item['slug'])) ?>"><b><?= htmlspecialchars($item['title']) ?></b><span><?= htmlspecialchars(tithika_template_label($item['template'])) ?> →</span></a>
