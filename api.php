@@ -264,6 +264,28 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'completion') {
+        $payload = readPayload();
+        $mode = strtolower(trim((string)($_GET['mode'] ?? 'manvadi')));
+        $supported = [
+            'manvadi','yugadi-tithi','kalpadi','kranti-samya',
+            'gowri','jain-pachchakkhan','pancha-pakshi','do-ghati','shubha-dates',
+            'iskcon-ekadashi','kalashtami','chandra-darshan','masik-janmashtami',
+            'ishti-anvadhan','shraddha','purushottam-maas','chaturmasa',
+            'festival-hindu','festival-tamil','festival-malayalam','festival-month','festival-yearly',
+            'prashna-kundali','gemstone','rudraksha','baby-name','name-initials',
+            'rashi-by-name','sahasra-chandrodaya','shraddha-tithi',
+            'planet-parallel','ecliptic-crossings','indian-seasons',
+        ];
+        if (!in_array($mode, $supported, true)) {
+            out(['ok'=>false,'error'=>'Unsupported completion mode'], 422);
+        }
+        $payload['mode'] = $mode;
+        $data = runPythonEngine('python/completion.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'regional-calendar') {
         $payload = readPayload();
         $variant = strtolower(trim((string)($_GET['variant'] ?? 'hindi')));
