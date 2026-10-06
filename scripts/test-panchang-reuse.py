@@ -42,7 +42,12 @@ for a,b in zip(naks,naks[1:]):
 ganda=panchang_reuse.yearly_ganda_moola(2026,tz,False)
 assert ganda
 assert {x["name"] for x in ganda} <= panchang_reuse.GANDA_MOOLA
-assert any(x["date"]=="2026-10-06" and x["name"]=="Ashlesha" for x in ganda),ganda[-12:]
+oct6_sunrise=datetime.fromisoformat(sun["sunrise"])
+assert any(
+    x["name"]=="Ashlesha"
+    and datetime.fromisoformat(x["start"]) <= oct6_sunrise < datetime.fromisoformat(x["end"])
+    for x in ganda
+),ganda[-12:]
 for row in ganda:
     mid=datetime.fromisoformat(row["start"])+(datetime.fromisoformat(row["end"])-datetime.fromisoformat(row["start"]))/2
     assert panchang.state_at(mid)["nakshatra"]==row["name"],row
