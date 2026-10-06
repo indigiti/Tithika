@@ -5,11 +5,11 @@ This document records the production-readiness contract enforced by CI. It is no
 ## Certified baseline
 
 - Product route contract: **292**
-- Verified calculation/live routes: **105**
+- Verified calculation/live routes: **113**
 - Structured editorial routes: **62**
 - Additional canonical live redirect: **1** (`muhurat/choghadiya`)
-- Total production-quality/indexable detail routes: **168**
-- Remaining mapped `noindex,follow` shells: **124**
+- Total production-quality/indexable detail routes: **176**
+- Remaining mapped `noindex,follow` shells: **116**
 
 The indexable set is generated from `config/live.php`, structured editorial coverage and explicit canonical live adapters. The XML sitemap uses the same quality state.
 
@@ -48,6 +48,27 @@ Contract:
 - The response states that Jain sect/region/Sangh calendars can add observance-specific rules.
 - 2026 regression locks Vikram 2082 / Vir 2552 through the Amavasya sunrise on 2026-11-09 and Vikram 2083 / Vir 2553 from Kartika Shukla Pratipada at sunrise on 2026-11-10.
 
+## Newly certified Panchang reuse routes
+
+The following routes reuse the same verified Lahiri Panchang primitives rather than introducing parallel astronomy implementations:
+
+- `/panchang/sunrise/` — local sunrise, sunset, next sunrise and sunrise-state context.
+- `/panchang/nakshatra/` — exact monthly Nakshatra transition intervals.
+- `/panchang/ganda-moola/` — exact intervals for Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati.
+- `/panchang/abhijit-nakshatra/` — Moon passage through the explicit Abhijit sidereal span.
+- `/panchang/vinchudo/` — exact Moon passage through Vrishchika.
+- `/panchang/jwalamukhi-yoga/` — exact overlap of the five encoded Tithi/Nakshatra combinations.
+- `/panchang/sankalpa/` — structured Vikrama/Shaka Samvat, dual Drik/Vedic Ritu-Ayana and selected-time Panchang context.
+- `/panchang/vedic-clock/` — 60-Ghati Ishtakala and independent 30+30 day/night Ghati clock.
+
+All eight are covered by `scripts/test-panchang-reuse.py`.
+
+### Deliberately gated Panchang routes
+
+`panchang/manvadi-tithi`, `panchang/yugadi-tithi` and `panchang/kalpadi-tithi` remain `noindex,follow`. CI showed that simple sunrise, Tithi-start or Tithi-midpoint selection is insufficient for all listed observance dates, especially when a Tithi spans two civil dates or an Adhika month creates duplicate lunar-month candidates. These routes require dedicated observance-day selectors before promotion.
+
+`panchang/kranti-samya` also remains gated because Mahapat requires a dedicated declination-equality calculation rather than treating the full Vyatipata/Vaidhriti Yoga span as equivalent.
+
 ## Data provenance
 
 Nepali Bikram Sambat civil month data is vendored from the MIT-licensed `sushilldhakal/nepali-calendar` project. Full attribution is in `docs/THIRD_PARTY_NOTICES.md`, and the upstream MIT license is retained beside the data file.
@@ -69,9 +90,9 @@ A release is certifiable only when all of the following pass on the exact merged
 
 ## Remaining shell-completion queue
 
-The remaining **124** mapped routes stay `noindex,follow`. They should be promoted in engine-reuse batches rather than route-by-route:
+The remaining **116** mapped routes stay `noindex,follow`. They should be promoted in engine-reuse batches rather than route-by-route:
 
-1. **Panchang reuse batch** — Hindu Sunrise, Nakshatra, Vedic Clock, Sankalpa and specialized Panchang conditions.
+1. **Panchang rule-completion batch** — dedicated Manvadi/Yugadi/Kalpadi observance-day selectors plus Kranti Samya/Mahapat declination-equality calculation.
 2. **Muhurat reuse batch** — Shubha Hora, Gowri, Panchaka Rahita, auspicious Yoga and recurring Yoga-date calendars.
 3. **Vrat recurrence batch** — Vinayaka Chaturthi, Sawan Somwar, Skanda Sashti, Karthigai, Rohini, Chandra Darshan and related recurring rules.
 4. **Festival/calendar aggregation batch** — Hindu/Tamil/Malayalam month collections and festival-specific yearly calendars built from verified event rules.
