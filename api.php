@@ -304,6 +304,13 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'marriage-analysis') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/marriage_analysis.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'seasons') {
         $payload = readPayload();
         $data = runPythonEngine('python/seasons.py', $payload);
