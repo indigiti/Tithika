@@ -1479,6 +1479,119 @@
     </article>`).join(''):`<div class="tk-panchang-empty">No ${esc(d.mode)} interval occurs during this Hindu day.</div>`;
   }
 
+  async function calculatePanchangReuse(){
+    const loading=$('#tkReuseLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating Panchang result…'}
+    try{
+      const mode=panchangReuseModes[pageSlug],p=payload();
+      const selectedTime=$('#tkReuseTime')?.value;
+      if(selectedTime)p.time=selectedTime;
+      const r=await fetch(`${base}api.php?action=panchang-reuse&mode=${encodeURIComponent(mode)}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Panchang utility unavailable');
+      if(loading)loading.hidden=true;
+      renderPanchangReuse(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Panchang utility unavailable'}
+      toast(e.message||'Panchang utility unavailable');
+    }
+  }
+
+  function reuseMetric(label,value,detail=''){
+    return `<div class="tk-panchang-metric"><small>${esc(label)}</small><strong>${esc(value??'—')}</strong><span>${esc(detail)}</span></div>`;
+  }
+
+  function renderReuseIntervals(rows){
+    const list=$('#tkReuseList');if(!list)return;
+    list.innerHTML=(rows||[]).length?(rows||[]).map(row=>`<article class="tk-lunar-event">
+      <div class="tk-lunar-event-date"><b>${esc(row.date_label||row.date||'')}</b><span>${esc(row.name||row.classification||'')}</span></div>
+      <div class="tk-lunar-event-main"><h4>${esc(row.name||row.combination||'Panchang interval')}</h4>
+        <p>${esc(row.start_label||'')} → ${esc(row.end_label||'')}</p>
+        <small>${esc(row.combination||row.moon_rashi||row.classification||'Lahiri Moon transition')}</small>
+      </div>
+    </article>`).join(''):'<div class="tk-panchang-empty">No matching intervals found.</div>';
+  }
+
+  function renderCreationDays(d){
+    const key=pageSlug==='panchang/manvadi-tithi'?'manvadi':pageSlug==='panchang/yugadi-tithi'?'yugadi':'kalpadi';
+    const rows=d[key]||[];
+    const summary=$('#tkReuseSummary');if(summary)summary.textContent=`${rows.length} ${key} dates · sunrise-state Purnimanta convention · ${d.year}`;
+    const list=$('#tkReuseList');if(!list)return;
+    list.innerHTML=rows.length?rows.map(row=>`<article class="tk-lunar-event">
+      <div class="tk-lunar-event-date"><b>${esc(row.date_label)}</b><span>${esc(row.weekday)}</span></div>
+      <div class="tk-lunar-event-main"><h4>${esc(row.name)}</h4>
+        <p>${esc(row.lunar_month)} · ${esc(row.paksha)} · ${esc(row.tithi)}</p>
+        <small>Sunrise ${esc(row.sunrise_label||'—')}</small>
+      </div>
+    </article>`).join(''):'<div class="tk-panchang-empty">No matching creation-day Tithis found.</div>';
+  }
+
+  function renderPanchangReuse(d){
+    const engine=$('#tkReuseEngine');if(engine)engine.textContent=`${d.engine?.ayanamsha||'Lahiri'} · reuse engine ${d.engine?.version||''}`;
+    const summary=$('#tkReuseSummary'),metrics=$('#tkReuseMetrics'),list=$('#tkReuseList');
+    if(metrics)metrics.innerHTML='';
+    if(list)list.innerHTML='';
+
+    if(d.mode==='sunrise'){
+      if(summary)summary.textContent=`${d.weekday} · Hindu day begins at local sunrise and continues to the next sunrise.`;
+      if(metrics)metrics.innerHTML=[
+        reuseMetric('Sunrise',d.sunrise_label,d.date),
+        reuseMetric('Sunset',d.sunset_label,'Local apparent solar set'),
+        reuseMetric('Next sunrise',d.next_sunrise_label,'End of Hindu day'),
+        reuseMetric('Daylight',`${Number(d.daylight_minutes||0).toFixed(1)} min`,'Sunrise → sunset'),
+        reuseMetric('Ahoratra',`${Number(d.ahoratra_minutes||0).toFixed(1)} min`,'Sunrise → next sunrise'),
+        reuseMetric('Nakshatra at sunrise',d.sunrise_state?.nakshatra||'—',`Pada ${d.sunrise_state?.nakshatra_pada||'—'}`)
+      ].join('');
+      return;
+    }
+
+    if(d.mode==='sankalpa'){
+      if(summary)summary.textContent=d.profile||'Structured Sankalpa Panchang context';
+      if(metrics)metrics.innerHTML=[
+        reuseMetric('Vikrama Samvat',`${d.vikrama_samvat} ${d.vikrama_samvatsara||''}`,'Chaitradi rollover'),
+        reuseMetric('Shaka Samvat',`${d.shaka_samvat} ${d.shaka_samvatsara||''}`,'Chaitradi rollover'),
+        reuseMetric('Purnimanta month',d.purnimanta_month||'—',d.adhika_month?'Adhika month':'Sunrise-state'),
+        reuseMetric('Amanta month',d.amanta_month||'—','Sunrise-state'),
+        reuseMetric('Ritu',d.ritu||'—',d.ayana||''),
+        reuseMetric('Tithi',d.tithi||'—',d.paksha||''),
+        reuseMetric('Nakshatra',d.nakshatra||'—',`Pada ${d.nakshatra_pada||'—'}`),
+        reuseMetric('Yoga / Karana',`${d.yoga||'—'} · ${d.karana||'—'}`,d.weekday_vedic||'')
+      ].join('');
+      if(list)list.innerHTML=`<article class="tk-lunar-event"><div class="tk-lunar-event-date"><b>${esc(d.reference_label||'')}</b><span>${esc(d.weekday_vedic||'')}</span></div><div class="tk-lunar-event-main"><h4>Structured Sankalpa context</h4><p>Moon ${esc(d.moon_rashi||'—')} · Sun ${esc(d.sun_rashi||'—')}</p><small>Samvatsara/month/Ritu/Ayana use sunrise state; Tithi/Nakshatra/Yoga/Karana use the selected local time.</small></div></article>`;
+      return;
+    }
+
+    if(d.mode==='vedic-clock'){
+      if(summary)summary.textContent=`${d.lunar_month||''} · ${d.paksha||''} ${d.tithi||''} · ${d.weekday_vedic||''}`;
+      if(metrics)metrics.innerHTML=[
+        reuseMetric('60-Ghati Ishtakala',d.ishtakala_60?.label||'—','Sunrise → next sunrise = 60'),
+        reuseMetric('30+30 Ghati',d.ritual_30_30?.label||'—',`${d.ritual_half||''} half`),
+        reuseMetric('Reference time',d.reference_label||'—',d.hindu_day||''),
+        reuseMetric('Sunrise',d.sunrise_label||'—','00:00:00 in both clocks'),
+        reuseMetric('Sunset',d.sunset_label||'—','30:00:00 in 30+30 model'),
+        reuseMetric('Next sunrise',d.next_sunrise_label||'—','60:00:00')
+      ].join('');
+      return;
+    }
+
+    if(d.mode==='creation-days'){renderCreationDays(d);return;}
+
+    const rows=d.intervals||[];
+    if(summary){
+      const scope=d.mode==='nakshatra'?`${d.month_name} ${d.year}`:`${d.year}`;
+      summary.textContent=`${rows.length} intervals · ${scope} · exact Lahiri transition boundaries`;
+    }
+    if(d.mode==='nakshatra'&&metrics){
+      metrics.innerHTML=[
+        reuseMetric('First interval',rows[0]?.name||'—',rows[0]?`${rows[0].start_label} → ${rows[0].end_label}`:''),
+        reuseMetric('Intervals',String(rows.length),d.month_name||''),
+        reuseMetric('Selected month',`${d.month_name||''} ${d.year||''}`,'Gregorian display month')
+      ].join('');
+    }
+    renderReuseIntervals(rows);
+  }
   async function calculateRegionalCalendar(){
     const loading=$('#tkRegionalLoading');
     if(loading){loading.hidden=false;loading.textContent='Building regional calendar…'}
