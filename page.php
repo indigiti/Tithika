@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri',''festivals/diwali',''festivals/karwa-chauth',''festivals/holi',''festivals/dussehra',''festivals/navratri',''festivals/raksha-bandhan',''festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -182,6 +182,18 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <div class="tk-muhurat-item avoid"><small>Yamaganda</small><strong id="tkMuhuratYamaganda">—</strong></div>
           <div class="tk-muhurat-item avoid"><small>Gulika</small><strong id="tkMuhuratGulika">—</strong></div>
         </div>
+      <?php elseif (in_array($page['slug'], ['festivals/ganesha-chaturthi','festivals/raksha-bandhan','festivals/navratri','festivals/dussehra','festivals/holi','festivals/karwa-chauth','festivals/diwali'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Verified festival rule</span>
+            <h3 id="tkFestivalTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Festival date and local timing are selected from exact Tithi windows plus the required Madhyahna, Aparahna, Pradosh, sunrise or moonrise rule.</p>
+          </div>
+          <div class="tk-panchang-engine">Festival rule engine · Lahiri</div>
+        </div>
+        <div id="tkFestivalLoading" class="tk-panchang-loading">Calculating festival rule…</div>
+        <div id="tkFestivalNote" class="tk-lunar-note"></div>
+        <div id="tkFestivalResult" class="tk-festival-result"></div>
       <?php elseif (in_array($page['slug'], ['vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
