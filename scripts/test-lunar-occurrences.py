@@ -28,11 +28,25 @@ def run(kind):
     return data
 
 ek=run("ekadashi")
-assert ek["observance_status"]=="candidate-only"
+assert ek["observance_status"]=="smarta-vaishnava-base-rule"
+oct_event=next(
+    event for event in ek["events"]
+    if event.get("observance",{}).get("smarta",{}).get("date")=="2026-10-06"
+)
+assert oct_event["observance"]["vaishnava"]["date"]=="2026-10-06"
+assert oct_event["observance"]["vaishnava"]["basis"]=="shuddha-at-arunodaya"
+
+july_event=next(
+    event for event in ek["events"]
+    if event["start"].startswith("2026-07-10")
+)
+assert july_event["observance"]["smarta"]["date"]=="2026-07-10"
+assert july_event["observance"]["vaishnava"]["date"]=="2026-07-11"
+assert july_event["observance"]["vaishnava"]["basis"]=="gauna-after-dashami-arunodaya"
+
 candidate=next(
     c
-    for event in ek["events"]
-    for c in event.get("sunrise_candidates",[])
+    for c in oct_event.get("sunrise_candidates",[])
     if c["date"]=="2026-10-06"
 )
 assert candidate["parana"] is not None
