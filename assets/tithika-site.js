@@ -3,6 +3,7 @@
   const base=window.TITHIKA_BASE||'/';
   const pageSlug=window.TITHIKA_PAGE_SLUG||'';
   const panchangPages=['panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'];
+  const lagnaPages=['muhurat/lagna','panchang/lagna-kundali'];
   const monthPages=['panchang/month'];
   const lunarKinds={
     'vrat/ekadashi':'ekadashi',
@@ -22,6 +23,7 @@
     'festivals/dussehra':'dussehra',
     'festivals/holi':'holi',
     'festivals/karwa-chauth':'karwa-chauth',
+    'festivals/janmashtami':'janmashtami',
     'festivals/diwali':'diwali'
   };
   const dwadashiPages=['vrat/dwadashi'];
@@ -101,6 +103,7 @@
       if(!j.ok)throw new Error(j.error||'Unable to calculate solar context');
       state.data=j;renderSolar(j);
       if(panchangPages.includes(pageSlug)) await calculatePanchang();
+      if(lagnaPages.includes(pageSlug)) await calculateLagna();
       if(monthPages.includes(pageSlug)) await calculateMonth();
       if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
       if(observanceKinds[pageSlug]) await calculateObservances();
@@ -131,6 +134,24 @@
       set('#tkCurrent','Solar day');
       set('#tkCurrentRange',`${d.sunrise_label} – ${d.sunset_label}`);
     }
+  }
+
+  async function calculateLagna(){
+    const loading=$('#tkLagnaLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating Lagna periods…'}
+    try{
+      const r=await fetch(`${base}api.php?action=lagna`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload())
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Unable to calculate Lagna');
+      if(loading)loading.hidden=true;
+      const list=$('#tkLagnaList');if(!list)return;
+      list.innerHTML=(j.timeline||[]).map(row=>`<article class="tk-observance-event">
+        <div class="tk-observance-date"><b>${esc(row.lagna)}</b><span>${Number(row.degree_in_sign||0).toFixed(1)}°</span></div>
+        <div class="tk-observance-main"><h4>${esc(row.start_label)} – ${esc(row.end_label)}</h4><p>${Math.round(row.duration_minutes)} minutes</p><small>Sidereal ascendant · Lahiri/Chitrapaksha</small></div>
+      </article>`).join('');
+    }catch(e){if(loading)loading.textContent=e.message||'Lagna engine unavailable';toast(e.message||'Lagna engine unavailable')}
   }
 
   async function calculateObservances(){
