@@ -2,7 +2,7 @@
 
 The executable source of truth is `config/routes.php`.
 
-Current mapped logical pages: **277**.
+Current mapped logical pages: **291**.
 
 ## Product families
 
@@ -22,7 +22,7 @@ Ekadashi, Pradosh, Sankashti, Dwadashi, Purnima, Amavasya, Shivaratri, Skanda Sa
 Popular collections, lunar-month festival lists, Tamil/Malayalam/Sankranti collections, Gurus/Saints, Navdurga, Dashavatara, Puja Vidhi, deities and pilgrimage content.
 
 ### 6. Jyotish
-Kundali, compatibility, Rashi, Birthstar, Lagna, Dosha, gemstone, Rudraksha, baby naming, Shani Sadesati, Pancha Pakshi, Shraddha Tithi and other calculator flows.
+Kundali, unified horoscope synthesis, evidence-backed interpretation, compatibility, Rashi, Birthstar, Lagna, Dosha, Shadbala, Ashtakavarga, Shodashavarga, Yogas, gemstone, Rudraksha, baby naming, Shani Sadesati, Pancha Pakshi, Shraddha Tithi and other calculator flows.
 
 ### 7. Planets & Astronomy
 Positions, transit, combustion, retrograde, aspects, ecliptic events, Graha Yuddha, eclipses, seasons, equinoxes and solstices.

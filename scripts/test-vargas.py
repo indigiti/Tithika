@@ -41,4 +41,7 @@ assert d["charts"]["D60"]["minimum_boundary_margin_deg"]>=0
 for key,ch in d["charts"].items():
     assert len(ch["placements"])==9,key
     assert len(ch["cells"])==12,key
+    names=[x["name"] for x in ch["placements"]]
+    assert names==["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"],(key,names)
+    assert all(x["varga_name"]==ch["name"] for x in ch["placements"]),key
 print("Varga fixture OK: BPHS D2-D60 mappings and established D9 parity")

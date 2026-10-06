@@ -142,7 +142,9 @@ def chart_for(n:int,asc_lon:float,states:list[dict])->dict:
     for st in states:
         v=varga_position(st["longitude"],n)
         placements.append({
-            "name":st["name"],**v,
+            **v,
+            "varga_name":v["name"],
+            "name":st["name"],
             "house":((v["rashi_id"]-asc["rashi_id"])%12)+1,
             "retrograde":st.get("retrograde",False),
             "vargottama":v["rashi_id"]==st["rashi_id"],

@@ -103,6 +103,9 @@ jobs:
       - name: Unified horoscope analysis regression fixture
         run: python scripts/test-horoscope-analysis.py
 
+      - name: Jyotish interpretation regression fixture
+        run: python scripts/test-interpretation.py
+
       - name: Major festival regression fixtures
         run: python scripts/test-festivals.py
 

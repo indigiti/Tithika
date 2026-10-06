@@ -24,6 +24,7 @@
   };
   const kundaliPages=['jyotish/janma-kundali'];
   const analysisPages=['jyotish/horoscope-analysis'];
+  const interpretationPages=['jyotish/interpretation-report'];
   const dashaPages=['jyotish/vimshottari-dasha'];
   const doshaModes={
     'jyotish/mangal-dosha':'mangal',
@@ -158,6 +159,7 @@
       if(eclipseModes[pageSlug]) await calculateEclipses();
       if(kundaliPages.includes(pageSlug)) await calculateKundali();
       if(analysisPages.includes(pageSlug)) await calculateHoroscopeAnalysis();
+      if(interpretationPages.includes(pageSlug)) await calculateInterpretation();
       if(dashaPages.includes(pageSlug)) await calculateDasha();
       if(doshaModes[pageSlug]) await calculateDosha();
       if(ashtaPages.includes(pageSlug)) await calculateAshtakavarga();
@@ -388,6 +390,47 @@
         <div class="tk-analysis-section"><header><small>Structural combinations</small><h4>${j.yogas?.count||0} detected Yogas</h4></header><div class="tk-yoga-list">${(j.yogas?.items||[]).slice(0,12).map(y=>`<article><div class="tk-yoga-title"><span>${esc(y.category)}</span><h4>${esc(y.name)}</h4></div><p>${esc(y.rule)}</p></article>`).join('')||'<div class="tk-panchang-empty">No Yoga from the current curated rule set was detected.</div>'}</div></div>
         <div class="tk-lunar-note">${esc(j.note||'')} ${esc((j.methodology||[]).join(' · '))}</div>`;
     }catch(e){if(loading)loading.textContent=e.message||'Unified analysis engine unavailable';toast(e.message||'Unified analysis engine unavailable')}
+  }
+
+  async function calculateInterpretation(){
+    const loading=$('#tkInterpretLoading');
+    if(loading){loading.hidden=false;loading.textContent='Building evidence-backed interpretation…'}
+    try{
+      const p=payload();
+      p.time=$('#tkInterpretTime')?.value||'12:00:00';
+      p.node_model=$('#tkInterpretNode')?.value||'mean';
+      const r=await fetch(`${base}api.php?action=jyotish-interpretation`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Interpretation engine unavailable');
+      if(loading)loading.hidden=true;
+      const el=$('#tkInterpretResult');if(!el)return;
+      const bp=j.birth_profile||{};
+      const focus=j.current_focus||[];
+      const domains=Object.entries(j.domain_interpretations||{});
+      const planets=j.planet_interpretations||[];
+      const houses=j.house_interpretations||[];
+      const roleClass=x=>({yogakaraka:'good',supportive:'good',mixed:'mixed',challenging:'warning',structural:'neutral'}[x]||'neutral');
+      const dignityClass=x=>x==='exalted'||x==='own'?'good':x==='debilitated'?'warning':'neutral';
+      el.innerHTML=`
+        <div class="tk-interpret-hero">
+          <div><small>Janma Lagna</small><strong>${esc(bp.lagna?.rashi||'—')} ${Number(bp.lagna?.degree_in_rashi||0).toFixed(2)}°</strong><span>${esc(bp.nakshatra||'—')} · Pada ${bp.nakshatra_pada||'—'}</span></div>
+          <div><small>Interpretation profile</small><strong>Auditable rule-based</strong><span>Whole-sign lordship · D1/D9/D10 · Shadbala · SAV</span></div>
+          <div><small>Current focus</small><strong>${focus.length?focus.map(x=>esc(x.title)).join(' · '):'Background cycle'}</strong><span>As-of timing uses Vimshottari + major transit houses</span></div>
+        </div>
+        <section class="tk-interpret-section"><header><small>Current emphasis</small><h4>Activated domains</h4></header>
+          <div class="tk-interpret-focus">${focus.length?focus.map(x=>`<article><span class="${x.activation==='high'?'high':'active'}">${esc(x.activation)}</span><b>${esc(x.title)}</b><strong>${Number(x.evidence_index||0).toFixed(0)}/100</strong></article>`).join(''):'<div class="tk-panchang-empty">No major domain activation is flagged by the current Dasha/transit profile.</div>'}</div>
+        </section>
+        <section class="tk-interpret-section"><header><small>Domain readings</small><h4>Evidence + timing</h4></header>
+          <div class="tk-interpret-domains">${domains.map(([key,d])=>`<article><div class="tk-interpret-domain-head"><div><small>${esc(key)}</small><h5>${esc(d.title)}</h5></div><b>${Number(d.evidence_index||0).toFixed(0)}</b></div><div class="tk-analysis-meter"><i style="width:${Math.max(0,Math.min(100,Number(d.evidence_index||0)))}%"></i></div><p>${esc(d.interpretation||'')}</p><span>Activation: ${esc(d.activation?.activation||'background')}</span>${(d.activation?.reasons||[]).length?`<ul>${d.activation.reasons.slice(0,4).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}</article>`).join('')}</div>
+        </section>
+        <section class="tk-interpret-section"><header><small>Functional lordship</small><h4>Planet-by-planet interpretation</h4></header>
+          <div class="tk-interpret-planets">${planets.map(x=>{const role=x.functional_role||{},conf=x.divisional_confirmation||{},st=x.strength||{};return `<article><header><div><small>${(x.owned_houses||[]).map(h=>'H'+h).join(' · ')}</small><h5>${esc(x.planet)}</h5></div><span class="${roleClass(role.category)}">${esc(role.label||role.category||'')}</span></header><p>${esc(x.interpretation||'')}</p><div class="tk-interpret-facts"><span><small>D1</small><b class="${dignityClass(conf.d1?.dignity)}">${esc(conf.d1?.dignity||'—')}</b><em>H${conf.d1?.house||'—'} · ${esc(conf.d1?.rashi||'—')}</em></span><span><small>D9</small><b class="${dignityClass(conf.d9?.dignity)}">${esc(conf.d9?.dignity||'—')}</b><em>H${conf.d9?.house||'—'} · ${esc(conf.d9?.rashi||'—')}</em></span><span><small>D10</small><b class="${dignityClass(conf.d10?.dignity)}">${esc(conf.d10?.dignity||'—')}</b><em>H${conf.d10?.house||'—'} · ${esc(conf.d10?.rashi||'—')}</em></span><span><small>Shadbala</small><b>${Number(st.ratio||0).toFixed(2)}×</b><em>${x.active_dasha_level?esc(x.active_dasha_level)+' active':'Not current Dasha lord'}</em></span></div></article>`}).join('')}</div>
+        </section>
+        <section class="tk-interpret-section"><header><small>House synthesis</small><h4>Key houses</h4></header>
+          <div class="tk-interpret-houses">${houses.map(x=>`<article><header><span>H${x.house}</span><div><small>${esc(x.theme)}</small><h5>${esc(x.lord)} rules this house</h5></div><b>${x.sav??'—'} SAV</b></header><p>${esc(x.interpretation||'')}</p><small>${(x.evidence||[]).map(esc).join(' · ')}</small></article>`).join('')}</div>
+        </section>
+        <div class="tk-lunar-note">${esc(j.note||'')} ${esc((j.methodology||[]).join(' · '))}</div>`;
+    }catch(e){if(loading)loading.textContent=e.message||'Interpretation engine unavailable';toast(e.message||'Interpretation engine unavailable')}
   }
 
   async function calculateDasha(){
@@ -1291,6 +1334,9 @@
   $('#tkYogaTime')?.addEventListener('change',()=>{if(yogaPages.includes(pageSlug))calculateYogas()});
   $('#tkShadbalaCalculate')?.addEventListener('click',()=>calculateShadbala());
   $('#tkShadbalaTime')?.addEventListener('change',()=>{if(shadbalaPages.includes(pageSlug))calculateShadbala()});
+  $('#tkInterpretCalculate')?.addEventListener('click',()=>calculateInterpretation());
+  $('#tkInterpretTime')?.addEventListener('change',()=>{if(interpretationPages.includes(pageSlug))calculateInterpretation()});
+  $('#tkInterpretNode')?.addEventListener('change',()=>{if(interpretationPages.includes(pageSlug))calculateInterpretation()});
   $('#tkAnalysisCalculate')?.addEventListener('click',()=>calculateHoroscopeAnalysis());
   $('#tkAnalysisTime')?.addEventListener('change',()=>{if(analysisPages.includes(pageSlug))calculateHoroscopeAnalysis()});
   $('#tkAnalysisNode')?.addEventListener('change',()=>{if(analysisPages.includes(pageSlug))calculateHoroscopeAnalysis()});
