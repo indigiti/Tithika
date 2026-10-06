@@ -13,13 +13,13 @@ Daily/monthly Panchang, regional Panjika/Panchang variants, ISKCON, solar/Pancha
 Hindu/Indian and regional yearly calendars plus major festival calendars such as Diwali, Durga Puja, Navratri, Onam, Chhath, Sankranti, Dashain and Tihar.
 
 ### 3. Muhurat
-Choghadiya, Hora, Vivah, Griha Pravesh, vehicle/property purchase, Lagna, Gowri, Jain Pachchakkhan, Rahu Kala, auspicious Yoga, Panchaka Rahita, Abhijit, Do Ghati, Shubha Dates and Pancha Pakshi.
+Choghadiya, Hora, Vivah, Griha Pravesh, vehicle/property purchase, Lagna, Gowri, Jain Pachchakkhan, Rahu Kala, auspicious Yoga, Panchaka Rahita, Abhijit, Do Ghati, Shubha Dates and Pancha Pakshi. A shared rule substrate is now live for common interval exclusions, Bhadra/Vishti filtering and auditable Panchang constraints; specialized Muhurat profiles are the next layer.
 
 ### 4. Vrat & Upavas
-Ekadashi, Pradosh, Sankashti, Dwadashi, Purnima, Amavasya, Shivaratri, Skanda Sashti, Karthigai, Shraddha, Durgashtami, Kalashtami, Chaturmasa and special Vrat collections.
+Ekadashi, Pradosh, Sankashti, Dwadashi, Purnima, Amavasya, Shivaratri, Skanda Sashti, Karthigai, Shraddha, Durgashtami, Kalashtami, Chaturmasa and special Vrat collections. Ekadashi now has Smarta/Vaishnava/ISKCON profiles with integrated eight-type Mahadwadashi priority and explicit Parana handling; Dwadashi includes Shravana/Vishnushrinkhala rules.
 
 ### 5. Festivals
-Popular collections, lunar-month festival lists, Tamil/Malayalam/Sankranti collections, Gurus/Saints, Navdurga, Dashavatara, Puja Vidhi, deities and pilgrimage content.
+Popular collections, lunar-month festival lists, Tamil/Malayalam/Sankranti collections, Gurus/Saints, Navdurga, Dashavatara, Puja Vidhi, deities and pilgrimage content. The 13 verified major-festival calculations now run through one declarative festival rule registry with reusable local-time selectors.
 
 ### 6. Jyotish
 Kundali, unified horoscope synthesis, evidence-backed interpretation, Dasha/transit timing timelines, personalized daily/weekly/monthly/yearly Rashifal, compatibility, Rashi, Birthstar, Lagna, Dosha, Shadbala, Ashtakavarga, Shodashavarga, Yogas, gemstone, Rudraksha, baby naming, Shani Sadesati, Pancha Pakshi, Shraddha Tithi and other calculator flows.
