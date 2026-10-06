@@ -28,7 +28,10 @@ def run(kind):
         raise SystemExit(f"{kind} failed: {proc.stdout}\n{proc.stderr}")
     data = json.loads(proc.stdout)
     assert data["ok"] is True, data
+    assert data["engine"]["status"] == "declarative-rule-selected"
     assert data["event"], (kind, data)
+    assert data["event"]["rule"]["selector"]
+    assert data["event"]["rule"]["profile"]
     return data["event"]
 
 def within(actual, expected, tolerance_minutes=10):

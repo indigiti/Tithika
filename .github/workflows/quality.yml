@@ -58,6 +58,9 @@ jobs:
       - name: Dwadashi regression fixture
         run: python scripts/test-dwadashi.py
 
+      - name: Shared Vrat rule regression fixture
+        run: python scripts/test-vrat-rules.py
+
       - name: Lagna regression fixture
         run: python scripts/test-lagna.py
 
@@ -114,6 +117,12 @@ jobs:
 
       - name: Major festival regression fixtures
         run: python scripts/test-festivals.py
+
+      - name: Festival rule registry fixture
+        run: python scripts/test-festival-rule-registry.py
+
+      - name: Shared Muhurat rule fixture
+        run: python scripts/test-muhurat-rules.py
 
       - name: Equinox and solstice regression fixture
         run: python scripts/test-seasons.py

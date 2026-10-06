@@ -306,15 +306,15 @@ def main():
         },
         "engine": {
             "name": "tithika-mahadwadashi",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "panchang_version": panchang.ENGINE_VERSION,
-            "status": "candidate-classification",
+            "status": "integrated-classifier",
         },
         "events": rows,
         "note": (
-            "Mahadwadashi yogas are detected from Tithi, local sunrise/sunset and "
-            "Nakshatra evidence. They are shown as classified candidates and do "
-            "not yet override base Ekadashi/Parana date selection."
+            "Mahadwadashi yogas are classified from Tithi, local sunrise/sunset "
+            "and Nakshatra evidence. The shared vrat_rules engine consumes these "
+            "classifications for Vaishnava/ISKCON fasting-date override and Parana."
         ),
     }, ensure_ascii=False))
 

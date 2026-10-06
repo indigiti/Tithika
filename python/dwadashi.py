@@ -22,6 +22,7 @@ from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import panchang
+import vrat_rules
 
 RULES = [
     {
@@ -197,11 +198,17 @@ def events_for_rule(year, rule, lat, lon, tz, hour24):
             month, name, aliases = month_and_name(
                 start_dt, end_dt, obs_date, rule, lat, lon, tz
             )
-            special = shraavana_special(start_dt, end_dt, obs_date, lat, lon, tz)
-            parana = parana_for_observance(obs_date, end_dt, lat, lon, tz, hour24)
-            if parana and special:
-                parana["special_rule_pending"] = True
-                parana["status"] = "vishnushrinkhala-review"
+            shravana = vrat_rules.shravana_profile(
+                start_dt, end_dt, obs_date, lat, lon, tz
+            )
+            if shravana["shravana_yoga"]:
+                parana = vrat_rules.shravana_special_parana(
+                    obs_date, end_dt, lat, lon, tz, hour24
+                )
+            else:
+                parana = parana_for_observance(
+                    obs_date, end_dt, lat, lon, tz, hour24
+                )
 
             events.append({
                 "date": obs_date.isoformat(),
@@ -218,7 +225,9 @@ def events_for_rule(year, rule, lat, lon, tz, hour24):
                 "adhika": bool(month.get("adhika")),
                 "selected_overlap_minutes": round(selected["overlap_seconds"] / 60.0, 2),
                 "parana": parana,
-                "vishnushrinkhala_candidate": special,
+                "shravana_yoga": shravana["shravana_yoga"],
+                "vishnushrinkhala_yoga": shravana["vishnushrinkhala"],
+                "shravana_evidence": shravana,
             })
 
         if start_dt.year > year and start_dt.month > 1:
@@ -265,7 +274,7 @@ def main():
         },
         "engine": {
             "name": "tithika-dwadashi",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "panchang_version": panchang.ENGINE_VERSION,
             "status": "rule-selected",
         },
@@ -273,7 +282,7 @@ def main():
         "note": (
             "Dwadashi dates use exact Lahiri Tithi windows and local sunrise-day overlap. "
             "Ordinary next-day Parana uses sunrise through Pratahkal, capped by Dwadashi end. "
-            "Shravana/Vishnushrinkhala and Mahadwadashi special Parana cases are flagged separately."
+            "Shravana Yoga and Vishnushrinkhala cases use the shared special-Parana rule profile rather than a pending flag."
         ),
     }, ensure_ascii=False))
 

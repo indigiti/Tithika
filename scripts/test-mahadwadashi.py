@@ -28,7 +28,7 @@ if proc.returncode != 0:
 data = json.loads(proc.stdout)
 assert data["ok"] is True, data
 assert data["year"] == 2026
-assert data["engine"]["status"] == "candidate-classification"
+assert data["engine"]["status"] == "integrated-classifier"
 assert data["events"], data
 
 by_date = {row["date"]: row for row in data["events"]}
