@@ -4,7 +4,7 @@ A modern, location-aware Vedic calendar, Panchang and Muhurat platform built wit
 
 ## Product architecture
 
-Tithika currently maps **291 logical pages** across 10 product families:
+Tithika currently maps **292 logical pages** across 10 product families:
 
 - Panchang
 - Calendars
@@ -118,6 +118,21 @@ The interpretation layer turns calculation evidence into transparent explanatory
 - machine-readable evidence attached to every narrative layer
 - explicit safeguards against deterministic event, mortality or high-stakes predictions
 
+### Jyotish timing timeline — `/jyotish/timing-timeline/`
+
+The timing layer turns the interpretation engine into a month/year emphasis timeline:
+
+- 6, 12, 18, 24 or 36-month horizons
+- monthly Mahadasha / Antardasha / Pratyantardasha activation
+- Jupiter, Saturn, Rahu and Ketu transit-house context
+- transparent 0–100 activation indices with disclosed arithmetic
+- merged activation windows
+- annual domain summaries and peak months
+- exact Mahadasha/Antardasha boundary markers
+- exact slow-planet Rashi ingress markers
+- supportive / mixed / challenging / contextual activation quality
+- no event probabilities or guaranteed outcome claims
+
 ### Choghadiya — `choghadiya.php`
 
 Verified calculation surface with:
@@ -138,7 +153,7 @@ index.php                     modern Tithika home
 site-map.php                  browsable map of all routes
 page.php                      shared mapped-page renderer
 
-config/routes.php             291-page product/route manifest
+config/routes.php             292-page product/route manifest
 includes/site.php             shared shell + route helpers
 assets/tithika.css            shared production UI system
 assets/tithika-site.js        shared location/date context
@@ -152,6 +167,7 @@ python/sankranti.py           Nirayana solar-ingress engine
 python/seasons.py             equinox/solstice engine
 python/horoscope_analysis.py  unified Jyotish synthesis layer
 python/interpretation.py      rule-based Jyotish interpretation layer
+python/timing_timeline.py      month/year Jyotish timing timeline
 python/vendor/astronomy.py    vendored Astronomy Engine (MIT)
 
 docs/DRIKPANCHANG_AUDIT.md    benchmark/product audit
@@ -217,5 +233,6 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 14. Shodashavarga + structural Yogas + complete Shadbala. ✓
 15. Unified evidence-first horoscope analysis. ✓
 16. Auditable Jyotish interpretation knowledge layer. ✓
+17. Jyotish timing and forecast timeline engine. ✓
 
 See `docs/DRIKPANCHANG_AUDIT.md` and `docs/TITHIKA_PAGE_MAP.md` for the full implementation plan.
