@@ -98,9 +98,6 @@
     'panchang/sunrise':'sunrise',
     'panchang/abhijit-nakshatra':'abhijit-nakshatra',
     'panchang/ganda-moola':'ganda-moola',
-    'panchang/manvadi-tithi':'creation-days',
-    'panchang/yugadi-tithi':'creation-days',
-    'panchang/kalpadi-tithi':'creation-days',
     'panchang/vinchudo':'vinchudo',
     'panchang/jwalamukhi-yoga':'jwalamukhi',
     'panchang/sankalpa':'sankalpa',
@@ -108,8 +105,7 @@
     'panchang/vedic-clock':'vedic-clock'
   };
   const panchangReuseYearly=new Set([
-    'panchang/abhijit-nakshatra','panchang/ganda-moola','panchang/manvadi-tithi',
-    'panchang/yugadi-tithi','panchang/kalpadi-tithi','panchang/vinchudo','panchang/jwalamukhi-yoga'
+    'panchang/abhijit-nakshatra','panchang/ganda-moola','panchang/vinchudo','panchang/jwalamukhi-yoga'
   ]);
   const panchangReuseMonthly=new Set(['panchang/nakshatra']);
   const regionalVariants={
@@ -1514,20 +1510,6 @@
     </article>`).join(''):'<div class="tk-panchang-empty">No matching intervals found.</div>';
   }
 
-  function renderCreationDays(d){
-    const key=pageSlug==='panchang/manvadi-tithi'?'manvadi':pageSlug==='panchang/yugadi-tithi'?'yugadi':'kalpadi';
-    const rows=d[key]||[];
-    const summary=$('#tkReuseSummary');if(summary)summary.textContent=`${rows.length} ${key} dates · exact Tithi-span convention · ${d.year}`;
-    const list=$('#tkReuseList');if(!list)return;
-    list.innerHTML=rows.length?rows.map(row=>`<article class="tk-lunar-event">
-      <div class="tk-lunar-event-date"><b>${esc(row.date_label)}</b><span>${esc(row.weekday)}</span></div>
-      <div class="tk-lunar-event-main"><h4>${esc(row.name)}</h4>
-        <p>${esc(row.lunar_month)} · ${esc(row.paksha)} · ${esc(row.tithi)}</p>
-        <small>Sunrise ${esc(row.sunrise_label||'—')}</small>
-      </div>
-    </article>`).join(''):'<div class="tk-panchang-empty">No matching creation-day Tithis found.</div>';
-  }
-
   function renderPanchangReuse(d){
     const engine=$('#tkReuseEngine');if(engine)engine.textContent=`${d.engine?.ayanamsha||'Lahiri'} · reuse engine ${d.engine?.version||''}`;
     const summary=$('#tkReuseSummary'),metrics=$('#tkReuseMetrics'),list=$('#tkReuseList');
@@ -1576,8 +1558,6 @@
       ].join('');
       return;
     }
-
-    if(d.mode==='creation-days'){renderCreationDays(d);return;}
 
     const rows=d.intervals||[];
     if(summary){
