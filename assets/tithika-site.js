@@ -264,11 +264,16 @@
     if(row.vijay_muhurat)timings.push(['Vijay Muhurat',row.vijay_muhurat.start_label+' – '+row.vijay_muhurat.end_label]);
     if(row.aparahna)timings.push(['Aparahna',row.aparahna.start_label+' – '+row.aparahna.end_label]);
     if(row.pradosh)timings.push(['Pradosh',row.pradosh.start_label+' – '+row.pradosh.end_label]);
+    if(row.lakshmi_puja)timings.push(['Lakshmi Puja',row.lakshmi_puja.start_label+' – '+row.lakshmi_puja.end_label]);
+    if(row.vrishabha_lagna)timings.push(['Vrishabha Lagna',row.vrishabha_lagna.start_label+' – '+row.vrishabha_lagna.end_label]);
+    if(row.nishita)timings.push(['Nishita Puja',row.nishita.start_label+' – '+row.nishita.end_label]);
+    if(row.parana?.after_label)timings.push(['Parana','After '+row.parana.after_label]);
+    if(row.dahi_handi_date)timings.push(['Dahi Handi',row.dahi_handi_date]);
     if(row.moonrise_label)timings.push(['Moonrise',row.moonrise_label]);
     if(row.upavasa)timings.push(['Upavasa',row.upavasa.start_label+' – '+row.upavasa.end_label]);
     if(row.rangwali_holi_date)timings.push(['Rangwali Holi',row.rangwali_holi_date]);
     const pending=[];
-    if(row.vrishabha_lagna_status)pending.push('Vrishabha Lagna refinement pending');
+    if(row.vrishabha_lagna_status&&row.vrishabha_lagna_status!=='verified')pending.push('Vrishabha Lagna refinement pending');
     if(row.puja_muhurat_status)pending.push('Evening Puja refinement pending');
     el.innerHTML=`<article class="tk-festival-card">
       <div class="tk-festival-date"><b>${esc(row.date)}</b><span>${esc(row.weekday||'')}</span></div>
