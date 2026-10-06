@@ -128,7 +128,7 @@ def hora_day(d: date, lat: float, lon: float, tz: ZoneInfo, hour24: bool) -> dic
     night_span = (next_sunrise - sunset) / 12
     for i in range(12):
         start = sunrise + day_span * i
-        end = sunrise + day_span * (i + 1)
+        end = sunset if i == 11 else sunrise + day_span * (i + 1)
         rows.append({
             **fmt_row(start, end, d, hour24),
             "index": i + 1,
@@ -138,7 +138,7 @@ def hora_day(d: date, lat: float, lon: float, tz: ZoneInfo, hour24: bool) -> dic
         })
     for i in range(12):
         start = sunset + night_span * i
-        end = sunset + night_span * (i + 1)
+        end = next_sunrise if i == 11 else sunset + night_span * (i + 1)
         rows.append({
             **fmt_row(start, end, d, hour24),
             "index": i + 13,
