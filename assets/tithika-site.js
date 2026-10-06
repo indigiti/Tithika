@@ -88,6 +88,23 @@
     'muhurat/property':'property',
     'muhurat/vehicle':'vehicle'
   };
+  const muhuratReuseModes={
+    'muhurat/shubha-hora':'hora',
+    'muhurat/panchaka-rahita':'panchaka-rahita',
+    'muhurat/auspicious-yoga':'auspicious-yoga',
+    'muhurat/guru-pushya':'guru-pushya',
+    'muhurat/sarvartha-siddhi':'sarvartha-siddhi',
+    'muhurat/amrit-siddhi':'amrit-siddhi',
+    'muhurat/dwipushkar':'dwipushkar',
+    'muhurat/tripushkar':'tripushkar',
+    'muhurat/ravi-pushya':'ravi-pushya',
+    'muhurat/ravi-yoga':'ravi-yoga'
+  };
+  const muhuratReuseYearly=new Set([
+    'muhurat/auspicious-yoga','muhurat/guru-pushya','muhurat/sarvartha-siddhi',
+    'muhurat/amrit-siddhi','muhurat/dwipushkar','muhurat/tripushkar',
+    'muhurat/ravi-pushya','muhurat/ravi-yoga'
+  ]);
   const utilityModes={
     'panchang/tarabalam':'tarabalam',
     'panchang/chandrabalam':'chandrabalam',
@@ -216,6 +233,7 @@
       if(sankrantiPages.includes(pageSlug)) await calculateSankranti();
       if(seasonKinds[pageSlug]) await calculateSeasons();
       if(specializedMuhuratModes[pageSlug]) await calculateSpecializedMuhurat();
+      if(muhuratReuseModes[pageSlug]) await calculateMuhuratReuse();
       if(utilityModes[pageSlug]) await calculatePanchangUtility();
       if(panchangReuseModes[pageSlug]) await calculatePanchangReuse();
       if(regionalVariants[pageSlug]) await calculateRegionalCalendar();
@@ -1688,7 +1706,7 @@
     if(pageSlug==='panchang/month'||specializedMuhuratModes[pageSlug]||regionalVariants[pageSlug]||panchangReuseMonthly.has(pageSlug)){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)){
+    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)||muhuratReuseYearly.has(pageSlug)){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
