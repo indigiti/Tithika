@@ -80,9 +80,11 @@ for row in jwala:
     st=panchang.state_at(mid)
     assert (st["tithi_number"],st["nakshatra"]) in panchang_reuse.JWALAMUKHI_COMBINATIONS,(row,st)
 
-# Manvadi, Yugadi and Kalpadi resolve one civil date from each exact target Tithi span.
+# Manvadi, Yugadi and Kalpadi use the civil date on which the exact target
+# Tithi begins, and Adhika-month duplicates are excluded. A Gregorian year
+# need not contain all 14 Manvadi names; Dharma Savarni next occurs in Jan 2027.
 creation=panchang_reuse.creation_days(2026,lat,lon,tz,False)
-assert len(creation["manvadi"])==14,creation["manvadi"]
+assert len(creation["manvadi"])==13,creation["manvadi"]
 assert len(creation["yugadi"])==4,creation["yugadi"]
 assert len(creation["kalpadi"])==7,creation["kalpadi"]
 
@@ -90,11 +92,12 @@ man={x["name"]:x["date"] for x in creation["manvadi"]}
 assert man["Brahma Savarni Manvadi"]=="2026-01-25",man
 assert man["Swayambhuva Manvadi"]=="2026-03-21",man
 assert man["Indra Savarni Manvadi"]=="2026-09-04",man
-assert man["Daksha Savarni Manvadi"]=="2026-10-20",man
+assert man["Daksha Savarni Manvadi"]=="2026-10-19",man
 assert man["Tamasa Manvadi"]=="2026-11-21",man
+assert "Dharma Savarni Manvadi" not in man,man
 
 yuga={x["name"]:x["date"] for x in creation["yugadi"]}
-assert yuga["Dwapara Yuga Diwas"]=="2026-02-17",yuga
+assert yuga["Dwapara Yuga Diwas"]=="2026-02-16",yuga
 assert yuga["Treta Yuga Diwas"]=="2026-04-19",yuga
 assert yuga["Kali Yuga Diwas"]=="2026-10-08",yuga
 assert yuga["Satya Yuga Diwas"]=="2026-11-18",yuga
