@@ -11,6 +11,18 @@
     'planets/retrograde':'retrograde',
     'planets/combustion':'combustion'
   };
+  const aspectsModes={
+    'planets/mutual-aspects':'mutual',
+    'planets/lunar-aspects':'lunar',
+    'planets/conjunctions':'conjunctions',
+    'planets/graha-yuddha':'graha-yuddha'
+  };
+  const eclipseModes={
+    'astronomy/eclipses':'all',
+    'astronomy/solar-eclipse':'solar',
+    'astronomy/lunar-eclipse':'lunar'
+  };
+  const kundaliPages=['jyotish/janma-kundali'];
   const jyotishModes={
     'jyotish/birthstar':'birthstar',
     'jyotish/janma-lagna':'janma-lagna',
@@ -123,6 +135,9 @@
       if(lagnaPages.includes(pageSlug)) await calculateLagna();
       if(monthPages.includes(pageSlug)) await calculateMonth();
       if(planetaryModes[pageSlug]) await calculatePlanetary();
+      if(aspectsModes[pageSlug]) await calculateAspects();
+      if(eclipseModes[pageSlug]) await calculateEclipses();
+      if(kundaliPages.includes(pageSlug)) await calculateKundali();
       if(jyotishModes[pageSlug]) await calculateJyotish();
       if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
       if(observanceKinds[pageSlug]) await calculateObservances();
@@ -164,6 +179,7 @@
       if(mode==='positions'){
         const time=$('#tkPlanetTime')?.value||'12:00:00';
         p.datetime=`${p.date}T${time}`;
+        p.node_model=$('#tkNodeModel')?.value||'mean';
       }
       const r=await fetch(`${base}api.php?action=planetary&mode=${encodeURIComponent(mode)}`,{
         method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
@@ -235,6 +251,86 @@
       <div><small>Sun</small><strong>${esc(r.sun?.rashi||'—')}</strong><span>${esc(r.sun?.nakshatra||'—')} · Pada ${r.sun?.pada||'—'}</span></div>
       <div><small>Lagna</small><strong>${esc(r.lagna?.rashi||'—')}</strong><span>${Number(r.lagna?.degree_in_rashi||0).toFixed(2)}°</span></div>
     </div>`;
+  }
+
+  async function calculateAspects(){
+    const loading=$('#tkAspectLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating planetary relationships…'}
+    try{
+      const mode=aspectsModes[pageSlug],p=payload();
+      const r=await fetch(`${base}api.php?action=aspects&mode=${encodeURIComponent(mode)}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Aspect engine unavailable');
+      if(loading)loading.hidden=true;
+      const note=$('#tkAspectNote');if(note)note.textContent=j.note||'';
+      const title=$('#tkAspectTitle');if(title)title.textContent=`${title.textContent.replace(/\s+\d{4}$/,'')} ${j.year}`;
+      const el=$('#tkAspectResult');if(!el)return;
+      const rows=j.events||[];
+      el.innerHTML=rows.length?rows.map(row=>{
+        if(mode==='graha-yuddha'){
+          return `<article class="tk-planet-event"><div class="tk-planet-event-date"><b>${esc(row.date)}</b><span>${esc(row.rashi)}</span></div><div class="tk-planet-event-main"><h4>${esc(row.planet1)} × ${esc(row.planet2)}</h4><p>Begins ${esc(new Date(row.start).toLocaleString('en-IN',{timeZone:state.timezone,dateStyle:'medium',timeStyle:'short'}))} · Ends ${esc(new Date(row.end).toLocaleString('en-IN',{timeZone:state.timezone,dateStyle:'medium',timeStyle:'short'}))}</p><small>Closest ${Number(row.closest_separation_deg).toFixed(3)}° · Entry winner ${esc(row.entry_winner||'—')} · Exit winner ${esc(row.exit_winner||'—')}</small></div></article>`;
+        }
+        return `<article class="tk-planet-event"><div class="tk-planet-event-date"><b>${esc(row.date)}</b><span>${esc(row.aspect)}</span></div><div class="tk-planet-event-main"><h4>${esc(row.planet1)} + ${esc(row.planet2)}</h4><p>${Number(row.angle).toFixed(0)}° exact aspect</p><small>${esc(new Date(row.datetime).toLocaleString('en-IN',{timeZone:state.timezone,dateStyle:'medium',timeStyle:'short'}))}</small></div></article>`;
+      }).join(''):'<div class="tk-panchang-empty">No matching events found for this year.</div>';
+    }catch(e){if(loading)loading.textContent=e.message||'Aspect engine unavailable';toast(e.message||'Aspect engine unavailable')}
+  }
+
+  async function calculateEclipses(){
+    const loading=$('#tkEclipseLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating eclipse events…'}
+    try{
+      const mode=eclipseModes[pageSlug],p=payload();
+      const r=await fetch(`${base}api.php?action=eclipses&mode=${encodeURIComponent(mode)}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Eclipse engine unavailable');
+      if(loading)loading.hidden=true;
+      const note=$('#tkEclipseNote');if(note)note.textContent=j.note||'';
+      const title=$('#tkEclipseTitle');if(title)title.textContent=`${title.textContent.replace(/\s+\d{4}$/,'')} ${j.year}`;
+      const el=$('#tkEclipseResult');if(!el)return;
+      let rows=mode==='solar'?j.solar_global:mode==='lunar'?j.lunar:j.events;
+      const localSolar=new Map((j.solar_local||[]).map(x=>[x.peak?.date,x]));
+      el.innerHTML=(rows||[]).map(row=>{
+        const local=row.type==='solar'?localSolar.get(row.peak?.date):row;
+        const visible=local?.locally_visible;
+        return `<article class="tk-eclipse-card"><div class="tk-eclipse-kind"><b>${esc(row.kind)}</b><span>${esc(row.type==='solar'?'Solar':'Lunar')}</span></div><div><h4>${esc(row.name)}</h4><p>${esc(row.peak?.label||'—')}</p><small>${visible===true?'Visible from selected location':visible===false?'Not visible from selected location':'Global event'}${row.obscuration!==null&&row.obscuration!==undefined?' · Obscuration '+Math.round(row.obscuration*100)+'%':''}</small></div></article>`;
+      }).join('')||'<div class="tk-panchang-empty">No eclipse events found for this year.</div>';
+    }catch(e){if(loading)loading.textContent=e.message||'Eclipse engine unavailable';toast(e.message||'Eclipse engine unavailable')}
+  }
+
+  function renderKundaliChart(cells,label){
+    const order=[11,0,1,2,10,null,null,3,9,null,null,4,8,7,6,5];
+    const by=new Map((cells||[]).map(x=>[x.rashi_id,x]));
+    return `<section class="tk-kundali-chart-wrap"><h4>${esc(label)}</h4><div class="tk-kundali-chart">${order.map((id,i)=>{
+      if(id===null)return `<div class="tk-kundali-center">${i===5?esc(label):''}</div>`;
+      const cell=by.get(id)||{};
+      return `<div class="tk-kundali-cell"><small>H${cell.house||'—'} · ${esc(cell.rashi||'')}</small><strong>${(cell.planets||[]).map(p=>esc(p.name)+(p.retrograde?' ℞':'')).join(' · ')||'—'}</strong></div>`;
+    }).join('')}</div></section>`;
+  }
+
+  async function calculateKundali(){
+    const loading=$('#tkKundaliLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating Janma Kundali…'}
+    try{
+      const p=payload();
+      p.time=$('#tkKundaliTime')?.value||'12:00:00';
+      p.node_model=$('#tkKundaliNode')?.value||'mean';
+      const r=await fetch(`${base}api.php?action=kundali`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Kundali engine unavailable');
+      if(loading)loading.hidden=true;
+      const el=$('#tkKundaliResult');if(!el)return;
+      const yuddha=(j.graha_yuddha||[]).map(x=>`${esc(x.planet1)}–${esc(x.planet2)} (${esc(x.winner||'tie')} wins)`).join(' · ');
+      el.innerHTML=`<div class="tk-kundali-head"><div><small>Janma Lagna</small><strong>${esc(j.lagna?.rashi||'—')} ${Number(j.lagna?.degree_in_rashi||0).toFixed(2)}°</strong></div><div><small>Birth Nakshatra</small><strong>${esc(j.panchang?.nakshatra||'—')} · Pada ${j.panchang?.nakshatra_pada||'—'}</strong></div><div><small>Node model</small><strong>${esc(j.node_model||'mean')}</strong></div></div>
+        <div class="tk-kundali-charts">${renderKundaliChart(j.d1?.cells,'D1 · Rashi')}${renderKundaliChart(j.d9?.cells,'D9 · Navamsha')}</div>
+        <div class="tk-kundali-grahas">${(j.d1?.placements||[]).map(p=>`<span><b>${esc(p.name)}</b>${esc(p.rashi)} ${Number(p.degree_in_rashi).toFixed(2)}° · H${p.house}</span>`).join('')}</div>
+        <div class="tk-lunar-note">Tithi ${esc(j.panchang?.tithi||'—')} · Yoga ${esc(j.panchang?.yoga||'—')} · Karana ${esc(j.panchang?.karana||'—')}${yuddha?' · Graha Yuddha: '+yuddha:''}</div>`;
+    }catch(e){if(loading)loading.textContent=e.message||'Kundali engine unavailable';toast(e.message||'Kundali engine unavailable')}
   }
 
   async function calculateLagna(){
@@ -843,7 +939,7 @@
     if(pageSlug==='panchang/month'){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||planetaryModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)){
+    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
@@ -855,6 +951,10 @@
   $('#tkToday')?.addEventListener('click',()=>{const input=$('#tkDate');state.dateTouched=false;if(input)input.value=isoToday(state.timezone);calculate()});
   $('#tkPlanetCalculate')?.addEventListener('click',()=>calculatePlanetary());
   $('#tkPlanetTime')?.addEventListener('change',()=>{if(pageSlug==='planets/positions')calculatePlanetary()});
+  $('#tkNodeModel')?.addEventListener('change',()=>{if(pageSlug==='planets/positions')calculatePlanetary()});
+  $('#tkKundaliCalculate')?.addEventListener('click',()=>calculateKundali());
+  $('#tkKundaliTime')?.addEventListener('change',()=>{if(kundaliPages.includes(pageSlug))calculateKundali()});
+  $('#tkKundaliNode')?.addEventListener('change',()=>{if(kundaliPages.includes(pageSlug))calculateKundali()});
   $('#tkBirthCalculate')?.addEventListener('click',()=>calculateJyotish());
   $('#tkBirthTime')?.addEventListener('change',()=>{if(jyotishModes[pageSlug])calculateJyotish()});
 
