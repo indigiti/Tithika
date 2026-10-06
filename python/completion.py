@@ -696,4 +696,17 @@ def main():
     elif mode=="shraddha": result["events"]=shraddha_events(year,lat,lon,tz,hour24)
     elif mode=="purushottam-maas": result["events"]=adhika_months(year,lat,lon,tz)
     elif mode=="chaturmasa": result["events"]=chaturmasa(year,lat,lon,tz,hour24)
-    elif mode.startswith("festival-"): result["events"]=festival_aggregate(ye
+    elif mode.startswith("festival-"): result["events"]=festival_aggregate(year,lat,lon,tz,hour24,mode,payload)
+    elif mode in {"prashna-kundali","gemstone","rudraksha","baby-name","name-initials","rashi-by-name","sahasra-chandrodaya","shraddha-tithi"}: result["result"]=jyotish_secondary(mode,payload,lat,lon,tz)
+    elif mode=="planet-parallel": result["events"]=planet_parallel(selected,lat,lon,tz)
+    elif mode=="ecliptic-crossings": result["events"]=ecliptic_crossings(year,tz)
+    elif mode=="indian-seasons": result["events"]=indian_seasons(year,tz)
+    print(json.dumps({"ok":True,"mode":mode,"title":MODE_TITLES[mode],"year":year,
+      "engine":{"name":"tithika-completion","version":ENGINE_VERSION,"panchang_version":panchang.ENGINE_VERSION,"ayanamsha":"Lahiri / Chitrapaksha"},
+      "location":{"city":str(payload.get("city") or "Current location")[:120],"lat":lat,"lon":lon,"timezone":tzname},**result},ensure_ascii=False))
+
+if __name__=="__main__":
+    try: main()
+    except Exception as exc:
+        print(json.dumps({"ok":False,"error":str(exc),"code":"COMPLETION_ENGINE_FAILED"}))
+        sys.exit(1)
