@@ -54,11 +54,64 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
     exit;
 }
 
+$completionProfiles = [
+    'panchang/manvadi-tithi' => ['mode'=>'manvadi','scope'=>'year'],
+    'panchang/yugadi-tithi' => ['mode'=>'yugadi-tithi','scope'=>'year'],
+    'panchang/kalpadi-tithi' => ['mode'=>'kalpadi','scope'=>'year'],
+    'panchang/kranti-samya' => ['mode'=>'kranti-samya','scope'=>'year'],
+    'panchang/gowri' => ['mode'=>'gowri','scope'=>'day'],
+    'muhurat/gowri' => ['mode'=>'gowri','scope'=>'day'],
+    'muhurat/jain-pachchakkhan' => ['mode'=>'jain-pachchakkhan','scope'=>'day'],
+    'muhurat/pancha-pakshi' => ['mode'=>'pancha-pakshi','scope'=>'day','input'=>'nakshatra'],
+    'jyotish/pancha-pakshi' => ['mode'=>'pancha-pakshi','scope'=>'day','input'=>'nakshatra'],
+    'muhurat/do-ghati' => ['mode'=>'do-ghati','scope'=>'day'],
+    'muhurat/shubha-dates' => ['mode'=>'shubha-dates','scope'=>'year'],
+    'vrat/iskcon-ekadashi' => ['mode'=>'iskcon-ekadashi','scope'=>'year'],
+    'vrat/kalashtami' => ['mode'=>'kalashtami','scope'=>'year'],
+    'vrat/chandra-darshan' => ['mode'=>'chandra-darshan','scope'=>'year'],
+    'vrat/masik-janmashtami' => ['mode'=>'masik-janmashtami','scope'=>'year'],
+    'vrat/ishti-anvadhan' => ['mode'=>'ishti-anvadhan','scope'=>'year'],
+    'vrat/shraddha' => ['mode'=>'shraddha','scope'=>'year'],
+    'vrat/purushottam-maas' => ['mode'=>'purushottam-maas','scope'=>'year'],
+    'vrat/chaturmasa' => ['mode'=>'chaturmasa','scope'=>'year'],
+    'festivals/hindu' => ['mode'=>'festival-hindu','scope'=>'year'],
+    'festivals/tamil' => ['mode'=>'festival-tamil','scope'=>'year'],
+    'festivals/malayalam' => ['mode'=>'festival-malayalam','scope'=>'year'],
+    'festivals/chaitra' => ['mode'=>'festival-month','scope'=>'year','params'=>['calendar_month'=>'Chaitra']],
+    'festivals/vaishakha' => ['mode'=>'festival-month','scope'=>'year','params'=>['calendar_month'=>'Vaishakha']],
+    'festivals/jyeshtha' => ['mode'=>'festival-month','scope'=>'year','params'=>['calendar_month'=>'Jyeshtha']],
+    'festivals/ashadha' => ['mode'=>'festival-month','scope'=>'year','params'=>['calendar_month'=>'Ashadha']],
+    'festivals/shravana' => ['mode'=>'festival-month','scope'=>'year','params'=>['calendar_month'=>'Shravana']],
+    'festivals/bhadrapada' => ['mode'=>'festival-month','scope'=>'year','params'=>['calendar_month'=>'Bhadrapada']],
+    'festivals/ashwina' => ['mode'=>'festival-month','scope'=>'year','params'=>['calendar_month'=>'Ashwina']],
+    'festivals/kartika' => ['mode'=>'festival-month','scope'=>'year','params'=>['calendar_month'=>'Kartika']],
+    'festivals/margashirsha' => ['mode'=>'festival-month','scope'=>'year','params'=>['calendar_month'=>'Margashirsha']],
+    'festivals/pausha' => ['mode'=>'festival-month','scope'=>'year','params'=>['calendar_month'=>'Pausha']],
+    'festivals/magha' => ['mode'=>'festival-month','scope'=>'year','params'=>['calendar_month'=>'Magha']],
+    'festivals/phalguna' => ['mode'=>'festival-month','scope'=>'year','params'=>['calendar_month'=>'Phalguna']],
+    'calendars/diwali' => ['mode'=>'festival-yearly','scope'=>'year','params'=>['festival_kind'=>'diwali']],
+    'calendars/durga-puja' => ['mode'=>'festival-yearly','scope'=>'year','params'=>['festival_kind'=>'durga-puja']],
+    'calendars/navratri' => ['mode'=>'festival-yearly','scope'=>'year','params'=>['festival_kind'=>'navratri']],
+    'calendars/shardiya-navratri' => ['mode'=>'festival-yearly','scope'=>'year','params'=>['festival_kind'=>'navratri']],
+    'jyotish/prashna-kundali' => ['mode'=>'prashna-kundali','scope'=>'day','input'=>'time'],
+    'jyotish/gemstone' => ['mode'=>'gemstone','scope'=>'day','input'=>'time'],
+    'jyotish/rudraksha' => ['mode'=>'rudraksha','scope'=>'day','input'=>'time'],
+    'jyotish/baby-name' => ['mode'=>'baby-name','scope'=>'day','input'=>'time'],
+    'jyotish/name-initials' => ['mode'=>'name-initials','scope'=>'day','input'=>'time'],
+    'jyotish/rashi-by-name' => ['mode'=>'rashi-by-name','scope'=>'day','input'=>'name'],
+    'jyotish/sahasra-chandrodaya' => ['mode'=>'sahasra-chandrodaya','scope'=>'day','input'=>'birth-date'],
+    'jyotish/shraddha-tithi' => ['mode'=>'shraddha-tithi','scope'=>'day','input'=>'time'],
+    'planets/parallel' => ['mode'=>'planet-parallel','scope'=>'day'],
+    'planets/ecliptic-crossings' => ['mode'=>'ecliptic-crossings','scope'=>'year'],
+    'astronomy/indian-seasons' => ['mode'=>'indian-seasons','scope'=>'year'],
+];
+$completionProfile = $completionProfiles[$page['slug']] ?? null;
+
 $group = $routes[$page['group']];
 $related = tithika_related($page);
 $isComputed = tithika_is_live_page($page['slug']) || tithika_has_editorial_content($page);
 tithika_render_header($page['title'], $page);
-echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
+echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';window.TITHIKA_COMPLETION_PROFILE=' . json_encode($completionProfile, JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
 <section class="tk-page-hero">
   <div class="tk-hero-inner">
@@ -111,7 +164,29 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
 
   <div class="tk-grid">
     <div class="tk-card span-8">
-      <?php if ($page['slug'] === 'panchang/month'): ?>
+      <?php if ($completionProfile): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Verified completion engine</span>
+            <h3 id="tkCompletionTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Calculated from Tithika's shared Lahiri Panchang, local solar context and an explicit route-specific selector. The result includes its calculation basis for auditability.</p>
+          </div>
+          <div class="tk-panchang-engine">Six-phase engine · Lahiri</div>
+        </div>
+        <?php if (($completionProfile['input'] ?? '') === 'time'): ?>
+          <div class="tk-form-demo"><label>Local time <input id="tkCompletionTime" type="time" step="1" value="12:00:00"></label><button id="tkCompletionCalculate" class="tk-primary" type="button">Calculate</button></div>
+        <?php elseif (($completionProfile['input'] ?? '') === 'name'): ?>
+          <div class="tk-form-demo"><label>Name <input id="tkCompletionName" type="text" maxlength="80" placeholder="Enter name"></label><button id="tkCompletionCalculate" class="tk-primary" type="button">Find traditional Rashi</button></div>
+        <?php elseif (($completionProfile['input'] ?? '') === 'nakshatra'): ?>
+          <div class="tk-form-demo"><label>Birth Nakshatra <select id="tkCompletionNakshatra"><?php foreach (['Ashwini','Bharani','Krittika','Rohini','Mrigashira','Ardra','Punarvasu','Pushya','Ashlesha','Magha','Purva Phalguni','Uttara Phalguni','Hasta','Chitra','Swati','Vishakha','Anuradha','Jyeshtha','Mula','Purva Ashadha','Uttara Ashadha','Shravana','Dhanishta','Shatabhisha','Purva Bhadrapada','Uttara Bhadrapada','Revati'] as $nak): ?><option value="<?= htmlspecialchars($nak) ?>"><?= htmlspecialchars($nak) ?></option><?php endforeach; ?></select></label><button id="tkCompletionCalculate" class="tk-primary" type="button">Calculate activities</button></div>
+        <?php elseif (($completionProfile['input'] ?? '') === 'birth-date'): ?>
+          <div class="tk-lunar-note">Use the shared date selector above as the birth date, then calculate the 1000th full-moon occurrence.</div>
+          <button id="tkCompletionCalculate" class="tk-primary" type="button">Calculate 1000 Chandrodaya</button>
+        <?php endif; ?>
+        <div id="tkCompletionLoading" class="tk-panchang-loading">Calculating verified rule…</div>
+        <div id="tkCompletionNote" class="tk-lunar-note"></div>
+        <div id="tkCompletionResult" class="tk-observance-list" aria-live="polite"></div>
+      <?php elseif ($page['slug'] === 'panchang/month'): ?>
         <div class="tk-panchang-live-head">
           <div>
             <span class="tk-card-tag">Live month engine</span>
