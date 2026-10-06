@@ -231,11 +231,16 @@ try {
     if ($action === 'regional-calendar') {
         $payload = readPayload();
         $variant = strtolower(trim((string)($_GET['variant'] ?? 'hindi')));
-        if (!in_array($variant, ['hindi','tamil','telugu','kannada','malayalam','gujarati','marathi','bengali','odia','assamese','iskcon'], true)) {
+        if (!in_array($variant, ['hindi','tamil','telugu','kannada','malayalam','gujarati','marathi','bengali','odia','assamese','iskcon','nepali','jain'], true)) {
             out(['ok'=>false,'error'=>'Unsupported regional calendar variant'], 422);
         }
         $payload['variant'] = $variant;
-        $data = runPythonEngine('python/regional_calendar.py', $payload);
+        $script = match($variant) {
+            'nepali' => 'python/nepali_calendar.py',
+            'jain' => 'python/jain_calendar.py',
+            default => 'python/regional_calendar.py',
+        };
+        $data = runPythonEngine($script, $payload);
         if (!($data['ok'] ?? false)) out($data, 422);
         out($data, 200, true);
     }
