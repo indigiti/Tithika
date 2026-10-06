@@ -88,6 +88,23 @@
     'muhurat/property':'property',
     'muhurat/vehicle':'vehicle'
   };
+  const muhuratReuseModes={
+    'muhurat/shubha-hora':'hora',
+    'muhurat/panchaka-rahita':'panchaka-rahita',
+    'muhurat/auspicious-yoga':'auspicious-yoga',
+    'muhurat/guru-pushya':'guru-pushya',
+    'muhurat/sarvartha-siddhi':'sarvartha-siddhi',
+    'muhurat/amrit-siddhi':'amrit-siddhi',
+    'muhurat/dwipushkar':'dwipushkar',
+    'muhurat/tripushkar':'tripushkar',
+    'muhurat/ravi-pushya':'ravi-pushya',
+    'muhurat/ravi-yoga':'ravi-yoga'
+  };
+  const muhuratReuseYearly=new Set([
+    'muhurat/auspicious-yoga','muhurat/guru-pushya','muhurat/sarvartha-siddhi',
+    'muhurat/amrit-siddhi','muhurat/dwipushkar','muhurat/tripushkar',
+    'muhurat/ravi-pushya','muhurat/ravi-yoga'
+  ]);
   const utilityModes={
     'panchang/tarabalam':'tarabalam',
     'panchang/chandrabalam':'chandrabalam',
@@ -216,6 +233,7 @@
       if(sankrantiPages.includes(pageSlug)) await calculateSankranti();
       if(seasonKinds[pageSlug]) await calculateSeasons();
       if(specializedMuhuratModes[pageSlug]) await calculateSpecializedMuhurat();
+      if(muhuratReuseModes[pageSlug]) await calculateMuhuratReuse();
       if(utilityModes[pageSlug]) await calculatePanchangUtility();
       if(panchangReuseModes[pageSlug]) await calculatePanchangReuse();
       if(regionalVariants[pageSlug]) await calculateRegionalCalendar();
@@ -1424,6 +1442,90 @@
       </div></article>`).join(''):'<div class="tk-panchang-empty">No candidate windows in this month under the selected profile.</div>';
   }
 
+  async function calculateMuhuratReuse(){
+    const loading=$('#tkMuhuratReuseLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating Muhurat windows…'}
+    try{
+      const mode=muhuratReuseModes[pageSlug],p=payload();
+      const r=await fetch(`${base}api.php?action=muhurat-reuse&mode=${encodeURIComponent(mode)}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Muhurat reuse engine unavailable');
+      if(loading)loading.hidden=true;
+      renderMuhuratReuse(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Muhurat reuse engine unavailable'}
+      toast(e.message||'Muhurat reuse engine unavailable');
+    }
+  }
+
+  function renderMuhuratReuse(d){
+    const engine=$('#tkMuhuratReuseEngine');
+    if(engine)engine.textContent=`${d.engine?.ayanamsha||'Lahiri'} · reuse ${d.engine?.version||''}`;
+    const summary=$('#tkMuhuratReuseSummary'),metrics=$('#tkMuhuratReuseMetrics'),list=$('#tkMuhuratReuseList');
+    if(metrics)metrics.innerHTML='';
+    if(list)list.innerHTML='';
+
+    if(d.mode==='hora'){
+      if(summary)summary.textContent=`${d.weekday} · first Hora ${d.weekday_lord} · 12 day + 12 night planetary hours`;
+      if(metrics)metrics.innerHTML=[
+        reuseMetric('Weekday lord',d.weekday_lord,d.weekday),
+        reuseMetric('Sunrise',d.sunrise_label,d.date),
+        reuseMetric('Sunset',d.sunset_label,'12th day Hora ends'),
+        reuseMetric('Next sunrise',d.next_sunrise_label,'24th Hora ends')
+      ].join('');
+      if(list)list.innerHTML=(d.horas||[]).map(row=>`<article class="tk-lunar-event">
+        <div class="tk-lunar-event-date"><b>Hora ${row.index}</b><span>${esc(row.half)}</span></div>
+        <div class="tk-lunar-event-main"><h4>${esc(row.planet)} Hora</h4>
+          <p>${esc(row.start_label)} → ${esc(row.end_label)}</p>
+          <small>${row.generally_benefic?'Generally benefic for suitable activities':'Purpose-specific planetary Hora'}</small>
+        </div>
+      </article>`).join('');
+      return;
+    }
+
+    if(d.mode==='panchaka-rahita'){
+      const rows=d.intervals||[],good=d.good_intervals||[];
+      if(summary)summary.textContent=`${d.formula} · good remainders ${(d.good_remainders||[]).join(', ')}`;
+      if(metrics)metrics.innerHTML=[
+        reuseMetric('Rahita windows',String(good.length),'Good'),
+        reuseMetric('All segments',String(rows.length),'Tithi/Nakshatra/Lagna boundaries'),
+        reuseMetric('Sunrise',d.sunrise_label,d.weekday),
+        reuseMetric('Next sunrise',d.next_sunrise_label,'Hindu weekday end')
+      ].join('');
+      if(list)list.innerHTML=rows.map(row=>`<article class="tk-lunar-event">
+        <div class="tk-lunar-event-date"><b>${row.good?'Rahita':'Avoid'}</b><span>Remainder ${row.remainder}</span></div>
+        <div class="tk-lunar-event-main"><h4>${esc(row.classification)}</h4>
+          <p>${esc(row.start_label)} → ${esc(row.end_label)}</p>
+          <small>${esc(row.tithi)} · ${esc(row.nakshatra)} · ${esc(row.lagna)} · sum ${row.sum}</small>
+        </div>
+      </article>`).join('');
+      return;
+    }
+
+    const rows=d.mode==='auspicious-yoga'?(d.events||[]):(d.events||[]);
+    if(summary)summary.textContent=d.mode==='auspicious-yoga'
+      ? `${rows.length} Yoga windows · ${d.year} · seven verified rule families`
+      : `${rows.length} ${d.name||'Yoga'} windows · ${d.year}`;
+    if(metrics&&d.mode==='auspicious-yoga'){
+      const c=d.counts||{};
+      metrics.innerHTML=[
+        reuseMetric('Sarvartha',String(c['sarvartha-siddhi']||0),'weekday + Nakshatra'),
+        reuseMetric('Amrit Siddhi',String(c['amrit-siddhi']||0),'seven pairings'),
+        reuseMetric('Dwi / Tri Pushkar',`${c.dwipushkar||0} / ${c.tripushkar||0}`,'three-factor Yogas'),
+        reuseMetric('Ravi Yoga',String(c['ravi-yoga']||0),'Sun–Moon Nakshatra distance')
+      ].join('');
+    }
+    if(list)list.innerHTML=rows.length?rows.map(row=>`<article class="tk-lunar-event">
+      <div class="tk-lunar-event-date"><b>${esc(row.date_label||row.date)}</b><span>${esc(row.weekday||'')}</span></div>
+      <div class="tk-lunar-event-main"><h4>${esc(row.name||'Auspicious Yoga')}</h4>
+        <p>${esc(row.start_label)} → ${esc(row.end_label)}</p>
+        <small>${esc(row.nakshatra||'')} · ${esc(row.paksha||'')} ${esc(row.tithi||'')}${row.kind==='ravi-yoga'?' · distance '+esc(row.ravi_distance):''}</small>
+      </div>
+    </article>`).join(''):'<div class="tk-panchang-empty">No matching Yoga windows found for this year.</div>';
+  }
+
   async function calculatePanchangUtility(){
     const loading=$('#tkUtilityLoading');
     if(loading){loading.hidden=false;loading.textContent='Calculating Panchang utility…'}
@@ -1688,7 +1790,7 @@
     if(pageSlug==='panchang/month'||specializedMuhuratModes[pageSlug]||regionalVariants[pageSlug]||panchangReuseMonthly.has(pageSlug)){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)){
+    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)||muhuratReuseYearly.has(pageSlug)){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);

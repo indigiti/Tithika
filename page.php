@@ -625,6 +625,19 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         </div>
         <div id="tkLagnaLoading" class="tk-panchang-loading">Calculating Lagna periods…</div>
         <div id="tkLagnaList" class="tk-observance-list"></div>
+      <?php elseif (in_array($page['slug'], ['muhurat/shubha-hora','muhurat/panchaka-rahita','muhurat/auspicious-yoga','muhurat/guru-pushya','muhurat/sarvartha-siddhi','muhurat/amrit-siddhi','muhurat/dwipushkar','muhurat/tripushkar','muhurat/ravi-pushya','muhurat/ravi-yoga'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Verified Muhurat reuse engine</span>
+            <h3 id="tkMuhuratReuseTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Exact sunrise-based weekday windows reuse Tithika's Lahiri Panchang and verified Lagna geometry. Each Yoga keeps its own rule table instead of sharing a generic auspicious flag.</p>
+          </div>
+          <div class="tk-panchang-engine" id="tkMuhuratReuseEngine">Muhurat rule engine</div>
+        </div>
+        <div id="tkMuhuratReuseLoading" class="tk-panchang-loading">Calculating Muhurat windows…</div>
+        <div id="tkMuhuratReuseSummary" class="tk-lunar-note"></div>
+        <div id="tkMuhuratReuseMetrics" class="tk-panchang-summary"></div>
+        <div id="tkMuhuratReuseList" class="tk-observance-list"></div>
       <?php elseif (in_array($page['slug'], ['muhurat/vivah','muhurat/griha-pravesh','muhurat/property','muhurat/vehicle'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>

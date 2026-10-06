@@ -216,6 +216,18 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'muhurat-reuse') {
+        $payload = readPayload();
+        $mode = strtolower(trim((string)($_GET['mode'] ?? 'hora')));
+        if (!in_array($mode, ['hora','panchaka-rahita','auspicious-yoga','sarvartha-siddhi','amrit-siddhi','guru-pushya','ravi-pushya','dwipushkar','tripushkar','ravi-yoga'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported Muhurat reuse mode'], 422);
+        }
+        $payload['mode'] = $mode;
+        $data = runPythonEngine('python/muhurat_reuse.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'panchang-utility') {
         $payload = readPayload();
         $mode = strtolower(trim((string)($_GET['mode'] ?? 'tarabalam')));
