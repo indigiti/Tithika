@@ -123,15 +123,17 @@ def latest_ingress(moment, events, sign_id):
 
 def solar_era(variant, d, sign_id):
     if variant == "malayalam":
-        # Kollam Era increments with Chingam (Simha) solar month.
+        # Kollam Era increments when Chingam/Simha begins, normally in August.
         return {
             "name": "Kollavarsham",
-            "year": d.year - 824 if sign_id >= 4 else d.year - 825,
+            "year": d.year - 824 if (d.month >= 8 and sign_id >= 4) else d.year - 825,
         }
     if variant == "bengali":
+        # Bengali year turns with Mesha/Boishakh; Makara..Meena belong to the
+        # pre-Boishakh part of the Gregorian year.
         return {
             "name": "Bengali Era",
-            "year": d.year - 593 if sign_id >= 0 and d.month >= 4 else d.year - 594,
+            "year": d.year - 593 if sign_id <= 8 else d.year - 594,
         }
     return None
 
