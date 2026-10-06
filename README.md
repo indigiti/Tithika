@@ -123,6 +123,23 @@ Stage 6 makes these mapped tools calculation-backed:
 - `/panchang/panchak/` — exact Moon-longitude Panchak intervals
 - `/panchang/bhadra/` — exact Vishti Karana intervals
 
+### Reusable Muhurat utilities
+
+The shared Muhurat reuse engine now powers:
+
+- `/muhurat/shubha-hora/`
+- `/muhurat/panchaka-rahita/`
+- `/muhurat/auspicious-yoga/`
+- `/muhurat/sarvartha-siddhi/`
+- `/muhurat/amrit-siddhi/`
+- `/muhurat/guru-pushya/`
+- `/muhurat/ravi-pushya/`
+- `/muhurat/dwipushkar/`
+- `/muhurat/tripushkar/`
+- `/muhurat/ravi-yoga/`
+
+Hora uses exact local day/night twelfths; Panchaka Rahita uses verified Lagna transitions plus the modulo-9 formula; recurring Yogas preserve separate weekday/Nakshatra/Tithi rule tables. Gowri, Jain Pachchakkhan, Pancha Pakshi, Do Ghati and generic Shubha Dates remain deliberately gated.
+
 ### Regional calendar engine
 
 Stage 7 reuses one Lahiri astronomy core while keeping regional month conventions explicit:
@@ -309,6 +326,7 @@ python/muhurat_rules.py        shared Muhurat filtering substrate
 python/specialized_muhurat.py  Vivah/Griha/Property/Vehicle/Sanskar profiles
 python/panchang_utilities.py    Tarabalam/Chandrabalam/Panchak/Bhadra
 python/panchang_reuse.py        Sunrise/Nakshatra/Ganda/Sankalpa/Vedic Clock reuse
+python/muhurat_reuse.py         Hora/Panchaka Rahita/recurring auspicious Yogas
 python/regional_calendar.py     regional solar/Amanta/Purnimanta calendars
 python/sankranti.py           Nirayana solar-ingress engine
 python/seasons.py             equinox/solstice engine
@@ -393,5 +411,6 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 25. Performance/mobile/accessibility/release hardening. ✓
 26. Production certification contract + remaining-shell queue. ✓
 27. Deterministic Panchang reuse batch (8 routes). ✓
+28. Deterministic Muhurat reuse batch (10 routes). ✓
 
 See `docs/DRIKPANCHANG_AUDIT.md` and `docs/TITHIKA_PAGE_MAP.md` for the full implementation plan.
