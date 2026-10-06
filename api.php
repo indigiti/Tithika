@@ -188,11 +188,18 @@ try {
     if ($action === 'festival') {
         $payload = readPayload();
         $kind = strtolower(trim((string)($_GET['kind'] ?? 'ganesh-chaturthi')));
-        if (!in_array($kind, ['ganesh-chaturthi','raksha-bandhan','navratri','dussehra','holi','karwa-chauth','diwali'], true)) {
+        if (!in_array($kind, ['ganesh-chaturthi','raksha-bandhan','navratri','dussehra','holi','karwa-chauth','janmashtami','diwali'], true)) {
             out(['ok'=>false,'error'=>'Unsupported festival kind'], 422);
         }
         $payload['kind'] = $kind;
         $data = runPythonEngine('python/festivals.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
+    if ($action === 'lagna') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/lagna.py', $payload);
         if (!($data['ok'] ?? false)) out($data, 422);
         out($data, 200, true);
     }
