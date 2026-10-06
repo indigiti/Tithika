@@ -59,7 +59,6 @@
     'festivals/maha-shivaratri':'shivaratri'
   };
   const vratReuseModes={
-    'vrat/iskcon-ekadashi':'iskcon-ekadashi',
     'vrat/satyanarayana':'satyanarayana',
     'vrat/durgashtami':'durgashtami',
     'vrat/skanda-sashti':'skanda-sashti',
