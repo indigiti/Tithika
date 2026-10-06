@@ -35,6 +35,8 @@ import panchang
 
 ENGINE_VERSION = "0.2.0"
 
+_TITHI_INTERVAL_CACHE = {}
+
 MODE_TITLES = {
     "satyanarayana": "Satyanarayana Puja",
     "durgashtami": "Masik Durgashtami",
@@ -123,18 +125,13 @@ def scan_sunrise_days(
     return rows
 
 
-def exact_tithi_intervals(
-    year: int,
-    target_tithi_id: int,
-    lat: float,
-    lon: float,
-    tz: ZoneInfo,
-) -> list[tuple[datetime, datetime]]:
-    start = datetime(year - 1, 12, 30, 0, 0, tzinfo=tz)
-    end = datetime(year + 1, 1, 3, 0, 0, tzinfo=tz)
+def tithi_intervals_between(
+    start: datetime,
+    end: datetime,
+    target_ids: set[int] | None = None,
+) -> list[tuple[int, datetime, datetime]]:
     rows = []
     cursor = start
-
     while cursor < end:
         state = panchang.state_at(cursor)
         current_id = state["tithi_id"]
@@ -142,12 +139,36 @@ def exact_tithi_intervals(
             cursor, end, "tithi_id", current_id, step_minutes=180
         )
         stop = transition or end
-        if current_id == target_tithi_id:
-            rows.append((cursor, stop))
+        if target_ids is None or current_id in target_ids:
+            rows.append((current_id, cursor, stop))
         if transition is None:
             break
         cursor = transition + timedelta(seconds=1)
     return rows
+
+
+def exact_tithi_intervals(
+    year: int,
+    target_tithi_id: int,
+    lat: float,
+    lon: float,
+    tz: ZoneInfo,
+) -> list[tuple[datetime, datetime]]:
+    tz_key = getattr(tz, "key", str(tz))
+    key = (year, target_tithi_id, round(lat, 6), round(lon, 6), tz_key)
+    if key in _TITHI_INTERVAL_CACHE:
+        return list(_TITHI_INTERVAL_CACHE[key])
+    start = datetime(year - 1, 12, 30, 0, 0, tzinfo=tz)
+    end = datetime(year + 1, 1, 3, 0, 0, tzinfo=tz)
+    rows = [
+        (interval_start, interval_end)
+        for tithi_id, interval_start, interval_end in tithi_intervals_between(
+            start, end, {target_tithi_id}
+        )
+        if tithi_id == target_tithi_id
+    ]
+    _TITHI_INTERVAL_CACHE[key] = tuple(rows)
+    return list(rows)
 
 
 def skanda_sashti(
@@ -657,55 +678,59 @@ def shraddha(year: int, lat: float, lon: float, tz: ZoneInfo, hour24: bool) -> l
         26: "Dwadashi Shraddha", 27: "Trayodashi Shraddha", 28: "Chaturdashi Shraddha",
         29: "Sarva Pitru Amavasya",
     }
-    for tithi_id in range(14, 30):
-        for start, end in exact_tithi_intervals(year, tithi_id, lat, lon, tz):
-            mid = start + (end - start) / 2
-            mid_state = panchang.state_at(mid)
-            months = month_info_at(mid, mid_state)
-            amanta = normalize_month(months.get("amanta"))
-            purnimanta = normalize_month(months.get("purnimanta"))
-            in_pitru_month = (
-                (tithi_id == 14 and amanta == "Bhadrapada")
-                or (tithi_id >= 15 and (amanta == "Bhadrapada" or purnimanta == "Ashwina"))
-            )
-            if not in_pitru_month:
+    # Pitru Paksha always falls in the late monsoon/early autumn window.
+    # Scan Tithi transitions once rather than rescanning the whole year for
+    # each of the sixteen Shraddha Tithis.
+    scan_start = datetime(year, 8, 1, 0, 0, tzinfo=tz)
+    scan_end = datetime(year, 11, 30, 23, 59, tzinfo=tz)
+    intervals = tithi_intervals_between(scan_start, scan_end, set(range(14, 30)))
+    for tithi_id, start, end in intervals:
+        mid = start + (end - start) / 2
+        mid_state = panchang.state_at(mid)
+        months = month_info_at(mid, mid_state)
+        amanta = normalize_month(months.get("amanta"))
+        purnimanta = normalize_month(months.get("purnimanta"))
+        in_pitru_month = (
+            (tithi_id == 14 and amanta == "Bhadrapada")
+            or (tithi_id >= 15 and (amanta == "Bhadrapada" or purnimanta == "Ashwina"))
+        )
+        if not in_pitru_month:
+            continue
+        candidates = []
+        for d in civil_days_around(start, end):
+            a_start, a_end, sunrise, sunset = aparahna_window(d, lat, lon, tz)
+            if not a_start:
                 continue
-            candidates = []
-            for d in civil_days_around(start, end):
-                a_start, a_end, sunrise, sunset = aparahna_window(d, lat, lon, tz)
-                if not a_start:
-                    continue
-                overlap = overlap_seconds(start, end, a_start, a_end)
-                if overlap > 0:
-                    candidates.append((overlap, d, a_start, a_end, sunrise, sunset))
-            if not candidates:
-                continue
-            overlap, d, a_start, a_end, sunrise, sunset = max(candidates, key=lambda x: x[0])
-            if d.year != year:
-                continue
-            state = panchang.state_at(max(start, a_start) + timedelta(seconds=1))
-            rows.append({
-                "name": tithi_names[tithi_id],
-                "date": d.isoformat(),
-                "date_label": d.strftime("%B %d, %Y").replace(" 0", " "),
-                "weekday": d.strftime("%A"),
-                "sunrise": sunrise.isoformat(),
-                "sunrise_label": panchang.fmt(sunrise, hour24),
-                "tithi": state.get("tithi"),
-                "paksha": state.get("paksha"),
-                "tithi_start": start.isoformat(),
-                "tithi_end": end.isoformat(),
-                "amanta_month": months.get("amanta"),
-                "purnimanta_month": months.get("purnimanta"),
-                "aparahna_start": a_start.isoformat(),
-                "aparahna_end": a_end.isoformat(),
-                "basis": "maximum-aparahna-overlap",
-                "aparahna_overlap_minutes": round(overlap / 60.0, 2),
-                "selection_rule": "Pitru Paksha Tithi selected on the civil day where it has maximum overlap with local Aparahna",
-            })
+            overlap = overlap_seconds(start, end, a_start, a_end)
+            if overlap > 0:
+                candidates.append((overlap, d, a_start, a_end, sunrise, sunset))
+        if not candidates:
+            continue
+        overlap, d, a_start, a_end, sunrise, sunset = max(candidates, key=lambda x: x[0])
+        if d.year != year:
+            continue
+        state = panchang.state_at(max(start, a_start) + timedelta(seconds=1))
+        rows.append({
+            "name": tithi_names[tithi_id],
+            "date": d.isoformat(),
+            "date_label": d.strftime("%B %d, %Y").replace(" 0", " "),
+            "weekday": d.strftime("%A"),
+            "sunrise": sunrise.isoformat(),
+            "sunrise_label": panchang.fmt(sunrise, hour24),
+            "tithi": state.get("tithi"),
+            "paksha": state.get("paksha"),
+            "tithi_start": start.isoformat(),
+            "tithi_end": end.isoformat(),
+            "amanta_month": months.get("amanta"),
+            "purnimanta_month": months.get("purnimanta"),
+            "aparahna_start": a_start.isoformat(),
+            "aparahna_end": a_end.isoformat(),
+            "basis": "maximum-aparahna-overlap",
+            "aparahna_overlap_minutes": round(overlap / 60.0, 2),
+            "selection_rule": "Pitru Paksha Tithi selected on the civil day where it has maximum overlap with local Aparahna",
+        })
     rows.sort(key=lambda row: row["date"])
     return rows
-
 
 def chaturmasa(year: int, lat: float, lon: float, tz: ZoneInfo, hour24: bool) -> list[dict]:
     events = []
