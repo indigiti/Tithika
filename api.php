@@ -204,6 +204,30 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'planetary') {
+        $payload = readPayload();
+        $mode = strtolower(trim((string)($_GET['mode'] ?? 'positions')));
+        if (!in_array($mode, ['positions','transit','retrograde','combustion'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported planetary mode'], 422);
+        }
+        $payload['mode'] = $mode;
+        $data = runPythonEngine('python/planetary.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
+    if ($action === 'jyotish') {
+        $payload = readPayload();
+        $mode = strtolower(trim((string)($_GET['mode'] ?? 'birthstar')));
+        if (!in_array($mode, ['birthstar','janma-lagna','moonsign','sunsign'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported Jyotish mode'], 422);
+        }
+        $payload['mode'] = $mode;
+        $data = runPythonEngine('python/jyotish.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'seasons') {
         $payload = readPayload();
         $data = runPythonEngine('python/seasons.py', $payload);
