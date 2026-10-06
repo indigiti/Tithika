@@ -107,5 +107,8 @@ return [
     'calendars/bengali',
     'calendars/odia',
     'calendars/assamese',
-    'calendars/iskcon'
+    'calendars/iskcon',
+    'panchang/nepali',
+    'calendars/nepali',
+    'calendars/jain'
 ];
