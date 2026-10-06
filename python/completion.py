@@ -481,9 +481,11 @@ def ishti_anvadhan(year,lat,lon,tz,hour24):
         for start,end in tithi_windows(year,tid,tz):
             d,sr,basis=select_tithi_day(start,end,lat,lon,tz)
             if d.year!=year: continue
-            rows.append({"name":"Anvadhan","date":(d-timedelta(days=1)).isoformat(),"weekday":(d-timedelta(days=1)).strftime("%A"),"cycle":label,
-                         "basis":"day preceding Ishti"})
-            rows.append({"name":"Ishti","date":d.isoformat(),"weekday":d.strftime("%A"),"cycle":label,"tithi_start":start.isoformat(),"tithi_end":end.isoformat(),"basis":basis})
+            rows.append({"name":"Anvadhan","date":d.isoformat(),"weekday":d.strftime("%A"),"cycle":label,
+                         "tithi_start":start.isoformat(),"tithi_end":end.isoformat(),"basis":basis+"; Anvadhan on Parva Tithi"})
+            ishti=d+timedelta(days=1)
+            rows.append({"name":"Ishti","date":ishti.isoformat(),"weekday":ishti.strftime("%A"),"cycle":label,
+                         "basis":"Ishti on the civil day following the Purnima/Amavasya Parva"})
     return sorted(rows,key=lambda r:(r["date"],r["name"]))
 
 
