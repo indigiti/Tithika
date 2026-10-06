@@ -4,7 +4,7 @@ A modern, location-aware Vedic calendar, Panchang and Muhurat platform built wit
 
 ## Product architecture
 
-Tithika currently maps **278 logical pages** across 10 product families:
+Tithika currently maps **279 logical pages** across 10 product families:
 
 - Panchang
 - Calendars
@@ -103,6 +103,21 @@ The evidence-first synthesis layer combines existing verified Jyotish engines in
 - divisional-boundary sensitivity warnings
 - no deterministic event prediction claims
 
+### Jyotish interpretation report — `/jyotish/interpretation-report/`
+
+The interpretation layer turns calculation evidence into transparent explanatory readings:
+
+- whole-sign functional lordship for all seven classical Grahas
+- strict Yogakaraka detection from Kendra + Trikona ownership
+- D1 dignity with D9 confirmation and D10 career context
+- Shadbala capacity and Sarvashtakavarga house support
+- key-house synthesis for H1, H2, H4, H5, H7, H9, H10 and H11
+- current Vimshottari lord activation
+- Jupiter, Saturn, Rahu and Ketu transit-house activation
+- domain narratives for identity, resources, learning, career and relationships
+- machine-readable evidence attached to every narrative layer
+- explicit safeguards against deterministic event, mortality or high-stakes predictions
+
 ### Choghadiya — `choghadiya.php`
 
 Verified calculation surface with:
@@ -123,7 +138,7 @@ index.php                     modern Tithika home
 site-map.php                  browsable map of all routes
 page.php                      shared mapped-page renderer
 
-config/routes.php             277-page product/route manifest
+config/routes.php             279-page product/route manifest
 includes/site.php             shared shell + route helpers
 assets/tithika.css            shared production UI system
 assets/tithika-site.js        shared location/date context
@@ -136,6 +151,7 @@ python/lunar_occurrences.py   lunar Vrat occurrence/Parana substrate
 python/sankranti.py           Nirayana solar-ingress engine
 python/seasons.py             equinox/solstice engine
 python/horoscope_analysis.py  unified Jyotish synthesis layer
+python/interpretation.py      rule-based Jyotish interpretation layer
 python/vendor/astronomy.py    vendored Astronomy Engine (MIT)
 
 docs/DRIKPANCHANG_AUDIT.md    benchmark/product audit
@@ -200,5 +216,6 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 13. Birth/Jyotish calculators. ✓
 14. Shodashavarga + structural Yogas + complete Shadbala. ✓
 15. Unified evidence-first horoscope analysis. ✓
+16. Auditable Jyotish interpretation knowledge layer. ✓
 
 See `docs/DRIKPANCHANG_AUDIT.md` and `docs/TITHIKA_PAGE_MAP.md` for the full implementation plan.
