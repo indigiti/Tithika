@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign','jyotish/janma-kundali','planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha','astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse','jyotish/vimshottari-dasha','jyotish/mangal-dosha','jyotish/kalasarpa','jyotish/shani-sadesati','jyotish/ashtakavarga','jyotish/shadbala','jyotish/horoscope-match','jyotish/marriage-analysis','jyotish/nakshatra-compatibility'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign','jyotish/janma-kundali','planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha','astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse','jyotish/vimshottari-dasha','jyotish/mangal-dosha','jyotish/kalasarpa','jyotish/shani-sadesati','jyotish/ashtakavarga','jyotish/shadbala','jyotish/horoscope-match','jyotish/marriage-analysis','jyotish/nakshatra-compatibility','jyotish/divisional-charts','jyotish/yogas'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -254,20 +254,56 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         </div>
         <div id="tkAshtaLoading" class="tk-panchang-loading">Building Ashtakavarga matrix…</div>
         <div id="tkAshtaResult" class="tk-ashta-result"></div>
+      <?php elseif ($page['slug'] === 'jyotish/divisional-charts'): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">BPHS Shodashavarga · D1–D60</span>
+            <h3>Divisional Charts</h3>
+            <p>Sixteen classical Vargas are derived from the same Lahiri Graha longitudes and exact birth Lagna. D2 and D10 use the Parashara construction; high-Varga cusp sensitivity is exposed.</p>
+          </div>
+          <div class="tk-panchang-engine">D1 · D2 · D3 · D4 · D7 · D9 · D10 · D12 · D16 · D20 · D24 · D27 · D30 · D40 · D45 · D60</div>
+        </div>
+        <div class="tk-birth-controls">
+          <label><span>Birth time</span><input id="tkVargaTime" type="time" step="1" value="12:00:00"></label>
+          <label><span>Divisional chart</span><select id="tkVargaSelect">
+            <option value="1">D1 · Rashi</option><option value="2">D2 · Hora</option><option value="3">D3 · Drekkana</option><option value="4">D4 · Chaturthamsha</option>
+            <option value="7">D7 · Saptamsha</option><option value="9" selected>D9 · Navamsha</option><option value="10">D10 · Dashamsha</option><option value="12">D12 · Dvadashamsha</option>
+            <option value="16">D16 · Shodashamsha</option><option value="20">D20 · Vimshamsha</option><option value="24">D24 · Siddhamsha</option><option value="27">D27 · Bhamsha</option>
+            <option value="30">D30 · Trimshamsha</option><option value="40">D40 · Khavedamsha</option><option value="45">D45 · Akshavedamsha</option><option value="60">D60 · Shashtyamsha</option>
+          </select></label>
+          <button id="tkVargaCalculate" type="button">Build chart</button>
+        </div>
+        <div id="tkVargaLoading" class="tk-panchang-loading">Calculating divisional chart…</div>
+        <div id="tkVargaResult" class="tk-varga-result"></div>
+      <?php elseif ($page['slug'] === 'jyotish/yogas'): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Structural Yoga detector</span>
+            <h3>Jyotish Yoga Analysis</h3>
+            <p>Detects a curated set of classical D1 combinations from exact Graha geometry, lordship and Graha Drishti, with cancellation or weakening evidence where implemented.</p>
+          </div>
+          <div class="tk-panchang-engine">Evidence-first · no predictive score</div>
+        </div>
+        <div class="tk-birth-controls">
+          <label><span>Birth time</span><input id="tkYogaTime" type="time" step="1" value="12:00:00"></label>
+          <button id="tkYogaCalculate" type="button">Detect Yogas</button>
+        </div>
+        <div id="tkYogaLoading" class="tk-panchang-loading">Detecting structural Yogas…</div>
+        <div id="tkYogaResult" class="tk-yoga-result"></div>
       <?php elseif ($page['slug'] === 'jyotish/shadbala'): ?>
         <div class="tk-panchang-live-head">
           <div>
-            <span class="tk-card-tag">Strength engine foundation</span>
-            <h3>Shadbala Components</h3>
-            <p>Only independently auditable components are shown. The final six-fold total is intentionally withheld until the remaining classical conventions are benchmarked.</p>
+            <span class="tk-card-tag">Complete six-fold strength profile</span>
+            <h3>Shadbala Planetary Strength</h3>
+            <p>Sthana, Dig, Kala, Cheshta, Naisargika and Drik Bala are calculated in virupas with every component and method convention exposed.</p>
           </div>
-          <div class="tk-panchang-engine">Foundation · not totaled</div>
+          <div class="tk-panchang-engine">60 virupas = 1 Rupa · Lahiri</div>
         </div>
         <div class="tk-birth-controls">
           <label><span>Birth time</span><input id="tkShadbalaTime" type="time" step="1" value="12:00:00"></label>
-          <button id="tkShadbalaCalculate" type="button">Calculate components</button>
+          <button id="tkShadbalaCalculate" type="button">Calculate Shadbala</button>
         </div>
-        <div id="tkShadbalaLoading" class="tk-panchang-loading">Calculating strength components…</div>
+        <div id="tkShadbalaLoading" class="tk-panchang-loading">Calculating six-fold planetary strength…</div>
         <div id="tkShadbalaResult" class="tk-shadbala-result"></div>
       <?php elseif ($page['slug'] === 'jyotish/janma-kundali'): ?>
         <div class="tk-panchang-live-head">
