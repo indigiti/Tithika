@@ -191,6 +191,12 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           </div>
           <div class="tk-panchang-engine">Astronomy Engine · Lahiri · mean nodes</div>
         </div>
+        <?php if ($page['slug'] === 'planets/positions'): ?>
+        <div class="tk-birth-controls">
+          <label><span>Local chart time</span><input id="tkPlanetTime" type="time" step="1" value="12:00:00"></label>
+          <button id="tkPlanetCalculate" type="button">Update positions</button>
+        </div>
+        <?php endif; ?>
         <div id="tkPlanetaryLoading" class="tk-panchang-loading">Calculating planetary ephemeris…</div>
         <div id="tkPlanetaryNote" class="tk-lunar-note"></div>
         <div id="tkPlanetaryResult" class="tk-planetary-result"></div>
