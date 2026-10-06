@@ -188,7 +188,7 @@ try {
     if ($action === 'festival') {
         $payload = readPayload();
         $kind = strtolower(trim((string)($_GET['kind'] ?? 'ganesh-chaturthi')));
-        if (!in_array($kind, ['ganesh-chaturthi','raksha-bandhan','navratri','dussehra','holi','karwa-chauth','janmashtami','diwali'], true)) {
+        if (!in_array($kind, ['ganesh-chaturthi','raksha-bandhan','navratri','dussehra','holi','karwa-chauth','janmashtami','rama-navami','hanuman-jayanti','akshaya-tritiya','vat-savitri','durga-puja','diwali'], true)) {
             out(['ok'=>false,'error'=>'Unsupported festival kind'], 422);
         }
         $payload['kind'] = $kind;
