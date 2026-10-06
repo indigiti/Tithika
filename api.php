@@ -281,6 +281,32 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'phase-completion') {
+        $payload = readPayload();
+        $slug = trim((string)($payload['slug'] ?? ''), '/');
+        $completion = require __DIR__ . '/config/completion.php';
+        if (!in_array($slug, $completion, true)) {
+            out(['ok'=>false,'error'=>'Unsupported completion route'], 422);
+        }
+        $payload['slug'] = $slug;
+        $script = match (true) {
+            $slug === 'panchang/gowri' => 'python/muhurat_completion.py',
+            str_starts_with($slug, 'panchang/') => 'python/panchang_completion.py',
+            str_starts_with($slug, 'muhurat/') => 'python/muhurat_completion.py',
+            str_starts_with($slug, 'vrat/') => 'python/vrat_completion.py',
+            str_starts_with($slug, 'calendars/'),
+            str_starts_with($slug, 'festivals/') => 'python/festival_calendar_completion.py',
+            str_starts_with($slug, 'jyotish/') => 'python/jyotish_secondary.py',
+            str_starts_with($slug, 'planets/'),
+            str_starts_with($slug, 'astronomy/') => 'python/astronomy_reference.py',
+            default => null,
+        };
+        if ($script === null) out(['ok'=>false,'error'=>'Completion engine unavailable'], 422);
+        $data = runPythonEngine($script, $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'lagna') {
         $payload = readPayload();
         $data = runPythonEngine('python/lagna.py', $payload);
