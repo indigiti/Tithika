@@ -1520,10 +1520,20 @@
   }
 
   const panel=$('#tkPlacePanel');
-  $('#tkPlaceButton')?.addEventListener('click',e=>{e.stopPropagation();panel.hidden=!panel.hidden});
+  const placeButton=$('#tkPlaceButton');
+  const setPlaceOpen=open=>{
+    if(!panel||!placeButton)return;
+    panel.hidden=!open;
+    placeButton.setAttribute('aria-expanded',open?'true':'false');
+    if(open)setTimeout(()=>$('#tkCitySearch')?.focus(),0);
+  };
+  placeButton?.addEventListener('click',e=>{e.stopPropagation();setPlaceOpen(panel?.hidden??true)});
   $('#tkDetectLocation')?.addEventListener('click',()=>locate(false));
   document.addEventListener('click',e=>{
-    if(panel&&!panel.hidden&&!e.target.closest('#tkPlacePanel')&&!e.target.closest('#tkPlaceButton'))panel.hidden=true;
+    if(panel&&!panel.hidden&&!e.target.closest('#tkPlacePanel')&&!e.target.closest('#tkPlaceButton'))setPlaceOpen(false);
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&panel&&!panel.hidden){setPlaceOpen(false);placeButton?.focus()}
   });
 
   $('#tkCitySearch')?.addEventListener('input',e=>{
@@ -1549,7 +1559,7 @@
           Object.assign(state,old);
           return;
         }
-        panel.hidden=true;
+        setPlaceOpen(false);
         calculate();
       }));
     }catch(e){toast('City search is temporarily unavailable')}
