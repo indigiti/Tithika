@@ -63,7 +63,11 @@ for row in abh:
 # Vinchudo is the Moon's passage through Vrishchika.
 vin=panchang_reuse.yearly_vinchudo(2026,tz,False)
 assert 11 <= len(vin) <= 14,len(vin)
-assert any(x["date"]=="2026-10-15" for x in vin),vin[-5:]
+oct15_noon=datetime(2026,10,15,12,0,tzinfo=tz)
+assert any(
+    datetime.fromisoformat(x["start"]) <= oct15_noon < datetime.fromisoformat(x["end"])
+    for x in vin
+),vin[-5:]
 for row in vin:
     mid=datetime.fromisoformat(row["start"])+(datetime.fromisoformat(row["end"])-datetime.fromisoformat(row["start"]))/2
     assert panchang.state_at(mid)["moon_rashi"]=="Vrishchika",row
