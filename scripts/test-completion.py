@@ -89,7 +89,8 @@ def test_vrat_completion():
     assert all(r.get("parana") for r in iskcon)
 
     chandra = completion.chandra_darshan(YEAR, LAT, LON, TZ, False)
-    assert "2026-10-12" in dates(chandra)
+    actual_chandra = sorted(dates(chandra))
+    assert "2026-10-12" in actual_chandra, f"Chandra Darshan mismatch: {actual_chandra}"
 
     ishti = completion.ishti_anvadhan(YEAR, LAT, LON, TZ, False)
     assert "2026-10-10" in dates(ishti, "Anvadhan")
