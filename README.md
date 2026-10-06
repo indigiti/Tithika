@@ -4,7 +4,7 @@ A modern, location-aware Vedic calendar, Panchang and Muhurat platform built wit
 
 ## Product architecture
 
-Tithika currently maps **277 logical pages** across 10 product families:
+Tithika currently maps **278 logical pages** across 10 product families:
 
 - Panchang
 - Calendars
@@ -89,6 +89,20 @@ It calculates all twelve Nirayana Rashi ingresses with exact local timestamps. P
 
 Verified Astronomy Engine events are live for the vernal/autumnal equinoxes and summer/winter solstices, rendered in the selected location's timezone.
 
+### Unified Jyotish analysis — `/jyotish/horoscope-analysis/`
+
+The evidence-first synthesis layer combines existing verified Jyotish engines into one report:
+
+- D1 Rashi, D9 Navamsha and D10 Dashamsha
+- complete six-fold Shadbala snapshot
+- Sarvashtakavarga house support
+- curated structural Yogas
+- current Vimshottari Mahadasha/Antardasha/Pratyantardasha context
+- current Jupiter, Saturn, Rahu and Ketu houses from Lagna and Moon
+- transparent domain evidence indices with disclosed weighting
+- divisional-boundary sensitivity warnings
+- no deterministic event prediction claims
+
 ### Choghadiya — `choghadiya.php`
 
 Verified calculation surface with:
@@ -121,6 +135,7 @@ python/panchang_month.py      Month Panchang engine
 python/lunar_occurrences.py   lunar Vrat occurrence/Parana substrate
 python/sankranti.py           Nirayana solar-ingress engine
 python/seasons.py             equinox/solstice engine
+python/horoscope_analysis.py  unified Jyotish synthesis layer
 python/vendor/astronomy.py    vendored Astronomy Engine (MIT)
 
 docs/DRIKPANCHANG_AUDIT.md    benchmark/product audit
@@ -181,7 +196,9 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 9. Smarta/Vaishnava Ekadashi observance selection + complete Parana rules.
 10. Festival rule engine.
 11. Extended Muhurat rule engine.
-12. Planet ephemeris/transit/retrograde/combustion.
-13. Birth/Jyotish calculators.
+12. Planet ephemeris/transit/retrograde/combustion. ✓
+13. Birth/Jyotish calculators. ✓
+14. Shodashavarga + structural Yogas + complete Shadbala. ✓
+15. Unified evidence-first horoscope analysis. ✓
 
 See `docs/DRIKPANCHANG_AUDIT.md` and `docs/TITHIKA_PAGE_MAP.md` for the full implementation plan.

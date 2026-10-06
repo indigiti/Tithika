@@ -100,6 +100,9 @@ jobs:
       - name: Janma Kundali regression fixture
         run: python scripts/test-kundali.py
 
+      - name: Unified horoscope analysis regression fixture
+        run: python scripts/test-horoscope-analysis.py
+
       - name: Major festival regression fixtures
         run: python scripts/test-festivals.py
 
