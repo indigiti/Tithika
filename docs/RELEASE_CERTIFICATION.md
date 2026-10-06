@@ -5,11 +5,11 @@ This document records the production-readiness contract enforced by CI. It is no
 ## Certified baseline
 
 - Product route contract: **292**
-- Verified calculation/live routes: **123**
+- Verified calculation/live routes: **130**
 - Structured editorial routes: **62**
 - Additional canonical live redirect: **1** (`muhurat/choghadiya`)
-- Total production-quality/indexable detail routes: **186**
-- Remaining mapped `noindex,follow` shells: **106**
+- Total production-quality/indexable detail routes: **193**
+- Remaining mapped `noindex,follow` shells: **99**
 
 The indexable set is generated from `config/live.php`, structured editorial coverage and explicit canonical live adapters. The XML sitemap uses the same quality state.
 
@@ -90,6 +90,26 @@ All ten are covered by `scripts/test-muhurat-reuse.py`, including 2026 Pune date
 
 `muhurat/gowri` remains gated until its regional day/night cycle is versioned explicitly. `muhurat/jain-pachchakkhan` and `muhurat/pancha-pakshi` require separate tradition-specific engines. `muhurat/do-ghati` and generic `muhurat/shubha-dates` also remain mapped until their acceptance profiles are defined precisely.
 
+## Newly certified Vrat recurrence routes
+
+The following routes reuse the verified Lahiri Panchang and existing lunar/Vrat substrates with explicit recurrence selectors:
+
+- `/vrat/satyanarayana/` — Purnima occurrence calendar backed by exact Tithi windows.
+- `/vrat/durgashtami/` — Shukla Ashtami prevailing at local sunrise.
+- `/vrat/skanda-sashti/` — Shukla Sashti with the Panchami→Sashti daytime-transition selector; after-sunset Sashti starts roll to the next civil day.
+- `/vrat/karthigai/` — Krittika Nakshatra prevailing at local sunset, matching the evening Deepam observance model.
+- `/vrat/rohini/` — Rohini Nakshatra prevailing immediately after local sunrise.
+- `/vrat/sawan-somwar/` — Mondays inside Shravana, exposed independently for Purnimanta and Amanta lunar-month conventions.
+- `/vrat/mangala-gauri/` — Tuesdays inside Shravana, exposed independently for Purnimanta and Amanta lunar-month conventions.
+
+All seven are covered by `scripts/test-vrat-recurrence.py` with 2026 Pune/Maharashtra recurrence anchors and rule invariants.
+
+### Deliberately gated Vrat routes
+
+`vrat/iskcon-ekadashi` remains gated. Cross-source regression showed that the existing simplified "ISKCON-compatible" selector does not match the published GCal/ISKCON date profile on every 2026 Pune occurrence, so Tithika will not expose it as a certified ISKCON calendar until a dedicated compatible selector is implemented.
+
+`vrat/kalashtami`, `vrat/chandra-darshan`, `vrat/masik-janmashtami`, `vrat/ishti-anvadhan`, `vrat/shraddha`, `vrat/purushottam-maas` and `vrat/chaturmasa` also remain mapped but unpromoted because they require additional night/visibility/ritual or multi-month selection logic.
+
 ## Data provenance
 
 Nepali Bikram Sambat civil month data is vendored from the MIT-licensed `sushilldhakal/nepali-calendar` project. Full attribution is in `docs/THIRD_PARTY_NOTICES.md`, and the upstream MIT license is retained beside the data file.
@@ -111,11 +131,11 @@ A release is certifiable only when all of the following pass on the exact merged
 
 ## Remaining shell-completion queue
 
-The remaining **106** mapped routes stay `noindex,follow`. They should be promoted in engine-reuse batches rather than route-by-route:
+The remaining **99** mapped routes stay `noindex,follow`. They should be promoted in engine-reuse batches rather than route-by-route:
 
 1. **Panchang rule-completion batch** — dedicated Manvadi/Yugadi/Kalpadi observance-day selectors plus Kranti Samya/Mahapat declination-equality calculation.
 2. **Muhurat rule-completion batch** — Gowri regional profiles, Jain Pachchakkhan, Pancha Pakshi, Do Ghati and generic Shubha Dates.
-3. **Vrat recurrence batch** — Vinayaka Chaturthi, Sawan Somwar, Skanda Sashti, Karthigai, Rohini, Chandra Darshan and related recurring rules.
+3. **Vrat rule-completion batch** — GCal-compatible ISKCON Ekadashi plus Kalashtami, Chandra Darshan, Masik Janmashtami, Ishti/Anvadhan, Shraddha, Purushottam Maas and Chaturmasa selectors.
 4. **Festival/calendar aggregation batch** — Hindu/Tamil/Malayalam month collections and festival-specific yearly calendars built from verified event rules.
 5. **Secondary Jyotish calculators** — Prashna, gemstone, Rudraksha, baby-name/name-initial and related evidence-based utilities.
 6. **Astronomy reference batch** — parallels, ecliptic crossings and Indian seasons.
