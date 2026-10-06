@@ -221,6 +221,7 @@
       if(seasonKinds[pageSlug]) await calculateSeasons();
       if(specializedMuhuratModes[pageSlug]) await calculateSpecializedMuhurat();
       if(utilityModes[pageSlug]) await calculatePanchangUtility();
+      if(panchangReuseModes[pageSlug]) await calculatePanchangReuse();
       if(regionalVariants[pageSlug]) await calculateRegionalCalendar();
     }catch(e){toast(e.message||'Unable to load location context')}
   }
@@ -1590,10 +1591,10 @@
     const input=$('#tkDate');if(!input)return;
     const d=new Date((input.value||isoToday())+'T12:00:00');
     const shift=Number(btn.dataset.shiftDate||0);
-    if(pageSlug==='panchang/month'||specializedMuhuratModes[pageSlug]||regionalVariants[pageSlug]){
+    if(pageSlug==='panchang/month'||specializedMuhuratModes[pageSlug]||regionalVariants[pageSlug]||panchangReuseMonthly.has(pageSlug)){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)){
+    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
@@ -1646,6 +1647,8 @@
   $('#tkMuhuratCalculate')?.addEventListener('click',()=>calculateSpecializedMuhurat());
   $('#tkMuhuratProfile')?.addEventListener('change',()=>calculateSpecializedMuhurat());
   $('#tkUtilityCalculate')?.addEventListener('click',()=>calculatePanchangUtility());
+  $('#tkReuseCalculate')?.addEventListener('click',()=>calculatePanchangReuse());
+  $('#tkReuseTime')?.addEventListener('change',()=>{if(panchangReuseModes[pageSlug])calculatePanchangReuse()});
   $('#tkBirthNakshatra')?.addEventListener('change',()=>{if(pageSlug==='panchang/tarabalam')calculatePanchangUtility()});
   $('#tkBirthRashi')?.addEventListener('change',()=>{if(pageSlug==='panchang/chandrabalam')calculatePanchangUtility()});
   $('#tkBirthTime')?.addEventListener('change',()=>{if(jyotishModes[pageSlug])calculateJyotish()});
