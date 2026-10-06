@@ -67,6 +67,15 @@ jobs:
       - name: Jyotish calculator regression fixtures
         run: python scripts/test-jyotish.py
 
+      - name: Planetary aspects and Yuddha regression fixtures
+        run: python scripts/test-aspects.py
+
+      - name: Eclipse regression fixtures
+        run: python scripts/test-eclipses.py
+
+      - name: Janma Kundali regression fixture
+        run: python scripts/test-kundali.py
+
       - name: Major festival regression fixtures
         run: python scripts/test-festivals.py
 
