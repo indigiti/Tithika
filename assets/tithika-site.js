@@ -31,6 +31,8 @@
   };
   const ashtaPages=['jyotish/ashtakavarga'];
   const shadbalaPages=['jyotish/shadbala'];
+  const vargaPages=['jyotish/divisional-charts'];
+  const yogaPages=['jyotish/yogas'];
   const matchPages=['jyotish/horoscope-match'];
   const marriagePages=['jyotish/marriage-analysis'];
   const nakMatchPages=['jyotish/nakshatra-compatibility'];
@@ -158,6 +160,8 @@
       if(doshaModes[pageSlug]) await calculateDosha();
       if(ashtaPages.includes(pageSlug)) await calculateAshtakavarga();
       if(shadbalaPages.includes(pageSlug)) await calculateShadbala();
+      if(vargaPages.includes(pageSlug)) await calculateVarga();
+      if(yogaPages.includes(pageSlug)) await calculateYogas();
       if(jyotishModes[pageSlug]) await calculateJyotish();
       if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
       if(observanceKinds[pageSlug]) await calculateObservances();
@@ -404,17 +408,58 @@
     }catch(e){if(loading)loading.textContent=e.message||'Ashtakavarga engine unavailable';toast(e.message||'Ashtakavarga engine unavailable')}
   }
 
+  async function calculateVarga(){
+    const loading=$('#tkVargaLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating divisional chart…'}
+    try{
+      const p=payload();p.time=$('#tkVargaTime')?.value||'12:00:00';p.division=Number($('#tkVargaSelect')?.value||9);
+      const r=await fetch(`${base}api.php?action=vargas`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+      const j=await r.json();if(!j.ok)throw new Error(j.error||'Varga engine unavailable');
+      if(loading)loading.hidden=true;
+      const key='D'+p.division,ch=j.charts?.[key],el=$('#tkVargaResult');if(!el||!ch)return;
+      const min=Number(ch.minimum_boundary_margin_deg||0);
+      const sensitive=min<0.15;
+      el.innerHTML=`<div class="tk-varga-head"><div><small>${esc(ch.key)} · ${esc(ch.name)}</small><h3>${esc(ch.theme)}</h3><p>Lagna ${esc(ch.lagna?.rashi||'—')} ${Number(ch.lagna?.degree_in_rashi||0).toFixed(2)}°</p></div><span class="${sensitive?'warning':'good'}">Nearest division boundary: ${min.toFixed(3)}°</span></div>
+        <div class="tk-kundali-charts">${renderKundaliChart(ch.cells,`${ch.key} · ${ch.name}`)}</div>
+        <div class="tk-varga-table">${(ch.placements||[]).map(x=>`<span><b>${esc(x.name)}${x.retrograde?' ℞':''}</b>${esc(x.rashi)} ${Number(x.degree_in_rashi).toFixed(2)}° · H${x.house}${x.vargottama?' · Vargottama':''}</span>`).join('')}</div>
+        <div class="tk-lunar-note">${esc(j.note||'')}</div>`;
+    }catch(e){if(loading)loading.textContent=e.message||'Varga engine unavailable';toast(e.message||'Varga engine unavailable')}
+  }
+
+  function yogaEvidence(obj){
+    return Object.entries(obj||{}).map(([k,v])=>`${esc(k.replaceAll('_',' '))}: ${esc(Array.isArray(v)?v.map(x=>typeof x==='object'?JSON.stringify(x):x).join(', '):typeof v==='object'?JSON.stringify(v):v)}`).join(' · ');
+  }
+
+  async function calculateYogas(){
+    const loading=$('#tkYogaLoading');
+    if(loading){loading.hidden=false;loading.textContent='Detecting structural Yogas…'}
+    try{
+      const p=payload();p.time=$('#tkYogaTime')?.value||'12:00:00';
+      const r=await fetch(`${base}api.php?action=yogas`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+      const j=await r.json();if(!j.ok)throw new Error(j.error||'Yoga engine unavailable');
+      if(loading)loading.hidden=true;
+      const el=$('#tkYogaResult');if(!el)return;
+      const rows=j.yogas||[];
+      el.innerHTML=`<div class="tk-yoga-summary"><span><small>Lagna</small><b>${esc(j.lagna?.rashi||'—')}</b></span><span><small>Detected set</small><b>${j.count||0}</b></span><span><small>Scope</small><b>Structural only</b></span></div>
+        <div class="tk-yoga-list">${rows.length?rows.map(y=>`<article><div class="tk-yoga-title"><span>${esc(y.category)}</span><h4>${esc(y.name)}</h4></div><p>${esc(y.rule)}</p><small>${yogaEvidence(y.evidence)}</small>${(y.notes||[]).length?`<em>${esc(y.notes.join(' · '))}</em>`:''}</article>`).join(''):'<div class="tk-panchang-empty">No Yoga from the current curated rule set was detected.</div>'}</div>
+        <div class="tk-lunar-note">${esc(j.note||'')}</div>`;
+    }catch(e){if(loading)loading.textContent=e.message||'Yoga engine unavailable';toast(e.message||'Yoga engine unavailable')}
+  }
+
   async function calculateShadbala(){
     const loading=$('#tkShadbalaLoading');
-    if(loading){loading.hidden=false;loading.textContent='Calculating strength components…'}
+    if(loading){loading.hidden=false;loading.textContent='Calculating six-fold planetary strength…'}
     try{
       const p=payload();p.time=$('#tkShadbalaTime')?.value||'12:00:00';
       const r=await fetch(`${base}api.php?action=shadbala`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
-      const j=await r.json();if(!j.ok)throw new Error(j.error||'Shadbala foundation unavailable');
+      const j=await r.json();if(!j.ok)throw new Error(j.error||'Shadbala engine unavailable');
       if(loading)loading.hidden=true;
       const el=$('#tkShadbalaResult');if(!el)return;
-      el.innerHTML=`<div class="tk-lunar-note">${esc(j.note||'')}</div><div class="tk-shadbala-grid">${(j.planets||[]).map(row=>`<article><header><b>${esc(row.planet)}</b><span>${esc(row.rashi)} · H${row.house}</span></header><div class="tk-shadbala-components"><span><small>Uchcha</small>${Number(row.components?.uchcha||0).toFixed(1)}</span><span><small>Dig</small>${Number(row.components?.dig||0).toFixed(1)}</span><span><small>Kendra</small>${Number(row.components?.kendra||0).toFixed(1)}</span><span><small>Drekkana</small>${Number(row.components?.drekkana||0).toFixed(1)}</span><span><small>Naisargika</small>${Number(row.components?.naisargika||0).toFixed(1)}</span><span><small>Chesta proxy</small>${row.components?.chesta_proxy===null?'—':Number(row.components?.chesta_proxy||0).toFixed(1)}</span></div></article>`).join('')}</div><div class="tk-rule-flag">Final Shadbala total withheld: ${esc((j.withheld||[]).join(' · '))}</div>`;
-    }catch(e){if(loading)loading.textContent=e.message||'Shadbala foundation unavailable';toast(e.message||'Shadbala foundation unavailable')}
+      el.innerHTML=`<div class="tk-shadbala-meta"><span><small>Lagna</small><b>${esc(j.lagna?.rashi||'—')}</b></span><span><small>Unit</small><b>60 virupas = 1 Rupa</b></span><span><small>Profile</small><b>Six-fold complete</b></span></div>
+        <div class="tk-shadbala-table"><div class="head"><b>Graha</b><b>Sthana</b><b>Dig</b><b>Kala</b><b>Cheshta</b><b>Nais.</b><b>Drik</b><b>Rupa</b><b>Req.</b></div>${(j.planets||[]).map(row=>{const c=row.components_virupa||{};return `<div><strong>${esc(row.planet)}</strong><span>${Number(c.sthana?.subtotal||0).toFixed(1)}</span><span>${Number(c.dig||0).toFixed(1)}</span><span>${Number(c.kala?.subtotal||0).toFixed(1)}</span><span>${Number(c.cheshta||0).toFixed(1)}</span><span>${Number(c.naisargika||0).toFixed(1)}</span><span>${Number(c.drik||0).toFixed(1)}</span><b class="${row.meets_required?'pass':'fail'}">${Number(row.total_rupa||0).toFixed(2)}</b><span>${Number(row.required_rupa||0).toFixed(1)}</span></div>`}).join('')}</div>
+        <div class="tk-shadbala-details">${(j.planets||[]).map(row=>{const s=row.components_virupa?.sthana||{},k=row.components_virupa?.kala||{};return `<article><header><b>${esc(row.planet)}</b><span>${Number(row.ratio||0).toFixed(2)}× required</span></header><p>Sthana: Uchcha ${Number(s.uchcha||0).toFixed(1)} · Saptavargaja ${Number(s.saptavargaja||0).toFixed(1)} · Ojayugma ${Number(s.ojayugma||0).toFixed(1)} · Kendradi ${Number(s.kendradi||0).toFixed(1)} · Drekkana ${Number(s.drekkana||0).toFixed(1)}</p><small>Kala: Nathonnatha ${Number(k.nathonnatha||0).toFixed(1)} · Paksha ${Number(k.paksha||0).toFixed(1)} · Tribhaga ${Number(k.tribhaga||0).toFixed(1)} · Abda ${Number(k.abda||0).toFixed(0)} · Masa ${Number(k.masa||0).toFixed(0)} · Vara ${Number(k.vara||0).toFixed(0)} · Hora ${Number(k.hora||0).toFixed(0)} · Ayana ${Number(k.ayana||0).toFixed(1)} · Yuddha ${Number(k.yuddha||0).toFixed(1)}</small></article>`}).join('')}</div>
+        <div class="tk-lunar-note">${esc(j.note||'')} ${esc((j.method_notes||[]).join(' · '))}</div>`;
+    }catch(e){if(loading)loading.textContent=e.message||'Shadbala engine unavailable';toast(e.message||'Shadbala engine unavailable')}
   }
 
   function matchProfile(role){
@@ -1206,6 +1251,11 @@
   $('#tkDoshaNode')?.addEventListener('change',()=>{if(doshaModes[pageSlug])calculateDosha()});
   $('#tkAshtaCalculate')?.addEventListener('click',()=>calculateAshtakavarga());
   $('#tkAshtaTime')?.addEventListener('change',()=>{if(ashtaPages.includes(pageSlug))calculateAshtakavarga()});
+  $('#tkVargaCalculate')?.addEventListener('click',()=>calculateVarga());
+  $('#tkVargaSelect')?.addEventListener('change',()=>{if(vargaPages.includes(pageSlug))calculateVarga()});
+  $('#tkVargaTime')?.addEventListener('change',()=>{if(vargaPages.includes(pageSlug))calculateVarga()});
+  $('#tkYogaCalculate')?.addEventListener('click',()=>calculateYogas());
+  $('#tkYogaTime')?.addEventListener('change',()=>{if(yogaPages.includes(pageSlug))calculateYogas()});
   $('#tkShadbalaCalculate')?.addEventListener('click',()=>calculateShadbala());
   $('#tkShadbalaTime')?.addEventListener('change',()=>{if(shadbalaPages.includes(pageSlug))calculateShadbala()});
   $('#tkKundaliCalculate')?.addEventListener('click',()=>calculateKundali());
