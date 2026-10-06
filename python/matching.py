@@ -22,6 +22,7 @@ import lagna
 import panchang
 import planetary
 import vimshottari
+import marriage_analysis
 
 ENGINE_VERSION = "0.1.0"
 NAK_SPAN = 360.0 / 27.0
@@ -275,12 +276,19 @@ def main():
         groom=profile_summary(payload.get("groom") or {},as_of)
         result=score(bride["moon"],groom["moon"])
         mangal_compatible=bride["mangal"]["present"]==groom["mangal"]["present"]
+        deep = marriage_analysis.analyze_profiles(
+            payload.get("groom") or {},
+            payload.get("bride") or {},
+            as_of,
+            int(payload.get("horizon_years") or 12),
+        )
         output={
             "ok":True,"mode":mode,"bride":bride,"groom":groom,"match":result,
             "integration":{
                 "mangal_compatible":mangal_compatible,
                 "mangal_note":"Both charts have the same base Manglik status." if mangal_compatible else "One chart is Manglik and the other is not under the base rule profile.",
-                "dasha_as_of":as_of.isoformat()
+                "dasha_as_of":as_of.isoformat(),
+                "deep_analysis": deep
             }
         }
     output["engine"]={"name":"tithika-ashtakoota","version":ENGINE_VERSION,"ayanamsha":"Lahiri / Chitrapaksha","maximum_gunas":36,"mangal_in_score":False}
