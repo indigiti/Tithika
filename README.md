@@ -4,7 +4,7 @@ A modern, location-aware Vedic calendar, Panchang and Muhurat platform built wit
 
 ## Product architecture
 
-Tithika currently maps **279 logical pages** across 10 product families:
+Tithika currently maps **291 logical pages** across 10 product families:
 
 - Panchang
 - Calendars
@@ -138,7 +138,7 @@ index.php                     modern Tithika home
 site-map.php                  browsable map of all routes
 page.php                      shared mapped-page renderer
 
-config/routes.php             279-page product/route manifest
+config/routes.php             291-page product/route manifest
 includes/site.php             shared shell + route helpers
 assets/tithika.css            shared production UI system
 assets/tithika-site.js        shared location/date context
