@@ -278,6 +278,7 @@ function tithika_render_header(string $title, ?array $page = null): void {
       <?php endforeach; ?>
       <a href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>">All tools</a>
     </nav>
+    <a class="tk-mobile-tools" href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>">All tools</a>
     <button class="tk-place-button" id="tkPlaceButton" type="button" aria-expanded="false" aria-controls="tkPlacePanel"><span aria-hidden="true">⌖</span><b id="tkPlaceText">Location</b></button>
   </header>
   <div class="tk-place-panel" id="tkPlacePanel" hidden aria-label="Location chooser">
