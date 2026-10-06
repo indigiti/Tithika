@@ -43,6 +43,9 @@ jobs:
       - name: SEO content accessibility and release audit
         run: php scripts/test-release-hardening.php
 
+      - name: Production certification contract
+        run: php scripts/test-production-certification.php
+
       - name: Panchang regression fixture
         run: python scripts/test-panchang.py
 
