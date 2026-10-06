@@ -14,6 +14,9 @@ assert m["present"] is True
 assert checks["Lagna"]["mars_house"]==10 and checks["Lagna"]["afflicted"] is False
 assert checks["Moon"]["mars_house"]==1 and checks["Moon"]["afflicted"] is True
 assert checks["Venus"]["mars_house"]==10 and checks["Venus"]["afflicted"] is False
+assert m["cancellation_status"]=="evidence-present"
+assert m["effective_present"] is False
+assert any(x["rule"]=="jupiter-conjunct-mars" for x in m["cancellation_evidence"])
 k=run("kalasarpa")
 assert k["present"] is False
 assert k["partial_considered"] is False
