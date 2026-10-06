@@ -266,6 +266,13 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'jyotish-interpretation') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/interpretation.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'vimshottari') {
         $payload = readPayload();
         $data = runPythonEngine('python/vimshottari.py', $payload);
