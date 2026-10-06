@@ -15,6 +15,7 @@
     'vrat/masik-shivaratri':'shivaratri',
     'festivals/maha-shivaratri':'shivaratri'
   };
+  const dwadashiPages=['vrat/dwadashi'];
   const mahadwadashiPages=['vrat/mahadwadashi'];
   const sankrantiPages=['vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti'];
   const seasonKinds={
@@ -28,7 +29,7 @@
     lat:19.076,lon:72.8777,city:'Mumbai, Maharashtra, India',
     timezone:'Asia/Kolkata',
     data:null,panchang:null,searchTimer:null,dateTouched:false,
-    monthData:null,monthKey:'',lunarCache:new Map(),observanceCache:new Map(),mahadwadashiCache:new Map(),sankrantiCache:new Map()
+    monthData:null,monthKey:'',lunarCache:new Map(),observanceCache:new Map(),dwadashiCache:new Map(),mahadwadashiCache:new Map(),sankrantiCache:new Map()
   };
 
   function isoToday(timeZone=state.timezone){
@@ -94,6 +95,7 @@
       if(monthPages.includes(pageSlug)) await calculateMonth();
       if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
       if(observanceKinds[pageSlug]) await calculateObservances();
+      if(dwadashiPages.includes(pageSlug)) await calculateDwadashi();
       if(mahadwadashiPages.includes(pageSlug)) await calculateMahadwadashi();
       if(sankrantiPages.includes(pageSlug)) await calculateSankranti();
       if(seasonKinds[pageSlug]) await calculateSeasons();
@@ -182,6 +184,60 @@
           <h4>${esc(row.name||row.observance||'Observance')}</h4>
           <p>${timing}</p>
           <small>${detail}</small>
+        </div>
+        <a href="${base}panchang/daily/?date=${encodeURIComponent(row.date)}">Panchang →</a>
+      </article>`;
+    }).join('');
+  }
+
+  async function calculateDwadashi(){
+    const loading=$('#tkDwadashiLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating Dwadashi observances…'}
+    try{
+      const p=payload();
+      const cacheKey=`${p.date.slice(0,4)}|${Number(p.lat).toFixed(5)}|${Number(p.lon).toFixed(5)}|${p.timezone}`;
+      if(state.dwadashiCache.has(cacheKey)){
+        renderDwadashi(state.dwadashiCache.get(cacheKey));
+        return;
+      }
+      const r=await fetch(`${base}api.php?action=dwadashi`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Unable to calculate Dwadashi');
+      state.dwadashiCache.set(cacheKey,j);
+      renderDwadashi(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Dwadashi engine unavailable'}
+      toast(e.message||'Dwadashi engine unavailable');
+    }
+  }
+
+  function renderDwadashi(d){
+    const loading=$('#tkDwadashiLoading');if(loading)loading.hidden=true;
+    const title=$('#tkDwadashiTitle');if(title)title.textContent=`Dwadashi Dates ${d.year}`;
+    const note=$('#tkDwadashiNote');if(note)note.textContent=d.note||'';
+    const list=$('#tkDwadashiList');if(!list)return;
+    const rows=d.events||[];
+    if(!rows.length){
+      list.innerHTML='<div class="tk-panchang-empty">No Dwadashi observances found for this year.</div>';
+      return;
+    }
+    list.innerHTML=rows.map(row=>{
+      const parana=row.parana;
+      const paranaText=parana
+        ? `Parana ${esc(parana.start_label||'—')} – ${esc(parana.end_label||'—')}`
+        : 'Parana unavailable';
+      const special=row.vishnushrinkhala_candidate
+        ? '<span class="tk-rule-flag">Special Parana review</span>'
+        : '';
+      return `<article class="tk-dwadashi-event">
+        <div class="tk-dwadashi-date"><b>${esc(row.date)}</b><span>${esc(row.weekday||'')}</span></div>
+        <div class="tk-dwadashi-main">
+          <div class="tk-dwadashi-title"><h4>${esc(row.name)}</h4>${special}</div>
+          <p>${esc(row.paksha||'')} · ${esc(row.purnimanta_month||'')} · ${esc(row.tithi_start_label||'—')} → ${esc(row.tithi_end_label||'—')}</p>
+          <small>${paranaText}${row.aliases?.length?' · '+row.aliases.map(esc).join(' · '):''}</small>
         </div>
         <a href="${base}panchang/daily/?date=${encodeURIComponent(row.date)}">Panchang →</a>
       </article>`;
@@ -587,7 +643,7 @@
     if(pageSlug==='panchang/month'){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)){
+    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
