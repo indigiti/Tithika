@@ -159,6 +159,18 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'observances') {
+        $payload = readPayload();
+        $kind = strtolower(trim((string)($_GET['kind'] ?? 'pradosh')));
+        if (!in_array($kind, ['pradosh','sankashti','shivaratri'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported observance kind'], 422);
+        }
+        $payload['kind'] = $kind;
+        $data = runPythonEngine('python/observances.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'seasons') {
         $payload = readPayload();
         $data = runPythonEngine('python/seasons.py', $payload);
