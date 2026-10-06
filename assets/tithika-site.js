@@ -94,6 +94,24 @@
     'panchang/panchak':'panchak',
     'panchang/bhadra':'bhadra'
   };
+  const panchangReuseModes={
+    'panchang/sunrise':'sunrise',
+    'panchang/abhijit-nakshatra':'abhijit-nakshatra',
+    'panchang/ganda-moola':'ganda-moola',
+    'panchang/manvadi-tithi':'creation-days',
+    'panchang/yugadi-tithi':'creation-days',
+    'panchang/kalpadi-tithi':'creation-days',
+    'panchang/vinchudo':'vinchudo',
+    'panchang/jwalamukhi-yoga':'jwalamukhi',
+    'panchang/sankalpa':'sankalpa',
+    'panchang/nakshatra':'nakshatra',
+    'panchang/vedic-clock':'vedic-clock'
+  };
+  const panchangReuseYearly=new Set([
+    'panchang/abhijit-nakshatra','panchang/ganda-moola','panchang/manvadi-tithi',
+    'panchang/yugadi-tithi','panchang/kalpadi-tithi','panchang/vinchudo','panchang/jwalamukhi-yoga'
+  ]);
+  const panchangReuseMonthly=new Set(['panchang/nakshatra']);
   const regionalVariants={
     'panchang/hindi':'hindi','panchang/tamil':'tamil','panchang/telugu':'telugu',
     'panchang/kannada':'kannada','panchang/malayalam':'malayalam','panchang/gujarati':'gujarati',
