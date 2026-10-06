@@ -106,6 +106,9 @@ jobs:
       - name: Jyotish interpretation regression fixture
         run: python scripts/test-interpretation.py
 
+      - name: Jyotish timing timeline regression fixture
+        run: python scripts/test-timing-timeline.py
+
       - name: Major festival regression fixtures
         run: python scripts/test-festivals.py
 
