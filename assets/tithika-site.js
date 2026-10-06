@@ -23,6 +23,13 @@
     'astronomy/lunar-eclipse':'lunar'
   };
   const kundaliPages=['jyotish/janma-kundali'];
+  const dashaPages=['jyotish/vimshottari-dasha'];
+  const doshaModes={
+    'jyotish/mangal-dosha':'mangal',
+    'jyotish/kalasarpa':'kalasarpa',
+    'jyotish/shani-sadesati':'sade-sati'
+  };
+  const ashtaPages=['jyotish/ashtakavarga'];
   const jyotishModes={
     'jyotish/birthstar':'birthstar',
     'jyotish/janma-lagna':'janma-lagna',
@@ -138,6 +145,9 @@
       if(aspectsModes[pageSlug]) await calculateAspects();
       if(eclipseModes[pageSlug]) await calculateEclipses();
       if(kundaliPages.includes(pageSlug)) await calculateKundali();
+      if(dashaPages.includes(pageSlug)) await calculateDasha();
+      if(doshaModes[pageSlug]) await calculateDosha();
+      if(ashtaPages.includes(pageSlug)) await calculateAshtakavarga();
       if(jyotishModes[pageSlug]) await calculateJyotish();
       if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
       if(observanceKinds[pageSlug]) await calculateObservances();
@@ -331,6 +341,56 @@
         <div class="tk-kundali-grahas">${(j.d1?.placements||[]).map(p=>`<span><b>${esc(p.name)}</b>${esc(p.rashi)} ${Number(p.degree_in_rashi).toFixed(2)}° · H${p.house}</span>`).join('')}</div>
         <div class="tk-lunar-note">Tithi ${esc(j.panchang?.tithi||'—')} · Yoga ${esc(j.panchang?.yoga||'—')} · Karana ${esc(j.panchang?.karana||'—')}${yuddha?' · Graha Yuddha: '+yuddha:''}</div>`;
     }catch(e){if(loading)loading.textContent=e.message||'Kundali engine unavailable';toast(e.message||'Kundali engine unavailable')}
+  }
+
+  async function calculateDasha(){
+    const loading=$('#tkDashaLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating Vimshottari periods…'}
+    try{
+      const p=payload();p.time=$('#tkDashaTime')?.value||'12:00:00';
+      const r=await fetch(`${base}api.php?action=vimshottari`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+      const j=await r.json();if(!j.ok)throw new Error(j.error||'Dasha engine unavailable');
+      if(loading)loading.hidden=true;
+      const el=$('#tkDashaResult');if(!el)return;
+      const x=j.result||{};
+      const current=x.current;
+      el.innerHTML=`<div class="tk-jyotish-primary"><small>Birth balance</small><h3>${esc(x.starting_lord||'—')} Mahadasha</h3><p>${esc(x.nakshatra||'—')} · Pada ${x.nakshatra_pada||'—'} · ${Number(x.birth_balance_years||0).toFixed(2)} years remaining at birth</p></div>
+        ${current?`<div class="tk-dasha-current"><span><b>Current Maha</b>${esc(current.mahadasha?.lord||'—')}</span><span><b>Current Antar</b>${esc(current.antardasha?.lord||'—')}</span><span><b>Current Pratyantar</b>${esc(current.antardasha?.current_pratyantardasha?.lord||'—')}</span></div>`:''}
+        <div class="tk-dasha-list">${(x.mahadasha||[]).map(m=>`<article><div><b>${esc(m.lord)}</b><small>${esc(new Date(m.start).toLocaleDateString('en-IN',{timeZone:state.timezone,dateStyle:'medium'}))} → ${esc(new Date(m.end).toLocaleDateString('en-IN',{timeZone:state.timezone,dateStyle:'medium'}))}</small></div><div class="tk-dasha-antar">${(m.antardasha||[]).map(a=>`<span><b>${esc(a.lord)}</b>${esc(new Date(a.start).toLocaleDateString('en-IN',{timeZone:state.timezone,year:'numeric',month:'short'}))}</span>`).join('')}</div></article>`).join('')}</div>`;
+    }catch(e){if(loading)loading.textContent=e.message||'Dasha engine unavailable';toast(e.message||'Dasha engine unavailable')}
+  }
+
+  async function calculateDosha(){
+    const loading=$('#tkDoshaLoading');
+    if(loading){loading.hidden=false;loading.textContent='Evaluating chart…'}
+    try{
+      const mode=doshaModes[pageSlug],p=payload();p.time=$('#tkDoshaTime')?.value||'12:00:00';p.node_model=$('#tkDoshaNode')?.value||'mean';
+      const r=await fetch(`${base}api.php?action=dosha&mode=${encodeURIComponent(mode)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+      const j=await r.json();if(!j.ok)throw new Error(j.error||'Dosha engine unavailable');
+      if(loading)loading.hidden=true;
+      const x=j.result||{},el=$('#tkDoshaResult');if(!el)return;
+      if(mode==='mangal'){
+        el.innerHTML=`<div class="tk-jyotish-primary"><small>Base Mangal Dosha</small><h3>${x.present?'Manglik':'Non-Manglik'}</h3><p>Checked from Lagna, Moon and Venus</p></div><div class="tk-jyotish-grid">${(x.checks||[]).map(c=>`<div><small>${esc(c.reference)}</small><strong>House ${c.mars_house}</strong><span>${c.afflicted?'Afflicted':'Clear'}</span></div>`).join('')}</div><div class="tk-lunar-note">Cancellation combinations are not auto-applied in this rule profile.</div>`;
+      }else if(mode==='kalasarpa'){
+        el.innerHTML=`<div class="tk-jyotish-primary"><small>Kalasarpa Yoga</small><h3>${x.present?esc(x.type):'Not Present'}</h3><p>${x.present?esc(x.direction||''):'Not all seven classical planets lie in one Rahu–Ketu half'} · ${esc(x.node_model||'mean')} nodes</p></div>`;
+      }else{
+        el.innerHTML=`<div class="tk-jyotish-primary"><small>Janma Rashi</small><h3>${esc(x.moon_rashi||'—')}</h3><p>${x.current?'Current phase: '+esc(x.current.phase):'No Sade Sati phase at selected present date'}</p></div><div class="tk-dasha-list">${(x.periods||[]).map(s=>`<article><div><b>${esc(s.phase)} · ${esc(s.rashi)}</b><small>${esc(new Date(s.start).toLocaleDateString('en-IN',{timeZone:state.timezone,dateStyle:'medium'}))} → ${esc(new Date(s.end).toLocaleDateString('en-IN',{timeZone:state.timezone,dateStyle:'medium'}))}</small></div></article>`).join('')}</div>`;
+      }
+    }catch(e){if(loading)loading.textContent=e.message||'Dosha engine unavailable';toast(e.message||'Dosha engine unavailable')}
+  }
+
+  async function calculateAshtakavarga(){
+    const loading=$('#tkAshtaLoading');
+    if(loading){loading.hidden=false;loading.textContent='Building Ashtakavarga matrix…'}
+    try{
+      const p=payload();p.time=$('#tkAshtaTime')?.value||'12:00:00';
+      const r=await fetch(`${base}api.php?action=ashtakavarga`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+      const j=await r.json();if(!j.ok)throw new Error(j.error||'Ashtakavarga engine unavailable');
+      if(loading)loading.hidden=true;
+      const el=$('#tkAshtaResult');if(!el)return;
+      const planets=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'];
+      el.innerHTML=`<div class="tk-ashta-summary"><span><small>SAV Total</small><b>${j.sav?.total||0}</b></span><span><small>Integrity</small><b>${j.integrity?.valid?'337 ✓':'Check failed'}</b></span></div><div class="tk-ashta-table"><div class="head"><b>Rashi</b>${planets.map(p=>`<b>${esc(p.slice(0,3))}</b>`).join('')}<b>SAV</b></div>${(j.rows||[]).map(row=>`<div><strong>H${row.house} · ${esc(row.rashi)}</strong>${planets.map(p=>`<span>${row.bav?.[p]??0}</span>`).join('')}<b>${row.sav}</b></div>`).join('')}</div>`;
+    }catch(e){if(loading)loading.textContent=e.message||'Ashtakavarga engine unavailable';toast(e.message||'Ashtakavarga engine unavailable')}
   }
 
   async function calculateLagna(){
@@ -952,6 +1012,13 @@
   $('#tkPlanetCalculate')?.addEventListener('click',()=>calculatePlanetary());
   $('#tkPlanetTime')?.addEventListener('change',()=>{if(pageSlug==='planets/positions')calculatePlanetary()});
   $('#tkNodeModel')?.addEventListener('change',()=>{if(pageSlug==='planets/positions')calculatePlanetary()});
+  $('#tkDashaCalculate')?.addEventListener('click',()=>calculateDasha());
+  $('#tkDashaTime')?.addEventListener('change',()=>{if(dashaPages.includes(pageSlug))calculateDasha()});
+  $('#tkDoshaCalculate')?.addEventListener('click',()=>calculateDosha());
+  $('#tkDoshaTime')?.addEventListener('change',()=>{if(doshaModes[pageSlug])calculateDosha()});
+  $('#tkDoshaNode')?.addEventListener('change',()=>{if(doshaModes[pageSlug])calculateDosha()});
+  $('#tkAshtaCalculate')?.addEventListener('click',()=>calculateAshtakavarga());
+  $('#tkAshtaTime')?.addEventListener('change',()=>{if(ashtaPages.includes(pageSlug))calculateAshtakavarga()});
   $('#tkKundaliCalculate')?.addEventListener('click',()=>calculateKundali());
   $('#tkKundaliTime')?.addEventListener('change',()=>{if(kundaliPages.includes(pageSlug))calculateKundali()});
   $('#tkKundaliNode')?.addEventListener('change',()=>{if(kundaliPages.includes(pageSlug))calculateKundali()});
