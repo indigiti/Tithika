@@ -56,6 +56,8 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
+$completionSlugs = require __DIR__ . '/config/completion.php';
+$isCompletionPage = in_array($page['slug'], $completionSlugs, true);
 $isComputed = tithika_is_live_page($page['slug']) || tithika_has_editorial_content($page);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
@@ -746,6 +748,28 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         </div>
       <?php elseif (tithika_has_editorial_content($page)): ?>
         <?php tithika_render_editorial_content($page); ?>
+      <?php elseif ($isCompletionPage): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Certified completion engine</span>
+            <h3 id="tkPhaseTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Route-specific calculation or structured reference data is generated from Tithika's shared Panchang, festival, Jyotish and astronomy substrates. Tradition-specific assumptions remain visible in each result.</p>
+          </div>
+          <div class="tk-panchang-engine" id="tkPhaseEngine">Six-phase completion</div>
+        </div>
+        <?php if (str_starts_with($page['slug'], 'jyotish/')): ?>
+        <div class="tk-birth-controls">
+          <label><span>Time / birth time</span><input id="tkPhaseTime" type="time" step="60" value="12:00"></label>
+          <?php if ($page['slug'] === 'jyotish/rashi-by-name'): ?>
+          <label><span>Name</span><input id="tkPhaseName" type="text" maxlength="80" placeholder="Enter name"></label>
+          <?php endif; ?>
+          <button id="tkPhaseCalculate" type="button">Calculate</button>
+        </div>
+        <?php endif; ?>
+        <div id="tkPhaseLoading" class="tk-panchang-loading">Building verified result…</div>
+        <div id="tkPhaseSummary" class="tk-lunar-note"></div>
+        <div id="tkPhaseMetrics" class="tk-panchang-summary"></div>
+        <div id="tkPhaseSections" class="tk-observance-list"></div>
       <?php elseif ($page['template'] === 'calendar' || $page['template'] === 'festival'): ?>
         <span class="tk-card-tag">Calendar interface</span>
         <h3>Month-first navigation</h3>
