@@ -135,7 +135,7 @@ return [
     'vrat/karthigai',
     'vrat/rohini',
     'vrat/sawan-somwar',
-    'vrat/mangala-gauri'
+    'vrat/mangala-gauri',
     'panchang/gowri',
     'panchang/published',
     'panchang/manvadi-tithi',
