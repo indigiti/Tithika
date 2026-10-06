@@ -585,4 +585,115 @@ def jyotish_secondary(mode,payload,lat,lon,tz):
         r=st["moon_rashi"]
         if mode=="gemstone":
             item,lord=GEMSTONE_TRADITION[r]; return {"moon_rashi":r,"traditional_correspondence":item,"planetary_lord":lord,"disclaimer":"Traditional Jyotish correspondence, not medical or financial advice."}
-        return {"moon_rashi":r,"traditio
+        return {"moon_rashi":r,"traditional_correspondence":RUDRAKSHA_TRADITION[r],"disclaimer":"Traditional devotional correspondence; no health outcome is implied."}
+    if mode in ("baby-name","name-initials"):
+        syll=NAME_SYLLABLES[st["nakshatra"]][st["nakshatra_pada"]-1]
+        return {"nakshatra":st["nakshatra"],"pada":st["nakshatra_pada"],"recommended_syllable":syll,"moon_rashi":st["moon_rashi"],"basis":"traditional Nakshatra-Pada naming syllable"}
+    if mode=="rashi-by-name":
+        name=str(payload.get("name") or "").strip(); initial=name[:2].title() if name else ""
+        matches=[r for r,vals in RASHI_INITIALS.items() if any(initial.startswith(v.title()) or (name and name[0].upper()==v[0].upper()) for v in vals)]
+        return {"name":name,"candidate_rashis":matches,"basis":"traditional phonetic-initial lookup; birth Moon remains authoritative for Janma Rashi"}
+    if mode=="shraddha-tithi":
+        return {"reference_date":moment.date().isoformat(),"tithi":st["tithi"],"tithi_id":st["tithi_id"],"paksha":st["paksha"],"purnimanta_month":strip_adhika(panchang.lunar_month_info(moment,st).get("purnimanta")),"basis":"Lahiri lunar Tithi identity at supplied local time"}
+    if mode=="sahasra-chandrodaya":
+        birth_text=str(payload.get("birth_date") or payload.get("date")); birth=datetime.fromisoformat(birth_text+"T12:00:00").replace(tzinfo=tz)
+        approx=birth+timedelta(days=999*29.530588853)
+        start=panchang.astronomy_time(approx-timedelta(days=20)); full=panchang.astronomy.SearchMoonPhase(180.0,start,40.0)
+        when=panchang.datetime_from_astronomy(full,tz) if full else approx
+        return {"birth_date":birth_text,"thousandth_full_moon":when.isoformat(),"date":when.date().isoformat(),"basis":"1000th full-moon occurrence counted from the birth lunation using exact Moon-phase refinement"}
+    raise ValueError("Unsupported secondary Jyotish mode")
+
+
+def planet_parallel(d,lat,lon,tz):
+    moment=datetime(d.year,d.month,d.day,12,0,tzinfo=tz); names=["Sun","Moon","Mercury","Venus","Mars","Jupiter","Saturn"]
+    dec={n:declination(planetary.PLANETS[n],moment,lat,lon) for n in names}; rows=[]
+    for i,a in enumerate(names):
+        for b in names[i+1:]:
+            same=dec[a]*dec[b]>=0; delta=abs(abs(dec[a])-abs(dec[b]))
+            if delta<=0.75:
+                rows.append({"name":f"{a} {'Parallel' if same else 'Contra-parallel'} {b}","planet_a":a,"planet_b":b,"type":"parallel" if same else "contra-parallel","orb_deg":round(delta,4),"declination_a":round(dec[a],4),"declination_b":round(dec[b],4),"datetime":moment.isoformat()})
+    return sorted(rows,key=lambda r:r["orb_deg"])
+
+
+def ecliptic_lat(name,moment): return planetary.tropical_coordinates(name,moment,"mean")[1]
+
+
+def ecliptic_crossings(year,tz):
+    rows=[]; planets=["Mercury","Venus","Mars","Jupiter","Saturn"]
+    for name in planets:
+        left=datetime(year,1,1,0,0,tzinfo=tz); fl=ecliptic_lat(name,left)
+        while left.year==year:
+            right=min(datetime(year+1,1,1,0,0,tzinfo=tz),left+timedelta(days=1)); fr=ecliptic_lat(name,right)
+            if fl==0 or fl*fr<0:
+                lo,hi=left,right; flo=fl
+                for _ in range(34):
+                    mid=lo+(hi-lo)/2; fm=ecliptic_lat(name,mid)
+                    if flo*fm<=0: hi=mid
+                    else: lo=mid; flo=fm
+                moment=hi; before=ecliptic_lat(name,moment-timedelta(hours=1)); after=ecliptic_lat(name,moment+timedelta(hours=1))
+                rows.append({"name":f"{name} Ecliptic Crossing","planet":name,"date":moment.date().isoformat(),"datetime":moment.isoformat(),"direction":"ascending" if after>before else "descending","latitude":round(ecliptic_lat(name,moment),8)})
+            left=right; fl=fr
+            if left.year>year: break
+    return sorted(rows,key=lambda r:r["datetime"])
+
+
+def refine_sun_longitude(target,left,right):
+    def diff(dt):
+        sun,_,_=panchang.sidereal_longitudes(dt); return ((sun-target+540)%360)-180
+    lo,hi=left,right; flo=diff(lo)
+    for _ in range(46):
+        mid=lo+(hi-lo)/2; fm=diff(mid)
+        if flo*fm<=0: hi=mid
+        else: lo=mid; flo=fm
+    return hi
+
+
+def indian_seasons(year,tz):
+    targets=[(0,"Vasanta"),(60,"Grishma"),(120,"Varsha"),(180,"Sharad"),(240,"Hemanta"),(300,"Shishira")]; rows=[]
+    start=datetime(year,1,1,tzinfo=tz); end=datetime(year+1,1,1,tzinfo=tz); step=timedelta(days=1)
+    for target,name in targets:
+        left=start; prev=int(panchang.sidereal_longitudes(left)[0]//60)
+        found=None
+        while left<end:
+            right=min(end,left+step); a=panchang.sidereal_longitudes(left)[0]; b=panchang.sidereal_longitudes(right)[0]
+            # unwrap around 360 for target 0
+            aa=a; bb=b; tt=target
+            if target==0 and aa>300: tt=360
+            if bb<aa: bb+=360
+            if aa<=tt<=bb:
+                found=refine_sun_longitude(target,left,right); break
+            left=right
+        if found:
+            rows.append({"name":name+" Ritu","date":found.date().isoformat(),"datetime":found.isoformat(),"time_label":panchang.fmt(found),"sidereal_sun_target":target,"basis":"Nirayana solar 60-degree Ritu boundary"})
+    return sorted(rows,key=lambda r:r["datetime"])
+
+
+def main():
+    payload=json.loads(sys.stdin.read() or "{}")
+    mode=str(payload.get("mode") or "manvadi").strip().lower()
+    if mode not in MODE_TITLES: raise ValueError("Unsupported completion mode")
+    lat=float(payload.get("lat",18.5204)); lon=float(payload.get("lon",73.8567))
+    if not (-89.999<=lat<=89.999 and -180<=lon<=180): raise ValueError("Invalid latitude/longitude")
+    tzname=str(payload.get("timezone") or "Asia/Kolkata")
+    try: tz=ZoneInfo(tzname)
+    except ZoneInfoNotFoundError: tzname="Asia/Kolkata"; tz=ZoneInfo(tzname)
+    selected=datetime.strptime(str(payload.get("date") or datetime.now(tz).strftime("%Y-%m-%d")),"%Y-%m-%d").date()
+    year=selected.year; hour24=bool(payload.get("hour24",False)); result={}
+    if mode=="manvadi": result["events"]=named_tithi_events(year,MANVADI_RULES,lat,lon,tz,hour24)
+    elif mode=="yugadi-tithi": result["events"]=named_tithi_events(year,YUGADI_RULES,lat,lon,tz,hour24)
+    elif mode=="kalpadi": result["events"]=named_tithi_events(year,KALPADI_RULES,lat,lon,tz,hour24)
+    elif mode=="kranti-samya": result["events"]=kranti_samya(year,lat,lon,tz,hour24)
+    elif mode=="gowri": result["events"]=gowri_day(selected,lat,lon,tz)
+    elif mode=="jain-pachchakkhan": result["events"]=pachchakkhan(selected,lat,lon,tz)
+    elif mode=="pancha-pakshi": result.update(pancha_pakshi(selected,lat,lon,tz,payload))
+    elif mode=="do-ghati": result["events"]=do_ghati(selected,lat,lon,tz)
+    elif mode=="shubha-dates": result["events"]=shubha_dates(year,lat,lon,tz)
+    elif mode=="iskcon-ekadashi": result["events"]=iskcon_ekadashi(year,lat,lon,tz,hour24)
+    elif mode=="kalashtami": result["events"]=kalashtami(year,lat,lon,tz,hour24)
+    elif mode=="chandra-darshan": result["events"]=chandra_darshan(year,lat,lon,tz,hour24)
+    elif mode=="masik-janmashtami": result["events"]=masik_janmashtami(year,lat,lon,tz,hour24)
+    elif mode=="ishti-anvadhan": result["events"]=ishti_anvadhan(year,lat,lon,tz,hour24)
+    elif mode=="shraddha": result["events"]=shraddha_events(year,lat,lon,tz,hour24)
+    elif mode=="purushottam-maas": result["events"]=adhika_months(year,lat,lon,tz)
+    elif mode=="chaturmasa": result["events"]=chaturmasa(year,lat,lon,tz,hour24)
+    elif mode.startswith("festival-"): result["events"]=festival_aggregate(ye
