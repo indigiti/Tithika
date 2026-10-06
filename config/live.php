@@ -118,5 +118,15 @@ return [
     'panchang/vinchudo',
     'panchang/jwalamukhi-yoga',
     'panchang/sankalpa',
-    'panchang/vedic-clock'
+    'panchang/vedic-clock',
+    'muhurat/shubha-hora',
+    'muhurat/panchaka-rahita',
+    'muhurat/auspicious-yoga',
+    'muhurat/guru-pushya',
+    'muhurat/sarvartha-siddhi',
+    'muhurat/amrit-siddhi',
+    'muhurat/dwipushkar',
+    'muhurat/tripushkar',
+    'muhurat/ravi-pushya',
+    'muhurat/ravi-yoga'
 ];
