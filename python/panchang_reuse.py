@@ -336,12 +336,14 @@ def creation_days(year: int, lat: float, lon: float, tz: ZoneInfo, hour24: bool)
         begin = datetime.fromisoformat(interval_row["start"])
         finish = datetime.fromisoformat(interval_row["end"])
         midpoint = begin + (finish - begin) / 2
-        display_date = midpoint.date()
+        display_date = begin.date()
         if display_date.year != year:
             continue
 
         state = panchang.state_at(midpoint)
         month_info = panchang.lunar_month_info(midpoint, state)
+        if bool(month_info.get("adhika")):
+            continue
         month = str(month_info.get("purnimanta") or "").replace("Adhika ", "")
         key = (month, state["paksha"], state["tithi_number"])
 
@@ -365,7 +367,7 @@ def creation_days(year: int, lat: float, lon: float, tz: ZoneInfo, hour24: bool)
                 "paksha": state["paksha"],
                 "tithi": state["tithi"],
                 "tithi_number": state["tithi_number"],
-                "date_rule": "local civil date containing exact Tithi midpoint",
+                "date_rule": "local civil date on which the exact target Tithi begins; Adhika-month duplicates excluded",
             })
             seen[kind].add(name)
 
