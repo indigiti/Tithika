@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign','jyotish/janma-kundali','planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha','astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign','jyotish/janma-kundali','planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha','astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse','jyotish/vimshottari-dasha','jyotish/mangal-dosha','jyotish/kalasarpa','jyotish/shani-sadesati','jyotish/ashtakavarga'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -206,6 +206,54 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <div id="tkEclipseLoading" class="tk-panchang-loading">Calculating eclipse events…</div>
         <div id="tkEclipseNote" class="tk-lunar-note"></div>
         <div id="tkEclipseResult" class="tk-eclipse-result"></div>
+      <?php elseif ($page['slug'] === 'jyotish/vimshottari-dasha'): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Vimshottari · 120 year cycle</span>
+            <h3>Vimshottari Dasha</h3>
+            <p>Birth Moon Nakshatra selects the starting Mahadasha; the remaining Nakshatra fraction determines the birth balance.</p>
+          </div>
+          <div class="tk-panchang-engine">Lahiri · 365.25 day Dasha year</div>
+        </div>
+        <div class="tk-birth-controls">
+          <label><span>Birth time</span><input id="tkDashaTime" type="time" step="1" value="12:00:00"></label>
+          <button id="tkDashaCalculate" type="button">Calculate Dasha</button>
+        </div>
+        <div id="tkDashaLoading" class="tk-panchang-loading">Calculating Vimshottari periods…</div>
+        <div id="tkDashaResult" class="tk-dasha-result"></div>
+      <?php elseif (in_array($page['slug'], ['jyotish/mangal-dosha','jyotish/kalasarpa','jyotish/shani-sadesati'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Natal / transit rule engine</span>
+            <h3 id="tkDoshaTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Rules are evaluated from the same Lahiri Janma chart used by Tithika Kundali; Sade Sati uses actual Saturn Rashi ingress and re-entry.</p>
+          </div>
+          <div class="tk-panchang-engine">Lahiri · mean nodes default</div>
+        </div>
+        <div class="tk-birth-controls">
+          <label><span>Birth time</span><input id="tkDoshaTime" type="time" step="1" value="12:00:00"></label>
+          <?php if ($page['slug'] === 'jyotish/kalasarpa'): ?>
+          <label><span>Rahu / Ketu</span><select id="tkDoshaNode"><option value="mean">Mean nodes</option><option value="true">True nodes</option></select></label>
+          <?php endif; ?>
+          <button id="tkDoshaCalculate" type="button">Calculate</button>
+        </div>
+        <div id="tkDoshaLoading" class="tk-panchang-loading">Evaluating chart…</div>
+        <div id="tkDoshaResult" class="tk-dosha-result"></div>
+      <?php elseif ($page['slug'] === 'jyotish/ashtakavarga'): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Classical bindu strength map</span>
+            <h3>Ashtakavarga</h3>
+            <p>Seven Bhinnashtakavarga tables are built from Sun through Saturn plus Lagna contributor positions, then summed into Sarvashtakavarga.</p>
+          </div>
+          <div class="tk-panchang-engine">Parashari raw BAV · SAV</div>
+        </div>
+        <div class="tk-birth-controls">
+          <label><span>Birth time</span><input id="tkAshtaTime" type="time" step="1" value="12:00:00"></label>
+          <button id="tkAshtaCalculate" type="button">Calculate Ashtakavarga</button>
+        </div>
+        <div id="tkAshtaLoading" class="tk-panchang-loading">Building Ashtakavarga matrix…</div>
+        <div id="tkAshtaResult" class="tk-ashta-result"></div>
       <?php elseif ($page['slug'] === 'jyotish/janma-kundali'): ?>
         <div class="tk-panchang-live-head">
           <div>
