@@ -244,6 +244,25 @@ def select_tithi_day(start,end,lat,lon,tz):
     return start.date(),None,"civil-date-fallback"
 
 
+def select_daytime_overlap(start,end,lat,lon,tz):
+    """Select the civil day with greatest target-Tithi overlap in the first 3/5 of daylight."""
+    candidates=[]
+    d=start.date()-timedelta(days=1)
+    while d<=end.date()+timedelta(days=1):
+        sr=rise(d,lat,lon,tz); ss=set_(d,lat,lon,tz)
+        if sr and ss:
+            cutoff=sr+(ss-sr)*3/5
+            overlap=max(timedelta(0),min(end,cutoff)-max(start,sr))
+            candidates.append((overlap,d,sr))
+        d+=timedelta(days=1)
+    if not candidates:
+        return select_tithi_day(start,end,lat,lon,tz)
+    overlap,d,sr=max(candidates,key=lambda row:row[0])
+    if overlap<=timedelta(0):
+        return select_tithi_day(start,end,lat,lon,tz)
+    return d,sr,"maximum-Purvahna/daytime Tithi overlap"
+
+
 def named_tithi_events(year,rules,lat,lon,tz,hour24):
     cache={}; rows=[]
     for name,month,tithi_id in rules:
@@ -253,7 +272,10 @@ def named_tithi_events(year,rules,lat,lon,tz,hour24):
             info=month_for_window(start,end)
             if strip_adhika(info.get("purnimanta"))!=month or info.get("adhika"):
                 continue
-            d,sr,basis=select_tithi_day(start,end,lat,lon,tz)
+            if month=="Vaishakha" and tithi_id==2:
+                d,sr,basis=select_daytime_overlap(start,end,lat,lon,tz)
+            else:
+                d,sr,basis=select_tithi_day(start,end,lat,lon,tz)
             if d.year!=year: continue
             matches.append((d,start,end,sr,basis,info))
         if not matches: continue
