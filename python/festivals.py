@@ -300,7 +300,12 @@ def festival_event(kind, year, lat, lon, tz, hour24):
             lambda d: (solar_day_parts(d, lat, lon, tz) or {}).get("madhyahna"),
         )
         if selected:
-            extra["puja"] = window(selected["overlap"][0], selected["overlap"][1], selected["date"], hour24)
+            extra["puja"] = window(
+                selected["period"][0] if kind == "rama-navami" else selected["overlap"][0],
+                selected["period"][1] if kind == "rama-navami" else selected["overlap"][1],
+                selected["date"],
+                hour24,
+            )
             if kind == "rama-navami":
                 next_day = selected["date"] + timedelta(days=1)
                 next_sunrise = rise(next_day, lat, lon, tz)
