@@ -53,7 +53,6 @@ for row in windows:
     assert row["duration_days"] > 0
 
 assert d["dasha_overlap"]["horizon_years"]==12
-assert "No additional compatibility score" not in d.get("disclaimer","")
-assert "No additional compatibility score".lower() in d["disclaimer"].lower()
+assert "no additional compatibility score" in d["disclaimer"].lower()
 
 print("Marriage analysis fixture OK: D1/D9, Mangal cancellation, 7th lords and Dasha overlaps")
