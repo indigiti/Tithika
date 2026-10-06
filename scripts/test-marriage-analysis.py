@@ -28,7 +28,7 @@ assert g["lagna"]["rashi"]=="Tula"
 assert g["d1"]["seventh_sign"]=="Mesha"
 assert g["d1"]["seventh_lord"]=="Mars"
 assert g["d1"]["seventh_lord_house"]==10
-assert g["d9"]["lagna"]["rashi"]=="Vrischika",g["d9"]["lagna"]
+assert g["d9"]["lagna"]["rashi"]=="Vrishchika",g["d9"]["lagna"]
 assert g["d9"]["seventh_sign"]=="Vrishabha"
 assert g["d9"]["seventh_lord"]=="Venus"
 assert g["d9"]["seventh_lord_house"]==4
