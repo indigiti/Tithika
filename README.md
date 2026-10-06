@@ -23,17 +23,14 @@ All mapped utility pages share one responsive design system, one route manifest 
 
 ### Home — `index.php`
 
-Modern product-style daily dashboard with:
+The homepage now uses the same local production shell as mapped routes:
 
-- automatic browser geolocation
-- manual city search fallback
-- live current Choghadiya
-- active-period progress/countdown
-- local sunrise and sunset
-- Rahu Kaal
-- next favourable Choghadiya
-- responsive day timeline
-- links into the broader Tithika product map
+- no runtime Tailwind/CDN dependency
+- shared canonical/OpenGraph/JSON-LD metadata
+- keyboard-accessible location chooser
+- responsive family/engine overview
+- production-quality route counts
+- direct paths into Panchang, Muhurat, Jyotish, festivals and editorial content
 
 ### Daily Panchang — `/panchang/daily/`
 
@@ -215,6 +212,45 @@ The mapped Rashifal family is now backed by the natal interpretation and timing 
 - disclosed natal/Dasha/transit score components
 - no event probabilities or guaranteed outcome claims
 
+### Stage 8 — SEO + internal linking
+
+The shared shell now provides production SEO controls across Tithika:
+
+- absolute canonical URLs
+- unique title/description generation
+- index/noindex quality gating from the centralized verified-route registry
+- OpenGraph + Twitter metadata
+- WebSite/WebPage/Article/CollectionPage JSON-LD
+- BreadcrumbList schema on detail pages
+- dynamic `/sitemap.xml` containing only production-quality routes
+- dynamic `/robots.txt` with sitemap discovery
+- topic-aware cross-family internal links that avoid thin mapped shells
+
+### Stage 9 — Devotion / Learn / Gallery content layer
+
+All Devotion, Gallery and Learn routes now have structured editorial content instead of generic placeholder copy:
+
+- original explanatory Learn guides for Panchang, Choghadiya, Muhurat, Nakshatra, Rahu Kaal, FAQ and product guidance
+- devotional taxonomy for Aarti, Chalisa, Stotra, Mantra, Yantra, deity and ritual routes
+- original lightweight visual indexes for Gallery and Wallpapers
+- related tool links connecting editorial content back to verified calculation surfaces
+- no copied devotional editions or third-party gallery artwork embedded in the core bundle
+
+### Stage 10 — performance, mobile, accessibility and release hardening
+
+The production shell now includes:
+
+- local versioned CSS/JS assets with long-lived immutable caching
+- gzip/deflate support and safe delivery headers
+- shared web manifest
+- skip navigation and visible keyboard focus
+- accurate `aria-expanded` state + Escape handling for the location chooser
+- mobile access to the full tool map
+- reduced-motion handling
+- content-visibility on large lower-page sections
+- removal of the homepage Tailwind CDN dependency
+- CI budgets for CSS/JS size, SEO metadata, editorial coverage, schema, accessibility markers and crawl configuration
+
 ### Choghadiya — `choghadiya.php`
 
 Verified calculation surface with:
@@ -236,9 +272,13 @@ site-map.php                  browsable map of all routes
 page.php                      shared mapped-page renderer
 
 config/routes.php             292-page product/route manifest
-includes/site.php             shared shell + route helpers
+config/live.php               centralized verified/live route registry
+includes/site.php             shared shell + SEO/schema/route helpers
+includes/content.php          structured Devotion/Learn/Gallery content
+sitemap.php / robots.php      quality-filtered crawl endpoints
+manifest.webmanifest          installable app metadata
 assets/tithika.css            shared production UI system
-assets/tithika-site.js        shared location/date context
+assets/tithika-site.js        shared location/date/accessibility context
 
 api.php                       PHP API / geocoding bridge
 python/choghadiya.py          solar + Choghadiya engine
@@ -330,5 +370,8 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 19. Auditable Jyotish interpretation knowledge layer. ✓
 20. Jyotish timing and forecast timeline engine. ✓
 21. Personalized daily/weekly/monthly/yearly Rashifal engine. ✓
+22. SEO/schema/internal-linking and quality-filtered sitemap. ✓
+23. Devotion/Learn/Gallery structured content layer. ✓
+24. Performance/mobile/accessibility/release hardening. ✓
 
 See `docs/DRIKPANCHANG_AUDIT.md` and `docs/TITHIKA_PAGE_MAP.md` for the full implementation plan.
