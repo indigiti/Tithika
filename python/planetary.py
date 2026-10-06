@@ -288,6 +288,64 @@ def retrograde_events(year: int, tz: ZoneInfo) -> list[dict]:
     return rows
 
 
+def combustion_margin(name: str, moment: datetime) -> float:
+    state = planet_state(name, moment)
+    if name not in COMBUSTION_LIMITS:
+        return 999.0
+    return state["sun_separation_deg"] - state["combustion_limit_deg"]
+
+
+def refine_combustion_boundary(
+    name: str, left: datetime, right: datetime, left_inside: bool
+) -> datetime:
+    lo, hi = left, right
+    for _ in range(45):
+        mid = lo + (hi - lo) / 2
+        inside = combustion_margin(name, mid) <= 0.0
+        if inside == left_inside:
+            lo = mid
+        else:
+            hi = mid
+    return hi
+
+
+def combustion_events(year: int, tz: ZoneInfo) -> list[dict]:
+    rows = []
+    start = datetime(year, 1, 1, 0, 0, tzinfo=tz)
+    end = datetime(year + 1, 1, 1, 0, 0, tzinfo=tz)
+    names = ["Mercury", "Venus", "Mars", "Jupiter", "Saturn"]
+
+    for name in names:
+        step = timedelta(hours=6)
+        left = start - timedelta(days=20)
+        left_inside = combustion_margin(name, left) <= 0.0
+        probe = left + step
+
+        while probe <= end + timedelta(days=20):
+            inside = combustion_margin(name, probe) <= 0.0
+            if inside != left_inside:
+                event = refine_combustion_boundary(name, probe - step, probe, left_inside)
+                if start <= event < end:
+                    state = planet_state(name, event)
+                    rows.append({
+                        "planet": name,
+                        "datetime": event.isoformat(),
+                        "date": event.date().isoformat(),
+                        "event": "asta_start" if inside else "udaya_end",
+                        "sun_separation_deg": state.get("sun_separation_deg"),
+                        "limit_deg": state.get("combustion_limit_deg"),
+                        "rashi": state["rashi"],
+                        "profile": "classical-angular-separation",
+                    })
+                left_inside = inside
+            else:
+                left_inside = inside
+            probe += step
+
+    rows.sort(key=lambda row: row["datetime"])
+    return rows
+
+
 def main() -> None:
     payload = json.loads(sys.stdin.read() or "{}")
     mode = str(payload.get("mode") or "positions").lower()
@@ -336,6 +394,13 @@ def main() -> None:
     elif mode == "retrograde":
         output["year"] = selected_date.year
         output["events"] = retrograde_events(selected_date.year, tz)
+    elif mode == "combustion":
+        output["year"] = selected_date.year
+        output["events"] = combustion_events(selected_date.year, tz)
+        output["note"] = (
+            "Combustion intervals use the classical angular-separation profile exposed "
+            "per planet; they are not a location-specific optical visibility model."
+        )
     else:
         raise ValueError("Unsupported planetary mode")
 
