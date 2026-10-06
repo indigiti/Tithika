@@ -279,20 +279,19 @@ def lunar_rule_day(d: date, lat: float, lon: float, tz: ZoneInfo):
 
 
 def chaitra_new_year(year: int, lat: float, lon: float, tz: ZoneInfo) -> date:
-    for month in (3, 4):
-        _, count = calendar.monthrange(year, month)
-        for day in range(1, count + 1):
-            d = date(year, month, day)
-            item = lunar_rule_day(d, lat, lon, tz)
-            if not item:
-                continue
-            _, state, lunar_month = item
-            if (
-                lunar_month == "Chaitra"
-                and state["paksha"] == "Shukla Paksha"
-                and state["tithi_number"] == 1
-            ):
-                return d
+    start = datetime(year, 3, 1, tzinfo=tz)
+    end = datetime(year, 5, 1, tzinfo=tz)
+    for row in tithi_intervals(start, end, False):
+        if row["paksha"] != "Shukla Paksha" or row["number"] != 1:
+            continue
+        begin = datetime.fromisoformat(row["start"])
+        finish = datetime.fromisoformat(row["end"])
+        midpoint = begin + (finish - begin) / 2
+        state = panchang.state_at(midpoint)
+        month_info = panchang.lunar_month_info(midpoint, state)
+        month = str(month_info.get("purnimanta") or "").replace("Adhika ", "")
+        if month == "Chaitra" and not bool(month_info.get("adhika")):
+            return begin.date()
     raise ValueError("Unable to resolve Chaitra Shukla Pratipada")
 
 
