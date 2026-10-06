@@ -28,13 +28,33 @@ def run(kind):
     return data
 
 ek=run("ekadashi")
-assert ek["observance_status"]=="smarta-vaishnava-base-rule"
+assert ek["observance_status"]=="smarta-vaishnava-iskcon-mahadwadashi-integrated"
 oct_event=next(
     event for event in ek["events"]
     if event.get("observance",{}).get("smarta",{}).get("date")=="2026-10-06"
 )
 assert oct_event["observance"]["vaishnava"]["date"]=="2026-10-06"
 assert oct_event["observance"]["vaishnava"]["basis"]=="shuddha-at-arunodaya"
+
+
+# Mahadwadashi is now integrated into Vaishnava/ISKCON date selection.
+maha_events=[
+    event for event in ek["events"]
+    if event.get("observance",{}).get("mahadwadashi",{}).get("active")
+]
+assert maha_events, "expected integrated Mahadwadashi overrides in 2026"
+maha_dates={
+    event["observance"]["mahadwadashi"]["date"]: event
+    for event in maha_events
+}
+for expected in ("2026-05-27","2026-08-24","2026-11-21"):
+    assert expected in maha_dates,(expected,sorted(maha_dates))
+    obs=maha_dates[expected]["observance"]
+    assert obs["vaishnava"]["date"]==expected
+    assert obs["iskcon"]["date"]==expected
+    assert obs["vaishnava"]["basis"]=="mahadwadashi-override"
+    assert obs["iskcon"]["basis"]=="iskcon-mahadwadashi-override"
+    assert obs["vaishnava"]["parana"] is not None
 
 july_event=next(
     event for event in ek["events"]
