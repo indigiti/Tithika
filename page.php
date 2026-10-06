@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign','jyotish/janma-kundali','jyotish/horoscope-analysis','jyotish/interpretation-report','jyotish/timing-timeline','planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha','astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse','jyotish/vimshottari-dasha','jyotish/mangal-dosha','jyotish/kalasarpa','jyotish/shani-sadesati','jyotish/ashtakavarga','jyotish/shadbala','jyotish/horoscope-match','jyotish/marriage-analysis','jyotish/nakshatra-compatibility','jyotish/divisional-charts','jyotish/yogas'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign','jyotish/janma-kundali','jyotish/horoscope-analysis','jyotish/interpretation-report','jyotish/timing-timeline','jyotish/rashifal','jyotish/rashifal/daily','jyotish/rashifal/weekly','jyotish/rashifal/monthly','jyotish/rashifal/yearly','planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha','astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse','jyotish/vimshottari-dasha','jyotish/mangal-dosha','jyotish/kalasarpa','jyotish/shani-sadesati','jyotish/ashtakavarga','jyotish/shadbala','jyotish/horoscope-match','jyotish/marriage-analysis','jyotish/nakshatra-compatibility','jyotish/divisional-charts','jyotish/yogas'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -305,6 +305,42 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         </div>
         <div id="tkShadbalaLoading" class="tk-panchang-loading">Calculating six-fold planetary strength…</div>
         <div id="tkShadbalaResult" class="tk-shadbala-result"></div>
+      <?php elseif (in_array($page['slug'], ['jyotish/rashifal','jyotish/rashifal/daily','jyotish/rashifal/weekly','jyotish/rashifal/monthly','jyotish/rashifal/yearly'], true)): ?>
+        <?php
+          $rfModes = [
+            'jyotish/rashifal' => 'overview',
+            'jyotish/rashifal/daily' => 'daily',
+            'jyotish/rashifal/weekly' => 'weekly',
+            'jyotish/rashifal/monthly' => 'monthly',
+            'jyotish/rashifal/yearly' => 'yearly',
+          ];
+          $rfMode = $rfModes[$page['slug']] ?? 'overview';
+        ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Personalized birth-chart Rashifal</span>
+            <h3><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Uses your Janma chart, functional lordship, Vimshottari activation and horizon-appropriate transits. Scores describe relative emphasis, not guaranteed events.</p>
+          </div>
+          <div class="tk-panchang-engine">Lahiri · Dasha + transit evidence · auditable scoring</div>
+        </div>
+        <nav class="tk-rashifal-tabs" aria-label="Rashifal period">
+          <a class="<?= $rfMode === 'overview' ? 'active' : '' ?>" href="<?= htmlspecialchars(tithika_pretty_url('jyotish/rashifal')) ?>">Overview</a>
+          <a class="<?= $rfMode === 'daily' ? 'active' : '' ?>" href="<?= htmlspecialchars(tithika_pretty_url('jyotish/rashifal/daily')) ?>">Daily</a>
+          <a class="<?= $rfMode === 'weekly' ? 'active' : '' ?>" href="<?= htmlspecialchars(tithika_pretty_url('jyotish/rashifal/weekly')) ?>">Weekly</a>
+          <a class="<?= $rfMode === 'monthly' ? 'active' : '' ?>" href="<?= htmlspecialchars(tithika_pretty_url('jyotish/rashifal/monthly')) ?>">Monthly</a>
+          <a class="<?= $rfMode === 'yearly' ? 'active' : '' ?>" href="<?= htmlspecialchars(tithika_pretty_url('jyotish/rashifal/yearly')) ?>">Yearly</a>
+        </nav>
+        <div class="tk-birth-controls tk-rashifal-controls">
+          <label><span>Birth date</span><input id="tkRashifalBirthDate" type="date"></label>
+          <label><span>Birth time</span><input id="tkRashifalBirthTime" type="time" step="1" value="12:00:00"></label>
+          <label><span>Forecast date</span><input id="tkRashifalTargetDate" type="date"></label>
+          <label><span>Rahu / Ketu</span><select id="tkRashifalNode"><option value="mean">Mean nodes</option><option value="true">True nodes</option></select></label>
+          <button id="tkRashifalCalculate" type="button">Build Rashifal</button>
+        </div>
+        <input id="tkRashifalMode" type="hidden" value="<?= htmlspecialchars($rfMode) ?>">
+        <div id="tkRashifalLoading" class="tk-panchang-loading">Building personalized Rashifal…</div>
+        <div id="tkRashifalResult" class="tk-rashifal-result"></div>
       <?php elseif ($page['slug'] === 'jyotish/timing-timeline'): ?>
         <div class="tk-panchang-live-head">
           <div>
