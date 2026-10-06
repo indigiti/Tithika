@@ -25,8 +25,54 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import panchang
 import lagna
+import choghadiya
 
 KINDS = {
+    "rama-navami": {
+        "title": "Rama Navami",
+        "month": "Chaitra",
+        "paksha": "Shukla Paksha",
+        "tithi_id": 8,
+        "start_angle": 96.0,
+        "end_angle": 108.0,
+        "selector": "madhyahna",
+    },
+    "hanuman-jayanti": {
+        "title": "Hanuman Jayanti",
+        "month": "Chaitra",
+        "paksha": "Shukla Paksha",
+        "tithi_id": 14,
+        "start_angle": 168.0,
+        "end_angle": 180.0,
+        "selector": "sunrise-only",
+    },
+    "akshaya-tritiya": {
+        "title": "Akshaya Tritiya",
+        "month": "Vaishakha",
+        "paksha": "Shukla Paksha",
+        "tithi_id": 2,
+        "start_angle": 24.0,
+        "end_angle": 36.0,
+        "selector": "auspicious-choghadiya",
+    },
+    "vat-savitri": {
+        "title": "Vat Savitri Vrat",
+        "month": "Jyeshtha",
+        "paksha": "Krishna Paksha",
+        "tithi_id": 29,
+        "start_angle": 348.0,
+        "end_angle": 0.0,
+        "selector": "sunrise-only",
+    },
+    "durga-puja": {
+        "title": "Durga Puja / Mahashtami",
+        "month": "Ashwina",
+        "paksha": "Shukla Paksha",
+        "tithi_id": 7,
+        "start_angle": 84.0,
+        "end_angle": 96.0,
+        "selector": "sandhi",
+    },
     "ganesh-chaturthi": {
         "title": "Ganesh Chaturthi",
         "month": "Bhadrapada",
@@ -255,6 +301,68 @@ def festival_event(kind, year, lat, lon, tz, hour24):
         )
         if selected:
             extra["puja"] = window(selected["overlap"][0], selected["overlap"][1], selected["date"], hour24)
+            if kind == "rama-navami":
+                next_day = selected["date"] + timedelta(days=1)
+                next_sunrise = rise(next_day, lat, lon, tz)
+                extra["vaishnava_date"] = (
+                    next_day.isoformat()
+                    if next_sunrise and start_dt <= next_sunrise < end_dt
+                    else selected["date"].isoformat()
+                )
+
+    elif selector == "sunrise-only":
+        sr = choose_sunrise(start_dt, end_dt, lat, lon, tz)
+        if sr:
+            d, sunrise = sr
+            selected = {"date": d, "score": 1}
+            extra["sunrise"] = sunrise.isoformat()
+            extra["sunrise_label"] = panchang.transition_label(sunrise, d, hour24)
+
+    elif selector == "auspicious-choghadiya":
+        best = None
+        for d in candidate_dates(start_dt, end_dt):
+            sunrise = choghadiya.solar_event(d, lat, lon, tz, True)
+            sunset = choghadiya.solar_event(d, lat, lon, tz, False)
+            if not sunrise or not sunset:
+                continue
+            rows = choghadiya.period_rows(
+                sunrise, sunset, choghadiya.DAY_SEQUENCES[d.weekday()], hour24
+            )
+            good = {"Chara", "Labh", "Amrit", "Shubh"}
+            active_start = None
+            active_end = None
+            for row in rows:
+                a = datetime.fromisoformat(row["start"])
+                b = datetime.fromisoformat(row["end"])
+                ov = overlap(start_dt, end_dt, a, b)
+                if row["name"] in good and ov:
+                    if active_start is None:
+                        active_start = ov[0]
+                        active_end = ov[1]
+                    elif ov[0] <= active_end + timedelta(seconds=2):
+                        active_end = max(active_end, ov[1])
+                    else:
+                        break
+                elif active_start is not None:
+                    break
+            if active_start and active_end:
+                score = (active_end - active_start).total_seconds()
+                if best is None or score > best["score"]:
+                    best = {"date": d, "start": active_start, "end": active_end, "score": score}
+        if best:
+            selected = best
+            extra["puja"] = window(best["start"], best["end"], best["date"], hour24)
+            extra["choghadiya_basis"] = "Chara/Labh/Amrit/Shubh overlap"
+
+    elif selector == "sandhi":
+        d = end_dt.date()
+        selected = {"date": d, "score": 1}
+        sandhi_start = end_dt - timedelta(minutes=24)
+        sandhi_end = end_dt + timedelta(minutes=24)
+        extra["sandhi_puja"] = window(sandhi_start, sandhi_end, d, hour24)
+        extra["mahashtami_date"] = d.isoformat()
+        extra["maha_navami_date"] = d.isoformat()
+        extra["navami_start"] = end_dt.isoformat()
 
     elif selector == "purnima-sunrise":
         sr = choose_sunrise(start_dt, end_dt, lat, lon, tz)
