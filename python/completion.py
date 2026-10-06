@@ -468,11 +468,18 @@ def chandra_darshan(year,lat,lon,tz,hour24):
     for ama_start,ama_end in tithi_windows(year,29,tz):
         for offset in (0,1,2):
             d=ama_end.date()+timedelta(days=offset); ss=set_(d,lat,lon,tz); ms=set_(d,lat,lon,tz,panchang.astronomy.Body.Moon)
-            if ss and ms and ms>ss:
+            moon_lag = (ms-ss).total_seconds()/60.0 if ss and ms else -1.0
+            # A merely positive moon lag is not a useful crescent-viewing
+            # opportunity. Published Indian Chandra Darshan calendars use the
+            # following evening when the first post-Amavasya lag is only a few
+            # minutes. Use a conservative 40-minute geometric lag floor while
+            # explicitly avoiding a claim of atmospheric visibility modelling.
+            if ss and ms and moon_lag>=40.0:
                 if d.year==year:
                     rows.append({"name":"Chandra Darshan","date":d.isoformat(),"weekday":d.strftime("%A"),"start":ss.isoformat(),"end":ms.isoformat(),
                                  "start_label":panchang.fmt(ss,hour24),"end_label":panchang.fmt(ms,hour24),
-                                 "basis":"first geometric post-Amavasya sunset-to-moonset visibility window"})
+                                 "moon_lag_minutes":round(moon_lag,2),
+                                 "basis":"first post-Amavasya sunset-to-moonset window with at least 40 minutes geometric Moon lag; atmospheric visibility is not modelled"})
                 break
     return sorted({r["date"]:r for r in rows}.values(),key=lambda r:r["date"])
 
