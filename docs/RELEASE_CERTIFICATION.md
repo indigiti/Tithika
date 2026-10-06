@@ -46,7 +46,7 @@ Contract:
 - Vir Nirvana Samvat is displayed alongside Vikram Samvat.
 - Aatham, Chaudas and Amavasya flags derive from the sunrise Tithi.
 - The response states that Jain sect/region/Sangh calendars can add observance-specific rules.
-- 2026 regression locks Vikram 2082 / Vir 2552 before New Year and Vikram 2083 / Vir 2553 from 2026-11-09.
+- 2026 regression locks Vikram 2082 / Vir 2552 through the Amavasya sunrise on 2026-11-09 and Vikram 2083 / Vir 2553 from Kartika Shukla Pratipada at sunrise on 2026-11-10.
 
 ## Data provenance
 
