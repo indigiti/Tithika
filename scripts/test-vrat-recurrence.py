@@ -52,15 +52,13 @@ for row in skanda:
     assert row["date"]==expected.isoformat(),(row,expected)
 
 # Karthigai: Krittika must be active immediately after sunrise.
-karth=vrat_recurrence.nakshatra_vrat(
-    2026,lat,lon,tz,False,"Krittika","Karthigai"
-)
+karth=vrat_recurrence.karthigai_days(2026,lat,lon,tz,False)
 karth_dates={row["date"] for row in karth}
 for required in ("2026-09-03","2026-09-30","2026-11-24","2026-12-21"):
     assert required in karth_dates,(required,sorted(karth_dates))
 for row in karth:
-    sunrise=datetime.fromisoformat(row["sunrise"])+timedelta(seconds=1)
-    assert panchang.state_at(sunrise)["nakshatra"]=="Krittika",row
+    sunset=datetime.fromisoformat(row["sunset"])-timedelta(seconds=1)
+    assert panchang.state_at(sunset)["nakshatra"]=="Krittika",row
 
 # Rohini Vrat explicitly requires Rohini after local sunrise.
 rohini=vrat_recurrence.nakshatra_vrat(
