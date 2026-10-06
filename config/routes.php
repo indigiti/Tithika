@@ -226,6 +226,7 @@ return [
             ['slug'=>'jyotish/janma-kundali','title'=>'Janma Kundali','template'=>'calculator'],
             ['slug'=>'jyotish/vimshottari-dasha','title'=>'Vimshottari Dasha','template'=>'calculator'],
             ['slug'=>'jyotish/ashtakavarga','title'=>'Ashtakavarga','template'=>'calculator'],
+            ['slug'=>'jyotish/shadbala','title'=>'Shadbala Strength Foundation','template'=>'calculator'],
             ['slug'=>'jyotish/pancha-pakshi','title'=>'Pancha Pakshi Bird Calculator','template'=>'calculator'],
             ['slug'=>'jyotish/gemstone','title'=>'Gemstone Calculator','template'=>'calculator'],
             ['slug'=>'jyotish/rudraksha','title'=>'Rudraksha Calculator','template'=>'calculator'],
