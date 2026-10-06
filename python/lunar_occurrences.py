@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import panchang
+import vrat_rules
 
 KINDS = {
     "ekadashi": [
@@ -231,8 +232,8 @@ def events_for_rule(year, rule, lat, lon, tz, hour24):
                 candidates = add_ekadashi_parana(
                     candidates, end_dt, dwadashi_end_dt, lat, lon, tz, hour24
                 )
-                observance = select_ekadashi_observance(
-                    start_dt, end_dt, dwadashi_end_dt, rule["tithi_id"],
+                observance = vrat_rules.integrated_ekadashi_observance(
+                    rule, start_dt, end_dt, dwadashi_end_dt,
                     lat, lon, tz, hour24
                 )
 
@@ -304,10 +305,11 @@ def main():
         },
         "events": events,
         "observance_status": (
-            "smarta-vaishnava-base-rule" if kind == "ekadashi" else "astronomical-occurrence"
+            "smarta-vaishnava-iskcon-mahadwadashi-integrated"
+            if kind == "ekadashi" else "astronomical-occurrence"
         ),
         "note": (
-            "Ekadashi events now include base Smarta and Vaishnava fasting-date selection, Arunodaya classification and Parana constraints. Mahadwadashi subtype rules and their special Parana cases remain explicitly flagged as pending."
+            "Ekadashi events include Smarta, Vaishnava and ISKCON-compatible fasting-date profiles, Arunodaya/Vriddhi selection, Mahadwadashi override and explicit Parana constraints."
             if kind == "ekadashi"
             else "These are exact Tithi occurrence windows with local sunrise candidates; festival-specific rules may choose a date differently."
         ),
