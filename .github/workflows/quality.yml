@@ -133,6 +133,9 @@ jobs:
       - name: Specialized Muhurat profile fixture
         run: python scripts/test-specialized-muhurat.py
 
+      - name: Muhurat reuse regression fixture
+        run: python scripts/test-muhurat-reuse.py
+
       - name: Panchang utility regression fixture
         run: python scripts/test-panchang-utilities.py
 
