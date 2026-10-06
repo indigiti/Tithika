@@ -1,0 +1,15 @@
+{
+  "name": "Tithika — Vedic Time",
+  "short_name": "Tithika",
+  "description": "Location-aware Panchang, Muhurat, Jyotish and Vedic calendar utilities.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f4f8",
+  "theme_color": "#f8fafc",
+  "lang": "en",
+  "categories": [
+    "lifestyle",
+    "utilities"
+  ]
+}
