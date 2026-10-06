@@ -370,11 +370,11 @@ def samvat_context(d: date, lat: float, lon: float, tz: ZoneInfo) -> dict:
     after = d >= new_year
     vikram = d.year + (57 if after else 56)
     shaka = d.year - (78 if after else 79)
-    samvatsara = SAMVATSARA_NAMES[(shaka + 11) % 60]
     return {
         "vikrama": vikram,
         "shaka": shaka,
-        "samvatsara": samvatsara,
+        "vikrama_samvatsara": SAMVATSARA_NAMES[(vikram + 9) % 60],
+        "shaka_samvatsara": SAMVATSARA_NAMES[(shaka + 11) % 60],
         "new_year": new_year.isoformat(),
     }
 
@@ -436,7 +436,8 @@ def sankalpa_context(
         "adhika_month": bool(months.get("adhika")),
         "vikrama_samvat": samvat["vikrama"],
         "shaka_samvat": samvat["shaka"],
-        "samvatsara": samvat["samvatsara"],
+        "vikrama_samvatsara": samvat["vikrama_samvatsara"],
+        "shaka_samvatsara": samvat["shaka_samvatsara"],
         "ritu": ritu,
         "ayana": ayana,
         "profile": "Vedic sunrise-state for Samvatsara/month/Ritu/Ayana; selected-time state for Tithi/Nakshatra/Yoga/Karana",
