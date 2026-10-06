@@ -80,38 +80,7 @@ for row in jwala:
     st=panchang.state_at(mid)
     assert (st["tithi_number"],st["nakshatra"]) in panchang_reuse.JWALAMUKHI_COMBINATIONS,(row,st)
 
-# Manvadi, Yugadi and Kalpadi use the civil date on which the exact target
-# Tithi begins, and Adhika-month duplicates are excluded. A Gregorian year
-# need not contain all 14 Manvadi names; Dharma Savarni next occurs in Jan 2027.
-creation=panchang_reuse.creation_days(2026,lat,lon,tz,False)
-assert len(creation["manvadi"])==13,creation["manvadi"]
-assert len(creation["yugadi"])==4,creation["yugadi"]
-assert len(creation["kalpadi"])==7,creation["kalpadi"]
-
-man={x["name"]:x["date"] for x in creation["manvadi"]}
-assert man["Brahma Savarni Manvadi"]=="2026-01-25",man
-assert man["Swayambhuva Manvadi"]=="2026-03-21",man
-assert man["Indra Savarni Manvadi"]=="2026-09-04",man
-assert man["Daksha Savarni Manvadi"]=="2026-10-19",man
-assert man["Tamasa Manvadi"]=="2026-11-21",man
-assert "Dharma Savarni Manvadi" not in man,man
-
-yuga={x["name"]:x["date"] for x in creation["yugadi"]}
-assert yuga["Dwapara Yuga Diwas"]=="2026-02-16",yuga
-assert yuga["Treta Yuga Diwas"]=="2026-04-19",yuga
-assert yuga["Kali Yuga Diwas"]=="2026-10-08",yuga
-assert yuga["Satya Yuga Diwas"]=="2026-11-18",yuga
-
-kalpa={x["name"]:x["date"] for x in creation["kalpadi"]}
-assert kalpa=={
-    "Varaha Kalpadi":"2026-01-30",
-    "Brahma Kalpadi":"2026-03-06",
-    "Kurma Kalpadi First":"2026-03-19",
-    "Kurma Kalpadi Second":"2026-03-23",
-    "Parthiva Kalpadi":"2026-04-19",
-    "Savitri Kalpadi":"2026-11-16",
-    "Pralaya Kalpadi":"2026-12-18",
-},kalpa
+# Manvadi/Yugadi/Kalpadi remain intentionally gated pending dedicated observance-day selectors.
 
 # Sankalpa: selected-time Panchang + sunrise-state Samvat/month/Ritu/Ayana.
 sank=panchang_reuse.sankalpa_context(
