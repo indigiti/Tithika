@@ -13,7 +13,7 @@ Daily/monthly Panchang, regional Panjika/Panchang variants, ISKCON and solar/Pan
 Hindu/Indian and regional yearly calendars plus major festival calendars such as Diwali, Durga Puja, Navratri, Onam, Chhath, Sankranti, Dashain and Tihar. Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional calendar views now share the verified regional calendar engine; Nepali and Jain now use dedicated adapters: Bikram Sambat civil conversion for Nepali and Kartikadi Amanta Vikram/Veer Samvat for Jain.
 
 ### 3. Muhurat
-Choghadiya, Hora, Vivah, Griha Pravesh, vehicle/property purchase, Lagna, Gowri, Jain Pachchakkhan, Rahu Kala, auspicious Yoga, Panchaka Rahita, Abhijit, Do Ghati, Shubha Dates and Pancha Pakshi. The shared substrate now powers specialized Vivah, Griha Pravesh, Property and Vehicle pages plus selectable Namakarana, Annaprashana and Mundana Sanskar profiles with auditable weekday/Tithi/Nakshatra, Adhika-month, combustion and blocked-period rules.
+Choghadiya, Hora, Vivah, Griha Pravesh, vehicle/property purchase, Lagna, Gowri, Jain Pachchakkhan, Rahu Kala, auspicious Yoga, Panchaka Rahita, Abhijit, Do Ghati, Shubha Dates and Pancha Pakshi. The shared substrate powers specialized Vivah/Griha/Property/Vehicle/Sanskar profiles. A second reuse engine now makes Shubha Hora, Panchaka Rahita, aggregate Auspicious Yogas, Sarvartha Siddhi, Amrit Siddhi, Guru/Ravi Pushya, Dwipushkar, Tripushkar and Ravi Yoga live with explicit rule tables. Gowri, Jain Pachchakkhan, Pancha Pakshi, Do Ghati and generic Shubha Dates remain deliberately gated.
 
 ### 4. Vrat & Upavas
 Ekadashi, Pradosh, Sankashti, Dwadashi, Purnima, Amavasya, Shivaratri, Skanda Sashti, Karthigai, Shraddha, Durgashtami, Kalashtami, Chaturmasa and special Vrat collections. Ekadashi now has Smarta/Vaishnava/ISKCON profiles with integrated eight-type Mahadwadashi priority and explicit Parana handling; Dwadashi includes Shravana/Vishnushrinkhala rules.
@@ -40,11 +40,11 @@ Tutorials, Panchang concepts, Choghadiya, Muhurat, Nakshatra, Rahu Kala, FAQ and
 
 Current certified detail-route state:
 
-- **113** verified/live calculation routes
+- **123** verified/live calculation routes
 - **62** structured editorial routes
 - **1** canonical live redirect (`muhurat/choghadiya`)
-- **176** production-quality/indexable detail routes
-- **116** mapped `noindex,follow` shells
+- **186** production-quality/indexable detail routes
+- **106** mapped `noindex,follow` shells
 
 The exact contract and promotion queue are documented in `docs/RELEASE_CERTIFICATION.md` and enforced by CI.
 
