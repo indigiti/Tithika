@@ -231,7 +231,7 @@ try {
     if ($action === 'panchang-reuse') {
         $payload = readPayload();
         $mode = strtolower(trim((string)($_GET['mode'] ?? 'sunrise')));
-        if (!in_array($mode, ['sunrise','nakshatra','ganda-moola','abhijit-nakshatra','vinchudo','jwalamukhi','creation-days','sankalpa','vedic-clock'], true)) {
+        if (!in_array($mode, ['sunrise','nakshatra','ganda-moola','abhijit-nakshatra','vinchudo','jwalamukhi','sankalpa','vedic-clock'], true)) {
             out(['ok'=>false,'error'=>'Unsupported Panchang reuse mode'], 422);
         }
         $payload['mode'] = $mode;
