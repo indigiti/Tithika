@@ -460,4 +460,129 @@ def masik_janmashtami(year,lat,lon,tz,hour24):
     for start,end in tithi_windows(year,22,tz):
         info=month_for_window(start,end); candidates=[]
         for d in (start.date()-timedelta(days=1),start.date(),end.date()):
-            
+             sr=rise(d,lat,lon,tz); ns=rise(d+timedelta(days=1),lat,lon,tz)
+            if sr and ns:
+                midnight=sr+(ns-sr)/2
+                # Nishita reference = middle two fifteenths around solar midnight.
+                unit=(ns-sr)/15; a=midnight-unit/2; b=midnight+unit/2
+                ov=max(timedelta(0),min(end,b)-max(start,a)); candidates.append((ov,d,a,b))
+        if candidates:
+            ov,d,a,b=max(candidates,key=lambda x:x[0])
+            if ov>timedelta(0) and d.year==year:
+                rows.append({"name":"Masik Krishna Janmashtami","date":d.isoformat(),"weekday":d.strftime("%A"),"month":strip_adhika(info.get("purnimanta")),
+                             "nishita_start":a.isoformat(),"nishita_end":b.isoformat(),"nishita_label":f"{panchang.fmt(a,hour24)} – {panchang.fmt(b,hour24)}",
+                             "tithi_start":start.isoformat(),"tithi_end":end.isoformat(),"basis":"Krishna Ashtami overlap with local Nishita"})
+    return sorted(rows,key=lambda r:r["date"])
+
+
+def ishti_anvadhan(year,lat,lon,tz,hour24):
+    rows=[]
+    for tid,label in ((14,"Purnima"),(29,"Amavasya")):
+        for start,end in tithi_windows(year,tid,tz):
+            d,sr,basis=select_tithi_day(start,end,lat,lon,tz)
+            if d.year!=year: continue
+            rows.append({"name":"Anvadhan","date":(d-timedelta(days=1)).isoformat(),"weekday":(d-timedelta(days=1)).strftime("%A"),"cycle":label,
+                         "basis":"day preceding Ishti"})
+            rows.append({"name":"Ishti","date":d.isoformat(),"weekday":d.strftime("%A"),"cycle":label,"tithi_start":start.isoformat(),"tithi_end":end.isoformat(),"basis":basis})
+    return sorted(rows,key=lambda r:(r["date"],r["name"]))
+
+
+def adhika_months(year,lat,lon,tz):
+    groups=[]; current=None; d=date(year,1,1)
+    while d.year==year:
+        sr=rise(d,lat,lon,tz)
+        if sr:
+            st=panchang.state_at(sr+timedelta(seconds=1)); info=panchang.lunar_month_info(sr,st)
+            key=strip_adhika(info.get("amanta")) if info.get("adhika") else None
+            if key:
+                if current and current["month"]==key and date.fromisoformat(current["end_date"])+timedelta(days=1)==d:
+                    current["end_date"]=d.isoformat()
+                else:
+                    current={"name":"Purushottam Maas","month":key,"start_date":d.isoformat(),"end_date":d.isoformat(),"basis":"lunar month with no solar ingress (Adhika month)"}; groups.append(current)
+            else: current=None
+        d+=timedelta(days=1)
+    return groups
+
+
+def chaturmasa(year,lat,lon,tz,hour24):
+    eka=iskcon_ekadashi(year,lat,lon,tz,hour24)
+    start=next((x for x in eka if x["paksha"]=="Shukla Paksha" and x.get("month")=="Ashadha"),None)
+    end=next((x for x in eka if x["paksha"]=="Shukla Paksha" and x.get("month")=="Kartika" and (not start or x["date"]>start["date"])),None)
+    if not start or not end: return []
+    return [{"name":"Chaturmasa","date":start["date"],"start_date":start["date"],"end_date":end["date"],"weekday":start["weekday"],
+             "basis":"Sayana/Devshayani Ekadashi through Prabodhini Ekadashi","start_event":start,"end_event":end}]
+
+
+def shraddha_events(year,lat,lon,tz,hour24):
+    rows=[]
+    # Twelve Amavasya days.
+    for start,end in tithi_windows(year,29,tz):
+        d,sr,basis=select_tithi_day(start,end,lat,lon,tz)
+        if d.year==year: rows.append({"name":"Amavasya Shraddha","date":d.isoformat(),"weekday":d.strftime("%A"),"category":"amavasya","basis":basis})
+    # Twelve Sankranti days.
+    for s in sankranti.find_year(year,lat,lon,tz,hour24):
+        rows.append({"name":s["name"]+" Shraddha","date":s["date"],"weekday":date.fromisoformat(s["date"]).strftime("%A"),"category":"sankranti","basis":"Nirayana solar ingress"})
+    # Fifteen Pitru Paksha tithis: Bhadrapada Krishna Paksha through Amavasya.
+    d=date(year,8,1)
+    while d<=date(year,11,15):
+        sr=rise(d,lat,lon,tz)
+        if sr:
+            st=panchang.state_at(sr+timedelta(seconds=1)); info=panchang.lunar_month_info(sr,st)
+            if strip_adhika(info.get("purnimanta"))=="Ashwina" and st["paksha"]=="Krishna Paksha":
+                rows.append({"name":st["tithi"]+" Shraddha","date":d.isoformat(),"weekday":d.strftime("%A"),"category":"pitru-paksha","basis":"Ashwina Purnimanta Krishna Tithi at sunrise"})
+        d+=timedelta(days=1)
+    # Add Manvadi/Yugadi days as recognized Shraddha occasions.
+    for r in named_tithi_events(year,MANVADI_RULES,lat,lon,tz,hour24): rows.append({**r,"category":"manvadi"})
+    for r in named_tithi_events(year,YUGADI_RULES,lat,lon,tz,hour24): rows.append({**r,"category":"yugadi"})
+    return sorted(rows,key=lambda r:(r["date"],r.get("category","")))
+
+
+def festival_aggregate(year,lat,lon,tz,hour24,mode,payload):
+    events=[]
+    for kind in festival_rules.SUPPORTED_KINDS:
+        ev=festival_rules.calculate_event(kind,year,lat,lon,tz,hour24)
+        if not ev: continue
+        d=date.fromisoformat(ev["date"]); sr=rise(d,lat,lon,tz)
+        if sr:
+            st=panchang.state_at(sr+timedelta(seconds=1)); info=panchang.lunar_month_info(sr,st)
+            ev={**ev,"purnimanta_month":strip_adhika(info.get("purnimanta")),"amanta_month":strip_adhika(info.get("amanta")),"sun_rashi":st["sun_rashi"]}
+        events.append(ev)
+    events.sort(key=lambda r:r["date"])
+    if mode=="festival-month":
+        wanted=str(payload.get("calendar_month") or "").title(); events=[e for e in events if e.get("purnimanta_month")==wanted]
+    elif mode in ("festival-tamil","festival-malayalam"):
+        variant="tamil" if mode.endswith("tamil") else "malayalam"
+        for e in events:
+            d=date.fromisoformat(e["date"]); sr=rise(d,lat,lon,tz); st=panchang.state_at(sr) if sr else None
+            if st: e["regional_month"]=regional_calendar.SOLAR_MONTHS[variant][st["sun_rashi_id"]]
+    elif mode=="festival-yearly":
+        kind=str(payload.get("festival_kind") or "diwali")
+        rows=[]
+        if kind in festival_rules.SUPPORTED_KINDS:
+            for y in (year-1,year,year+1):
+                ev=festival_rules.calculate_event(kind,y,lat,lon,tz,hour24)
+                if ev: rows.append(ev)
+        return rows
+    return events
+
+
+def selected_moment(payload,tz):
+    date_text=str(payload.get("date") or datetime.now(tz).strftime("%Y-%m-%d"))
+    time_text=str(payload.get("time") or payload.get("birth_time") or "12:00:00")
+    if len(time_text)==5: time_text += ":00"
+    return datetime.fromisoformat(date_text+"T"+time_text).replace(tzinfo=tz)
+
+
+def jyotish_secondary(mode,payload,lat,lon,tz):
+    moment=selected_moment(payload,tz); st=panchang.state_at(moment); lag=lagna.lagna_state(moment,lat,lon)
+    if mode=="prashna-kundali":
+        placements=[]
+        for name in planetary.CLASSICAL_ORDER:
+            lonx,_,_,_=planetary.sidereal_coordinates(name,moment,"mean")
+            placements.append({"name":name,"longitude":round(lonx,4),"rashi":panchang.RASHI_NAMES[int(lonx//30)%12],"degree_in_rashi":round(lonx%30,4)})
+        return {"moment":moment.isoformat(),"lagna":lag,"panchang":st,"placements":placements,"basis":"query-time sidereal chart; Lahiri"}
+    if mode in ("gemstone","rudraksha"):
+        r=st["moon_rashi"]
+        if mode=="gemstone":
+            item,lord=GEMSTONE_TRADITION[r]; return {"moon_rashi":r,"traditional_correspondence":item,"planetary_lord":lord,"disclaimer":"Traditional Jyotish correspondence, not medical or financial advice."}
+        return {"moon_rashi":r,"traditio
