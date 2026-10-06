@@ -280,6 +280,18 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'personal-rashifal') {
+        $payload = readPayload();
+        $mode = strtolower(trim((string)($_GET['mode'] ?? 'overview')));
+        if (!in_array($mode, ['overview','daily','weekly','monthly','yearly'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported Rashifal mode'], 422);
+        }
+        $payload['mode'] = $mode;
+        $data = runPythonEngine('python/personal_rashifal.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'vimshottari') {
         $payload = readPayload();
         $data = runPythonEngine('python/vimshottari.py', $payload);
