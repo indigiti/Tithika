@@ -24,6 +24,11 @@
     'festivals/holi':'holi',
     'festivals/karwa-chauth':'karwa-chauth',
     'festivals/janmashtami':'janmashtami',
+    'festivals/rama-navami':'rama-navami',
+    'festivals/hanuman-jayanti':'hanuman-jayanti',
+    'festivals/akshaya-tritiya':'akshaya-tritiya',
+    'festivals/vat-savitri':'vat-savitri',
+    'festivals/durga-puja':'durga-puja',
     'festivals/diwali':'diwali'
   };
   const dwadashiPages=['vrat/dwadashi'];
@@ -267,6 +272,8 @@
     if(row.lakshmi_puja)timings.push(['Lakshmi Puja',row.lakshmi_puja.start_label+' – '+row.lakshmi_puja.end_label]);
     if(row.vrishabha_lagna)timings.push(['Vrishabha Lagna',row.vrishabha_lagna.start_label+' – '+row.vrishabha_lagna.end_label]);
     if(row.nishita)timings.push(['Nishita Puja',row.nishita.start_label+' – '+row.nishita.end_label]);
+    if(row.sandhi_puja)timings.push(['Sandhi Puja',row.sandhi_puja.start_label+' – '+row.sandhi_puja.end_label]);
+    if(row.vaishnava_date&&row.vaishnava_date!==row.date)timings.push(['Vaishnava observance',row.vaishnava_date]);
     if(row.parana?.after_label)timings.push(['Parana','After '+row.parana.after_label]);
     if(row.dahi_handi_date)timings.push(['Dahi Handi',row.dahi_handi_date]);
     if(row.moonrise_label)timings.push(['Moonrise',row.moonrise_label]);
