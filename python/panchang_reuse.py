@@ -39,39 +39,6 @@ JWALAMUKHI_COMBINATIONS = {
     (10, "Ashlesha"): "Dashami + Ashlesha",
 }
 
-MANVADI_RULES = [
-    ("Brahma Savarni Manvadi", "Magha", "Shukla Paksha", 7),
-    ("Savarni Manvadi", "Phalguna", "Shukla Paksha", 15),
-    ("Swayambhuva Manvadi", "Chaitra", "Shukla Paksha", 3),
-    ("Swarochisha Manvadi", "Chaitra", "Shukla Paksha", 15),
-    ("Vaivaswata Manvadi", "Jyeshtha", "Shukla Paksha", 15),
-    ("Raivata Manvadi", "Ashadha", "Shukla Paksha", 10),
-    ("Chakshusha Manvadi", "Ashadha", "Shukla Paksha", 15),
-    ("Indra Savarni Manvadi", "Bhadrapada", "Krishna Paksha", 8),
-    ("Daiva Savarni Manvadi", "Bhadrapada", "Krishna Paksha", 15),
-    ("Rudra Savarni Manvadi", "Bhadrapada", "Shukla Paksha", 3),
-    ("Daksha Savarni Manvadi", "Ashwina", "Shukla Paksha", 9),
-    ("Tamasa Manvadi", "Kartika", "Shukla Paksha", 12),
-    ("Uttama Manvadi", "Kartika", "Shukla Paksha", 15),
-    ("Dharma Savarni Manvadi", "Pausha", "Shukla Paksha", 11),
-]
-
-YUGADI_RULES = [
-    ("Dwapara Yuga Diwas", "Phalguna", "Krishna Paksha", 15),
-    ("Treta Yuga Diwas", "Vaishakha", "Shukla Paksha", 3),
-    ("Kali Yuga Diwas", "Ashwina", "Krishna Paksha", 13),
-    ("Satya Yuga Diwas", "Kartika", "Shukla Paksha", 9),
-]
-
-KALPADI_RULES = [
-    ("Varaha Kalpadi", "Magha", "Shukla Paksha", 13),
-    ("Brahma Kalpadi", "Chaitra", "Krishna Paksha", 3),
-    ("Kurma Kalpadi First", "Chaitra", "Shukla Paksha", 1),
-    ("Kurma Kalpadi Second", "Chaitra", "Shukla Paksha", 5),
-    ("Parthiva Kalpadi", "Vaishakha", "Shukla Paksha", 3),
-    ("Savitri Kalpadi", "Kartika", "Shukla Paksha", 7),
-    ("Pralaya Kalpadi", "Margashirsha", "Shukla Paksha", 9),
-]
 
 SAMVATSARA_NAMES = [
     "Prabhava","Vibhava","Shukla","Pramoda","Prajotpatti","Angirasa",
@@ -311,71 +278,6 @@ def lunar_rule_day(d: date, lat: float, lon: float, tz: ZoneInfo):
     return sunrise, state, str(month).replace("Adhika ", "")
 
 
-def creation_days(year: int, lat: float, lon: float, tz: ZoneInfo, hour24: bool):
-    registries = {
-        "manvadi": MANVADI_RULES,
-        "yugadi": YUGADI_RULES,
-        "kalpadi": KALPADI_RULES,
-    }
-    lookup = {
-        kind: {(month, paksha, number): name for name, month, paksha, number in rules}
-        for kind, rules in registries.items()
-    }
-    output = {kind: [] for kind in registries}
-
-    # A target Tithi may touch two local sunrises. These creation-day lists
-    # represent one occurrence, not one row per sunrise. Resolve the exact
-    # Tithi span and assign its local civil date from the interval midpoint;
-    # this also matches the 2026 Phalguna Amavasya / Vaishakha Tritiya
-    # benchmark behavior.
-    scan_start = datetime(year, 1, 1, tzinfo=tz) - timedelta(days=2)
-    scan_end = datetime(year + 1, 1, 1, tzinfo=tz) + timedelta(days=2)
-    seen = {kind: set() for kind in registries}
-
-    for interval_row in tithi_intervals(scan_start, scan_end, hour24):
-        begin = datetime.fromisoformat(interval_row["start"])
-        finish = datetime.fromisoformat(interval_row["end"])
-        midpoint = begin + (finish - begin) / 2
-        display_date = begin.date()
-        if display_date.year != year:
-            continue
-
-        state = panchang.state_at(midpoint)
-        month_info = panchang.lunar_month_info(midpoint, state)
-        if bool(month_info.get("adhika")):
-            continue
-        month = str(month_info.get("purnimanta") or "").replace("Adhika ", "")
-        key = (month, state["paksha"], state["tithi_number"])
-
-        for kind in registries:
-            name = lookup[kind].get(key)
-            if not name or name in seen[kind]:
-                continue
-            sunrise = sunrise_for(display_date, lat, lon, tz)
-            output[kind].append({
-                "name": name,
-                "date": display_date.isoformat(),
-                "date_label": display_date.strftime("%B %d, %Y").replace(" 0", " "),
-                "weekday": display_date.strftime("%A"),
-                "sunrise": sunrise.isoformat() if sunrise else None,
-                "sunrise_label": panchang.fmt(sunrise, hour24) if sunrise else None,
-                "tithi_start": begin.isoformat(),
-                "tithi_end": finish.isoformat(),
-                "tithi_start_label": panchang.transition_label(begin, display_date, hour24),
-                "tithi_end_label": panchang.transition_label(finish, display_date, hour24),
-                "lunar_month": month,
-                "paksha": state["paksha"],
-                "tithi": state["tithi"],
-                "tithi_number": state["tithi_number"],
-                "date_rule": "local civil date on which the exact target Tithi begins; Adhika-month duplicates excluded",
-            })
-            seen[kind].add(name)
-
-    for kind in output:
-        output[kind].sort(key=lambda row: row["date"])
-    return output
-
-
 def chaitra_new_year(year: int, lat: float, lon: float, tz: ZoneInfo) -> date:
     for month in (3, 4):
         _, count = calendar.monthrange(year, month)
@@ -606,7 +508,7 @@ def main():
     mode = str(payload.get("mode") or "sunrise").strip().lower()
     supported = {
         "sunrise","nakshatra","ganda-moola","abhijit-nakshatra","vinchudo",
-        "jwalamukhi","creation-days","sankalpa","vedic-clock",
+        "jwalamukhi","sankalpa","vedic-clock",
     }
     if mode not in supported:
         raise ValueError("Unsupported Panchang reuse mode")
@@ -648,8 +550,6 @@ def main():
         result = {"year": selected.year, "intervals": yearly_vinchudo(selected.year, tz, hour24)}
     elif mode == "jwalamukhi":
         result = {"year": selected.year, "intervals": yearly_jwalamukhi(selected.year, tz, hour24)}
-    elif mode == "creation-days":
-        result = {"year": selected.year, **creation_days(selected.year, lat, lon, tz, hour24)}
     elif mode == "sankalpa":
         result = sankalpa_context(selected, lat, lon, tz, hour24, time_value)
     else:
