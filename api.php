@@ -171,6 +171,13 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'mahadwadashi') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/mahadwadashi.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'seasons') {
         $payload = readPayload();
         $data = runPythonEngine('python/seasons.py', $payload);
