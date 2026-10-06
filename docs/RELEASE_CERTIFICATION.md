@@ -5,11 +5,11 @@ This document records the production-readiness contract enforced by CI. It is no
 ## Certified baseline
 
 - Product route contract: **292**
-- Verified calculation/live routes: **130**
+- Verified calculation/live routes: **179**
 - Structured editorial routes: **62**
 - Additional canonical live redirect: **1** (`muhurat/choghadiya`)
-- Total production-quality/indexable detail routes: **193**
-- Remaining mapped `noindex,follow` shells: **99**
+- Total production-quality/indexable detail routes: **242**
+- Remaining mapped `noindex,follow` shells: **50**
 
 The indexable set is generated from `config/live.php`, structured editorial coverage and explicit canonical live adapters. The XML sitemap uses the same quality state.
 
@@ -63,11 +63,16 @@ The following routes reuse the same verified Lahiri Panchang primitives rather t
 
 All eight are covered by `scripts/test-panchang-reuse.py`.
 
-### Deliberately gated Panchang routes
+### Six-phase Panchang rule completion
 
-`panchang/manvadi-tithi`, `panchang/yugadi-tithi` and `panchang/kalpadi-tithi` remain `noindex,follow`. CI showed that simple sunrise, Tithi-start or Tithi-midpoint selection is insufficient for all listed observance dates, especially when a Tithi spans two civil dates or an Adhika month creates duplicate lunar-month candidates. These routes require dedicated observance-day selectors before promotion.
+The previously gated Panchang rule family is now promoted through `python/completion.py`:
 
-`panchang/kranti-samya` also remains gated because Mahapat requires a dedicated declination-equality calculation rather than treating the full Vyatipata/Vaidhriti Yoga span as equivalent.
+- `/panchang/manvadi-tithi/` — 14 named Manvadi rules with explicit lunar-month/Tithi selection, Adhika exclusion and Kshaya fallback based on maximum sunrise-day overlap.
+- `/panchang/yugadi-tithi/` — the four Yuga commencement Tithis with the same deterministic observance-day selector.
+- `/panchang/kalpadi-tithi/` — the seven encoded Kalpadi observances with month/Tithi regression anchors.
+- `/panchang/kranti-samya/` — sub-second Sun/Moon declination-equality crossings filtered to Vyatipata/Vaidhriti Yoga, rather than treating the whole Yoga span as Mahapata.
+
+The 2026 Maharashtra Manvadi/Yugadi/Kalpadi anchors and formula invariants are covered by `scripts/test-completion.py`.
 
 ## Newly certified Muhurat reuse routes
 
@@ -86,9 +91,17 @@ The following routes reuse the verified Lahiri Panchang, local sunrise/sunset an
 
 All ten are covered by `scripts/test-muhurat-reuse.py`, including 2026 Pune date-set benchmarks and formula invariants.
 
-### Deliberately gated Muhurat routes
+### Six-phase Muhurat rule completion
 
-`muhurat/gowri` remains gated until its regional day/night cycle is versioned explicitly. `muhurat/jain-pachchakkhan` and `muhurat/pancha-pakshi` require separate tradition-specific engines. `muhurat/do-ghati` and generic `muhurat/shubha-dates` also remain mapped until their acceptance profiles are defined precisely.
+The remaining Muhurat family now uses explicit, inspectable profiles:
+
+- `/panchang/gowri/` and `/muhurat/gowri/` — weekday-specific Gowri day/night cycles over eight equal local daylight and eight equal local night segments.
+- `/muhurat/jain-pachchakkhan/` — local sunrise/sunset Pachchakkhan reference timings including Navkarshi, Porshi, Purimaddha, Avaddha and Chovihar.
+- `/muhurat/pancha-pakshi/` and `/jyotish/pancha-pakshi/` — Nakshatra/Paksha bird selection with a disclosed main-Yama reference profile. Lineage-specific sub-Yama variants are not silently blended into the output.
+- `/muhurat/do-ghati/` — thirty local Muhurtas, each two variable local Ghatis; daylight and night are independently divided into fifteen.
+- `/muhurat/shubha-dates/` — transparent Panchang quality scoring. The response states that ceremony-specific Muhurat profiles take precedence.
+
+All are regression-gated in `scripts/test-completion.py`.
 
 ## Newly certified Vrat recurrence routes
 
@@ -104,11 +117,20 @@ The following routes reuse the verified Lahiri Panchang and existing lunar/Vrat 
 
 All seven are covered by `scripts/test-vrat-recurrence.py` with 2026 Pune/Maharashtra recurrence anchors and rule invariants.
 
-### Deliberately gated Vrat routes
+### Six-phase Vrat rule completion
 
-`vrat/iskcon-ekadashi` remains gated. Cross-source regression showed that the existing simplified "ISKCON-compatible" selector does not match the published GCal/ISKCON date profile on every 2026 Pune occurrence, so Tithika will not expose it as a certified ISKCON calendar until a dedicated compatible selector is implemented.
+The remaining Vrat shells now have dedicated selectors in `python/completion.py`:
 
-`vrat/kalashtami`, `vrat/chandra-darshan`, `vrat/masik-janmashtami`, `vrat/ishti-anvadhan`, `vrat/shraddha`, `vrat/purushottam-maas` and `vrat/chaturmasa` also remain mapped but unpromoted because they require additional night/visibility/ritual or multi-month selection logic.
+- `/vrat/iskcon-ekadashi/` — exact Ekadashi windows, Arunodaya/Vriddhi handling, Mahadwadashi priority and Parana rules; CI locks the complete 24-date published Pune 2026 ISKCON sequence.
+- `/vrat/kalashtami/` — Krishna Ashtami selected for Pradosh/night prevalence with the one-Ghati-after-sunset condition.
+- `/vrat/chandra-darshan/` — first post-Amavasya geometric sunset-to-moonset opportunity; the response does not claim an atmospheric crescent-visibility forecast.
+- `/vrat/masik-janmashtami/` — Krishna Ashtami overlap with local Nishita.
+- `/vrat/ishti-anvadhan/` — Anvadhan on the Purnima/Amavasya Parva day and Ishti on the following civil day.
+- `/vrat/shraddha/` — deterministic core Shraddha collection covering Amavasya, Sankranti, Pitru Paksha, Manvadi and Yugadi occasions; it is not labelled as an exhaustive sect-specific 96-day catalogue.
+- `/vrat/purushottam-maas/` — contiguous Adhika lunar-month detection from the no-solar-ingress month condition.
+- `/vrat/chaturmasa/` — Devshayani/Sayana Ekadashi through Prabodhini/Utthana Ekadashi.
+
+The full batch is regression-gated by `scripts/test-completion.py`.
 
 ## Data provenance
 
@@ -128,16 +150,19 @@ A release is certifiable only when all of the following pass on the exact merged
 6. Regional calendar regressions including Nepali and Jain adapters.
 7. Planetary/Jyotish/Kundali/Varga/Yoga/Shadbala/matching/timing/Rashifal regressions.
 8. Eclipse, season and Sankranti regression fixtures.
+9. Six-phase completion regressions, including the full 2026 Pune ISKCON date-set contract.
 
-## Remaining shell-completion queue
+## Six requested completion phases closed
 
-The remaining **99** mapped routes stay `noindex,follow`. They should be promoted in engine-reuse batches rather than route-by-route:
+The six engine-reuse phases requested for this release are now implemented and promoted:
 
-1. **Panchang rule-completion batch** — dedicated Manvadi/Yugadi/Kalpadi observance-day selectors plus Kranti Samya/Mahapat declination-equality calculation.
-2. **Muhurat rule-completion batch** — Gowri regional profiles, Jain Pachchakkhan, Pancha Pakshi, Do Ghati and generic Shubha Dates.
-3. **Vrat rule-completion batch** — GCal-compatible ISKCON Ekadashi plus Kalashtami, Chandra Darshan, Masik Janmashtami, Ishti/Anvadhan, Shraddha, Purushottam Maas and Chaturmasa selectors.
-4. **Festival/calendar aggregation batch** — Hindu/Tamil/Malayalam month collections and festival-specific yearly calendars built from verified event rules.
-5. **Secondary Jyotish calculators** — Prashna, gemstone, Rudraksha, baby-name/name-initial and related evidence-based utilities.
-6. **Astronomy reference batch** — parallels, ecliptic crossings and Indian seasons.
+1. **Panchang rule completion** — 4 routes.
+2. **Muhurat rule completion** — 7 routes, including the shared Gowri and Pancha Pakshi surfaces.
+3. **Vrat rule completion** — 8 routes.
+4. **Festival/calendar aggregation** — 19 routes: Hindu/Tamil/Malayalam collections, twelve lunar-month collections and four verified yearly festival calendars.
+5. **Secondary Jyotish calculators** — 8 routes with traditional correspondences clearly labelled as such.
+6. **Astronomy reference** — 3 routes for planetary parallels, ecliptic crossings and Nirayana Indian seasons.
 
-Each promotion must add or reuse a deterministic engine, a route-specific UI adapter, a regression fixture and then enter `config/live.php`.
+That is **49 newly promoted routes**. The remaining **50** mapped `noindex,follow` routes are outside these six completed batches and stay gated because they still need a separate evidence-backed rule family or substantive editorial adapter. They are not promoted merely to reduce the shell count.
+
+Each promoted route has a deterministic engine/profile, a shared API/UI adapter, CI regression coverage and membership in `config/live.php`.

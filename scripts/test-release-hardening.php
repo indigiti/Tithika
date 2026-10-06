@@ -14,7 +14,7 @@ function ok(bool $value, string $message): void {
 
 $flat = tithika_flat_routes();
 ok(tithika_page_count() === 292, 'route count must remain 292');
-ok(count(tithika_live_slugs()) === 130, 'verified live route registry drifted');
+ok(count(tithika_live_slugs()) === 179, 'verified live route registry drifted');
 ok(count(array_unique(tithika_live_slugs())) === count(tithika_live_slugs()), 'duplicate live route');
 foreach (tithika_live_slugs() as $slug) {
     ok(isset($flat[$slug]), "live slug missing from route map: {$slug}");
@@ -93,7 +93,7 @@ ok(str_contains($header, '<link rel="canonical"'), 'canonical not rendered');
 ok(str_contains($header, 'BreadcrumbList'), 'breadcrumb schema not rendered');
 
 ob_start();
-$shell = $flat['muhurat/gowri'];
+$shell = $flat['jyotish/prashnavali'];
 tithika_render_header($shell['title'], $shell);
 $thinHeader = ob_get_clean();
 ok(str_contains($thinHeader, '<meta name="robots" content="noindex,follow">'), 'unverified shell must be noindex');

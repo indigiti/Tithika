@@ -174,16 +174,19 @@ def classify_window(rule: dict, start_dt: datetime, end_dt: datetime, lat, lon, 
     duration_hours = (end_dt - start_dt).total_seconds() / 3600.0
     evidence["dwadashi_duration_hours"] = round(duration_hours, 4)
 
+    # GCAL Vyanjuli rule: Dwadashi must prevail at local sunrise on
+    # two consecutive civil days. A merely long Dwadashi that covers one
+    # sunrise-to-sunset interval is not sufficient and must not override a
+    # Shuddha Ekadashi fast.
     vanjuli_date = None
-    for sunrise in dwa_sunrises:
-        sunset = local_sunset(sunrise.date(), lat, lon, tz)
-        if (
-            sunset is not None
-            and start_dt <= sunrise < sunset < end_dt
-            and duration_hours >= 24.0
-        ):
-            vanjuli_date = sunrise.date()
-            break
+    if len(dwa_sunrises) >= 2:
+        first, second = dwa_sunrises[0], dwa_sunrises[1]
+        if second.date() == first.date() + timedelta(days=1):
+            vanjuli_date = first.date()
+    evidence["vanjuli_two_sunrises"] = (
+        [x.isoformat() for x in dwa_sunrises[:2]]
+        if vanjuli_date is not None else []
+    )
     if vanjuli_date is not None:
         yogas.append("Vanjuli Mahadwadashi")
         ordinary_date = vanjuli_date
