@@ -50,6 +50,13 @@ assert by["Venus"]["retrograde"] is True
 assert by["Saturn"]["retrograde"] is True
 assert by["Mercury"]["retrograde"] is False
 
+true_pos = run("positions", {"node_model":"true"})
+true_by = {row["name"]: row for row in true_pos["planets"]}
+assert close(true_by["Rahu"]["longitude"], 304.87, 0.25), true_by["Rahu"]
+assert close(true_by["Ketu"]["longitude"], 124.87, 0.25), true_by["Ketu"]
+assert true_by["Rahu"]["node_model"] == "true"
+assert abs(((true_by["Ketu"]["longitude"] - true_by["Rahu"]["longitude"]) % 360.0) - 180.0) < 0.001
+
 retro = run("retrograde", {"date":"2026-01-01","datetime":"2026-01-01T12:00:00+05:30"})
 events = retro["events"]
 
