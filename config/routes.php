@@ -226,6 +226,7 @@ return [
             ['slug'=>'jyotish/janma-kundali','title'=>'Janma Kundali','template'=>'calculator'],
             ['slug'=>'jyotish/horoscope-analysis','title'=>'Unified Horoscope Analysis','template'=>'calculator'],
             ['slug'=>'jyotish/interpretation-report','title'=>'Jyotish Interpretation Report','template'=>'calculator'],
+            ['slug'=>'jyotish/timing-timeline','title'=>'Jyotish Timing Timeline','template'=>'calculator'],
             ['slug'=>'jyotish/vimshottari-dasha','title'=>'Vimshottari Dasha','template'=>'calculator'],
             ['slug'=>'jyotish/ashtakavarga','title'=>'Ashtakavarga','template'=>'calculator'],
             ['slug'=>'jyotish/shadbala','title'=>'Shadbala Planetary Strength','template'=>'calculator'],
