@@ -379,9 +379,11 @@ def samvat_context(d: date, lat: float, lon: float, tz: ZoneInfo) -> dict:
     }
 
 
-def ritu_ayana(state: dict) -> tuple[str, str]:
-    sign = state["sun_rashi_id"]
-    ritu = [
+def sankalpa_seasons(
+    sunrise: datetime, sunrise_state: dict, purnimanta_month: str | None
+) -> dict:
+    sign = sunrise_state["sun_rashi_id"]
+    vedic_ritu = [
         "Vasanta", "Vasanta",
         "Grishma", "Grishma",
         "Varsha", "Varsha",
@@ -389,8 +391,32 @@ def ritu_ayana(state: dict) -> tuple[str, str]:
         "Hemanta", "Hemanta",
         "Shishira", "Shishira",
     ][sign]
-    ayana = "Uttarayana" if sign in (9, 10, 11, 0, 1, 2) else "Dakshinayana"
-    return ritu, ayana
+    vedic_ayana = (
+        "Uttarayana" if sign in (9, 10, 11, 0, 1, 2) else "Dakshinayana"
+    )
+
+    lunar = str(purnimanta_month or "").replace("Adhika ", "")
+    drik_ritu = {
+        "Chaitra": "Vasanta", "Vaishakha": "Vasanta",
+        "Jyeshtha": "Grishma", "Ashadha": "Grishma",
+        "Shravana": "Varsha", "Bhadrapada": "Varsha",
+        "Ashwina": "Sharad", "Kartika": "Sharad",
+        "Margashirsha": "Hemanta", "Pausha": "Hemanta",
+        "Magha": "Shishira", "Phalguna": "Shishira",
+    }.get(lunar, vedic_ritu)
+
+    tropical_sun, _, _ = panchang.tropical_longitudes(sunrise)
+    drik_ayana = (
+        "Uttarayana"
+        if tropical_sun >= 270.0 or tropical_sun < 90.0
+        else "Dakshinayana"
+    )
+    return {
+        "drik_ritu": drik_ritu,
+        "vedic_ritu": vedic_ritu,
+        "drik_ayana": drik_ayana,
+        "vedic_ayana": vedic_ayana,
+    }
 
 
 def parse_reference(selected: date, tz: ZoneInfo, value: str | None) -> datetime:
@@ -414,7 +440,9 @@ def sankalpa_context(
     sunrise_state = panchang.state_at(sunrise)
     months = panchang.lunar_month_info(sunrise, sunrise_state)
     samvat = samvat_context(selected, lat, lon, tz)
-    ritu, ayana = ritu_ayana(sunrise_state)
+    seasons = sankalpa_seasons(
+        sunrise, sunrise_state, months.get("purnimanta")
+    )
     return {
         "reference": reference.isoformat(),
         "reference_label": panchang.fmt(reference, hour24),
@@ -438,9 +466,8 @@ def sankalpa_context(
         "shaka_samvat": samvat["shaka"],
         "vikrama_samvatsara": samvat["vikrama_samvatsara"],
         "shaka_samvatsara": samvat["shaka_samvatsara"],
-        "ritu": ritu,
-        "ayana": ayana,
-        "profile": "Vedic sunrise-state for Samvatsara/month/Ritu/Ayana; selected-time state for Tithi/Nakshatra/Yoga/Karana",
+        **seasons,
+        "profile": "Sunrise-state for Samvatsara/month/Ritu/Ayana; selected-time state for Tithi/Nakshatra/Yoga/Karana. Drik and Vedic Ritu/Ayana are exposed separately.",
     }
 
 
