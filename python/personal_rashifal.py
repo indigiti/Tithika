@@ -409,6 +409,7 @@ def build_period(
     base: dict,
     schedule: dict,
     node_model: str,
+    include_markers: bool = True,
 ) -> dict:
     start, end = period_bounds(mode, target)
     samples = [
@@ -416,7 +417,10 @@ def build_period(
         for moment in sample_moments(mode, start, end)
     ]
     result = aggregate_period(mode, start, end, samples)
-    result["markers"] = period_markers(schedule, start, end, node_model)
+    result["markers"] = (
+        period_markers(schedule, start, end, node_model)
+        if include_markers else []
+    )
     return result
 
 
@@ -446,7 +450,9 @@ def build(payload: dict) -> dict:
 
     if mode == "overview":
         periods = {
-            item: build_period(item, target, base, schedule, node_model)
+            item: build_period(
+                item, target, base, schedule, node_model, include_markers=False
+            )
             for item in ("daily", "weekly", "monthly", "yearly")
         }
         primary = periods["daily"]
