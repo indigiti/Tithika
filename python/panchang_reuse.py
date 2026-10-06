@@ -322,28 +322,55 @@ def creation_days(year: int, lat: float, lon: float, tz: ZoneInfo, hour24: bool)
         for kind, rules in registries.items()
     }
     output = {kind: [] for kind in registries}
-    d = date(year, 1, 1)
-    while d.year == year:
-        item = lunar_rule_day(d, lat, lon, tz)
-        if item:
-            sunrise, state, month = item
-            key = (month, state["paksha"], state["tithi_number"])
-            for kind in registries:
-                name = lookup[kind].get(key)
-                if name:
-                    output[kind].append({
-                        "name": name,
-                        "date": d.isoformat(),
-                        "date_label": d.strftime("%B %d, %Y").replace(" 0", " "),
-                        "weekday": d.strftime("%A"),
-                        "sunrise": sunrise.isoformat(),
-                        "sunrise_label": panchang.fmt(sunrise, hour24),
-                        "lunar_month": month,
-                        "paksha": state["paksha"],
-                        "tithi": state["tithi"],
-                        "tithi_number": state["tithi_number"],
-                    })
-        d += timedelta(days=1)
+
+    # A target Tithi may touch two local sunrises. These creation-day lists
+    # represent one occurrence, not one row per sunrise. Resolve the exact
+    # Tithi span and assign its local civil date from the interval midpoint;
+    # this also matches the 2026 Phalguna Amavasya / Vaishakha Tritiya
+    # benchmark behavior.
+    scan_start = datetime(year, 1, 1, tzinfo=tz) - timedelta(days=2)
+    scan_end = datetime(year + 1, 1, 1, tzinfo=tz) + timedelta(days=2)
+    seen = {kind: set() for kind in registries}
+
+    for interval_row in tithi_intervals(scan_start, scan_end, hour24):
+        begin = datetime.fromisoformat(interval_row["start"])
+        finish = datetime.fromisoformat(interval_row["end"])
+        midpoint = begin + (finish - begin) / 2
+        display_date = midpoint.date()
+        if display_date.year != year:
+            continue
+
+        state = panchang.state_at(midpoint)
+        month_info = panchang.lunar_month_info(midpoint, state)
+        month = str(month_info.get("purnimanta") or "").replace("Adhika ", "")
+        key = (month, state["paksha"], state["tithi_number"])
+
+        for kind in registries:
+            name = lookup[kind].get(key)
+            if not name or name in seen[kind]:
+                continue
+            sunrise = sunrise_for(display_date, lat, lon, tz)
+            output[kind].append({
+                "name": name,
+                "date": display_date.isoformat(),
+                "date_label": display_date.strftime("%B %d, %Y").replace(" 0", " "),
+                "weekday": display_date.strftime("%A"),
+                "sunrise": sunrise.isoformat() if sunrise else None,
+                "sunrise_label": panchang.fmt(sunrise, hour24) if sunrise else None,
+                "tithi_start": begin.isoformat(),
+                "tithi_end": finish.isoformat(),
+                "tithi_start_label": panchang.transition_label(begin, display_date, hour24),
+                "tithi_end_label": panchang.transition_label(finish, display_date, hour24),
+                "lunar_month": month,
+                "paksha": state["paksha"],
+                "tithi": state["tithi"],
+                "tithi_number": state["tithi_number"],
+                "date_rule": "local civil date containing exact Tithi midpoint",
+            })
+            seen[kind].add(name)
+
+    for kind in output:
+        output[kind].sort(key=lambda row: row["date"])
     return output
 
 
