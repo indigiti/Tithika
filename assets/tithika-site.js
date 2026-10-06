@@ -15,6 +15,7 @@
     'vrat/masik-shivaratri':'shivaratri',
     'festivals/maha-shivaratri':'shivaratri'
   };
+  const mahadwadashiPages=['vrat/mahadwadashi'];
   const sankrantiPages=['vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti'];
   const seasonKinds={
     'astronomy/vernal-equinox':'vernal_equinox',
@@ -27,7 +28,7 @@
     lat:19.076,lon:72.8777,city:'Mumbai, Maharashtra, India',
     timezone:'Asia/Kolkata',
     data:null,panchang:null,searchTimer:null,dateTouched:false,
-    monthData:null,monthKey:'',lunarCache:new Map(),observanceCache:new Map(),sankrantiCache:new Map()
+    monthData:null,monthKey:'',lunarCache:new Map(),observanceCache:new Map(),mahadwadashiCache:new Map(),sankrantiCache:new Map()
   };
 
   function isoToday(timeZone=state.timezone){
@@ -93,6 +94,7 @@
       if(monthPages.includes(pageSlug)) await calculateMonth();
       if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
       if(observanceKinds[pageSlug]) await calculateObservances();
+      if(mahadwadashiPages.includes(pageSlug)) await calculateMahadwadashi();
       if(sankrantiPages.includes(pageSlug)) await calculateSankranti();
       if(seasonKinds[pageSlug]) await calculateSeasons();
     }catch(e){toast(e.message||'Unable to load location context')}
@@ -184,6 +186,51 @@
         <a href="${base}panchang/daily/?date=${encodeURIComponent(row.date)}">Panchang →</a>
       </article>`;
     }).join('');
+  }
+
+  async function calculateMahadwadashi(){
+    const loading=$('#tkMahadwadashiLoading');
+    if(loading){loading.hidden=false;loading.textContent='Detecting Mahadwadashi yogas…'}
+    try{
+      const p=payload();
+      const cacheKey=`${p.date.slice(0,4)}|${Number(p.lat).toFixed(5)}|${Number(p.lon).toFixed(5)}|${p.timezone}`;
+      if(state.mahadwadashiCache.has(cacheKey)){
+        renderMahadwadashi(state.mahadwadashiCache.get(cacheKey));
+        return;
+      }
+      const r=await fetch(`${base}api.php?action=mahadwadashi`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Unable to classify Mahadwadashi');
+      state.mahadwadashiCache.set(cacheKey,j);
+      renderMahadwadashi(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Mahadwadashi engine unavailable'}
+      toast(e.message||'Mahadwadashi engine unavailable');
+    }
+  }
+
+  function renderMahadwadashi(d){
+    const loading=$('#tkMahadwadashiLoading');if(loading)loading.hidden=true;
+    const title=$('#tkMahadwadashiTitle');if(title)title.textContent=`Mahadwadashi ${d.year}`;
+    const note=$('#tkMahadwadashiNote');if(note)note.textContent=d.note||'';
+    const list=$('#tkMahadwadashiList');if(!list)return;
+    const rows=d.events||[];
+    if(!rows.length){
+      list.innerHTML='<div class="tk-panchang-empty">No Mahadwadashi combinations detected for this year.</div>';
+      return;
+    }
+    list.innerHTML=rows.map(row=>`<article class="tk-mahadwadashi-event">
+      <div class="tk-mahadwadashi-date"><b>${esc(row.date)}</b><span>${esc(row.weekday||'')}</span></div>
+      <div class="tk-mahadwadashi-main">
+        <div class="tk-mahadwadashi-tags">${(row.yogas||[]).map(y=>`<span>${esc(y)}</span>`).join('')}</div>
+        <p>${esc(row.paksha||'')} · ${esc(row.amanta_month||'')} · Dwadashi ${esc(row.dwadashi_start_label||'—')} → ${esc(row.dwadashi_end_label||'—')}</p>
+        <small>Rule evidence retained: local sunrise/sunset, Tithi spans and Nakshatra state.</small>
+      </div>
+      <a href="${base}panchang/daily/?date=${encodeURIComponent(row.date)}">Panchang →</a>
+    </article>`).join('');
   }
 
   async function calculateSankranti(){
@@ -540,7 +587,7 @@
     if(pageSlug==='panchang/month'){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)){
+    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
