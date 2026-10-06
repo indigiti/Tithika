@@ -204,6 +204,42 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'specialized-muhurat') {
+        $payload = readPayload();
+        $profile = strtolower(trim((string)($_GET['profile'] ?? 'vivah')));
+        if (!in_array($profile, ['vivah','griha-pravesh','property','vehicle','namakarana','annaprashana','mundana'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported Muhurat profile'], 422);
+        }
+        $payload['profile'] = $profile;
+        $data = runPythonEngine('python/specialized_muhurat.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
+    if ($action === 'panchang-utility') {
+        $payload = readPayload();
+        $mode = strtolower(trim((string)($_GET['mode'] ?? 'tarabalam')));
+        if (!in_array($mode, ['tarabalam','chandrabalam','panchak','bhadra','all'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported Panchang utility mode'], 422);
+        }
+        $payload['mode'] = $mode;
+        $data = runPythonEngine('python/panchang_utilities.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
+    if ($action === 'regional-calendar') {
+        $payload = readPayload();
+        $variant = strtolower(trim((string)($_GET['variant'] ?? 'hindi')));
+        if (!in_array($variant, ['hindi','tamil','telugu','kannada','malayalam','gujarati','marathi','bengali','odia','assamese','iskcon'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported regional calendar variant'], 422);
+        }
+        $payload['variant'] = $variant;
+        $data = runPythonEngine('python/regional_calendar.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'lagna') {
         $payload = readPayload();
         $data = runPythonEngine('python/lagna.py', $payload);
