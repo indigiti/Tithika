@@ -171,6 +171,18 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'vrat-recurrence') {
+        $payload = readPayload();
+        $mode = strtolower(trim((string)($_GET['mode'] ?? 'durgashtami')));
+        if (!in_array($mode, ['iskcon-ekadashi','satyanarayana','durgashtami','skanda-sashti','karthigai','rohini','sawan-somwar','mangala-gauri'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported Vrat recurrence mode'], 422);
+        }
+        $payload['mode'] = $mode;
+        $data = runPythonEngine('python/vrat_recurrence.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'mahadwadashi') {
         $payload = readPayload();
         $data = runPythonEngine('python/mahadwadashi.py', $payload);
