@@ -174,7 +174,7 @@ try {
     if ($action === 'vrat-recurrence') {
         $payload = readPayload();
         $mode = strtolower(trim((string)($_GET['mode'] ?? 'durgashtami')));
-        if (!in_array($mode, ['iskcon-ekadashi','satyanarayana','durgashtami','skanda-sashti','karthigai','rohini','sawan-somwar','mangala-gauri'], true)) {
+        if (!in_array($mode, ['satyanarayana','durgashtami','skanda-sashti','karthigai','rohini','sawan-somwar','mangala-gauri'], true)) {
             out(['ok'=>false,'error'=>'Unsupported Vrat recurrence mode'], 422);
         }
         $payload['mode'] = $mode;
