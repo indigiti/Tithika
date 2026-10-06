@@ -134,7 +134,7 @@ Stage 7 reuses one Lahiri astronomy core while keeping regional month convention
 - regional month/day labels rendered in the shared month grid
 - Malayalam Kollavarsham and Bengali Era rollover metadata
 
-Nepali and Jain calendars remain mapped but require their own specialized civil-calendar conversion layers.
+Nepali and Jain calendar adapters are now live through dedicated engines. Nepali uses an offline Bikram Sambat civil-date table plus Tithika Panchang; Jain uses an explicit Kartikadi Amanta Vikram/Veer Samvat profile.
 
 ### Sankranti / solar ingress
 
@@ -304,6 +304,7 @@ python/vendor/astronomy.py    vendored Astronomy Engine (MIT)
 
 docs/DRIKPANCHANG_AUDIT.md    benchmark/product audit
 docs/TITHIKA_PAGE_MAP.md      implementation map
+docs/RELEASE_CERTIFICATION.md production certification + shell queue
 scripts/validate-routes.php   CI route validator
 ```
 
@@ -363,15 +364,17 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 12. Specialized Vivah/Griha/Property/Vehicle/Sanskar Muhurat profiles. ✓
 13. Tarabalam, Chandrabalam, Panchak and Bhadra decision utilities. ✓
 14. Regional solar/Amanta/Purnimanta calendar engine. ✓
-15. Planet ephemeris/transit/retrograde/combustion. ✓
-16. Birth/Jyotish calculators. ✓
-17. Shodashavarga + structural Yogas + complete Shadbala. ✓
-18. Unified evidence-first horoscope analysis. ✓
-19. Auditable Jyotish interpretation knowledge layer. ✓
-20. Jyotish timing and forecast timeline engine. ✓
-21. Personalized daily/weekly/monthly/yearly Rashifal engine. ✓
-22. SEO/schema/internal-linking and quality-filtered sitemap. ✓
-23. Devotion/Learn/Gallery structured content layer. ✓
-24. Performance/mobile/accessibility/release hardening. ✓
+15. Dedicated Nepali Bikram Sambat + Jain Kartikadi calendar adapters. ✓
+16. Planet ephemeris/transit/retrograde/combustion. ✓
+17. Birth/Jyotish calculators. ✓
+18. Shodashavarga + structural Yogas + complete Shadbala. ✓
+19. Unified evidence-first horoscope analysis. ✓
+20. Auditable Jyotish interpretation knowledge layer. ✓
+21. Jyotish timing and forecast timeline engine. ✓
+22. Personalized daily/weekly/monthly/yearly Rashifal engine. ✓
+23. SEO/schema/internal-linking and quality-filtered sitemap. ✓
+24. Devotion/Learn/Gallery structured content layer. ✓
+25. Performance/mobile/accessibility/release hardening. ✓
+26. Production certification contract + remaining-shell queue. ✓
 
 See `docs/DRIKPANCHANG_AUDIT.md` and `docs/TITHIKA_PAGE_MAP.md` for the full implementation plan.

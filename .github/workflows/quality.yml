@@ -43,6 +43,9 @@ jobs:
       - name: SEO content accessibility and release audit
         run: php scripts/test-release-hardening.php
 
+      - name: Production certification contract
+        run: php scripts/test-production-certification.php
+
       - name: Panchang regression fixture
         run: python scripts/test-panchang.py
 
@@ -135,6 +138,12 @@ jobs:
 
       - name: Regional calendar regression fixture
         run: python scripts/test-regional-calendar.py
+
+      - name: Nepali Bikram Sambat regression fixture
+        run: python scripts/test-nepali-calendar.py
+
+      - name: Jain Kartikadi calendar regression fixture
+        run: python scripts/test-jain-calendar.py
 
       - name: Equinox and solstice regression fixture
         run: python scripts/test-seasons.py

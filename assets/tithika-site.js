@@ -98,11 +98,11 @@
     'panchang/hindi':'hindi','panchang/tamil':'tamil','panchang/telugu':'telugu',
     'panchang/kannada':'kannada','panchang/malayalam':'malayalam','panchang/gujarati':'gujarati',
     'panchang/marathi':'marathi','panchang/bengali':'bengali','panchang/odia':'odia',
-    'panchang/assamese':'assamese','panchang/iskcon':'iskcon',
+    'panchang/assamese':'assamese','panchang/iskcon':'iskcon','panchang/nepali':'nepali',
     'calendars/tamil':'tamil','calendars/telugu':'telugu','calendars/kannada':'kannada',
     'calendars/malayalam':'malayalam','calendars/gujarati':'gujarati','calendars/marathi':'marathi',
     'calendars/bengali':'bengali','calendars/odia':'odia','calendars/assamese':'assamese',
-    'calendars/iskcon':'iskcon'
+    'calendars/iskcon':'iskcon','calendars/nepali':'nepali','calendars/jain':'jain'
   };
   const RASHIS=['Mesha','Vrishabha','Mithuna','Karka','Simha','Kanya','Tula','Vrishchika','Dhanu','Makara','Kumbha','Meena'];
   const browserTimezone=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata';
@@ -1488,10 +1488,12 @@
     html+=(d.days||[]).map(row=>{
       if(!row.available)return `<div class="tk-month-day is-unavailable"><b>${row.day||''}</b><small>Unavailable</small></div>`;
       const regionalDay=row.regional_day!==null&&row.regional_day!==undefined?row.regional_day:'';
+      const regionalYear=row.regional_year?` · ${esc(row.regional_year)}`:'';
+      const native=row.regional_date_native?` · ${esc(row.regional_date_native)}`:'';
       return `<button type="button" class="tk-month-day" data-regional-date="${esc(row.date)}">
         <span class="tk-month-day-top"><b>${row.day}</b><em>${esc(row.weekday_short||'')}</em></span>
-        <strong>${esc(row.regional_month||'—')} ${esc(regionalDay)}</strong>
-        <small>${esc(row.tithi||'')} · ${esc(row.paksha||'')}</small>
+        <strong>${esc(row.regional_month||'—')} ${esc(regionalDay)}${regionalYear}</strong>
+        <small>${esc(row.tithi||'')} · ${esc(row.paksha||'')}${native}</small>
         <span class="tk-month-nak">${esc(row.nakshatra||'—')}</span>
       </button>`;
     }).join('');

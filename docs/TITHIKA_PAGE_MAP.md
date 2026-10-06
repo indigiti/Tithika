@@ -7,10 +7,10 @@ Current mapped logical pages: **292**.
 ## Product families
 
 ### 1. Panchang
-Daily/monthly Panchang, regional Panjika/Panchang variants, ISKCON, solar/Panchang utilities, Chandrabalam, Tarabalam, Panchak, Bhadra, Ganda Moola, Nakshatra and Sankalpa. Tarabalam, Chandrabalam, Panchak and Bhadra are now engine-backed; Hindi, Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional month views are backed by the shared regional calendar engine. Nepali remains mapped pending a dedicated civil-calendar conversion layer.
+Daily/monthly Panchang, regional Panjika/Panchang variants, ISKCON, solar/Panchang utilities, Chandrabalam, Tarabalam, Panchak, Bhadra, Ganda Moola, Nakshatra and Sankalpa. Tarabalam, Chandrabalam, Panchak and Bhadra are now engine-backed; Hindi, Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional month views are backed by the shared regional calendar engine. Nepali Patro is now backed by a dedicated offline Bikram Sambat civil-date adapter with local Tithika Panchang integration.
 
 ### 2. Calendars
-Hindu/Indian and regional yearly calendars plus major festival calendars such as Diwali, Durga Puja, Navratri, Onam, Chhath, Sankranti, Dashain and Tihar. Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional calendar views now share the verified regional calendar engine; Jain/Nepali remain specialized future adapters.
+Hindu/Indian and regional yearly calendars plus major festival calendars such as Diwali, Durga Puja, Navratri, Onam, Chhath, Sankranti, Dashain and Tihar. Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional calendar views now share the verified regional calendar engine; Nepali and Jain now use dedicated adapters: Bikram Sambat civil conversion for Nepali and Kartikadi Amanta Vikram/Veer Samvat for Jain.
 
 ### 3. Muhurat
 Choghadiya, Hora, Vivah, Griha Pravesh, vehicle/property purchase, Lagna, Gowri, Jain Pachchakkhan, Rahu Kala, auspicious Yoga, Panchaka Rahita, Abhijit, Do Ghati, Shubha Dates and Pancha Pakshi. The shared substrate now powers specialized Vivah, Griha Pravesh, Property and Vehicle pages plus selectable Namakarana, Annaprashana and Mundana Sanskar profiles with auditable weekday/Tithi/Nakshatra, Adhika-month, combustion and blocked-period rules.
@@ -35,6 +35,18 @@ Rangoli, greetings, Mehandi, festival/deity collections, Krishna art, Hindu symb
 
 ### 10. Learn
 Tutorials, Panchang concepts, Choghadiya, Muhurat, Nakshatra, Rahu Kala, FAQ and contact/reference content. These routes now contain structured original editorial guides with deep links into the verified calculation engines.
+
+## Production certification
+
+Current certified detail-route state:
+
+- **105** verified/live calculation routes
+- **62** structured editorial routes
+- **1** canonical live redirect (`muhurat/choghadiya`)
+- **168** production-quality/indexable detail routes
+- **124** mapped `noindex,follow` shells
+
+The exact contract and promotion queue are documented in `docs/RELEASE_CERTIFICATION.md` and enforced by CI.
 
 ## SEO and release state
 
