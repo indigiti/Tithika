@@ -1517,7 +1517,7 @@
   function renderCreationDays(d){
     const key=pageSlug==='panchang/manvadi-tithi'?'manvadi':pageSlug==='panchang/yugadi-tithi'?'yugadi':'kalpadi';
     const rows=d[key]||[];
-    const summary=$('#tkReuseSummary');if(summary)summary.textContent=`${rows.length} ${key} dates · sunrise-state Purnimanta convention · ${d.year}`;
+    const summary=$('#tkReuseSummary');if(summary)summary.textContent=`${rows.length} ${key} dates · exact Tithi-span convention · ${d.year}`;
     const list=$('#tkReuseList');if(!list)return;
     list.innerHTML=rows.length?rows.map(row=>`<article class="tk-lunar-event">
       <div class="tk-lunar-event-date"><b>${esc(row.date_label)}</b><span>${esc(row.weekday)}</span></div>
