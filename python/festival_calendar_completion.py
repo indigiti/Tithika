@@ -79,17 +79,28 @@ def month_rows(year,lat,lon,tz,month):
     return rows
 
 def regional_year(year,lat,lon,tz,variant):
+    # Reuse one ingress index for the whole year instead of recalculating it
+    # separately for all 12 Gregorian display months.
+    events=regional_calendar.ingress_index(year,lat,lon,tz,False)
+    events=sorted(events,key=lambda x:x["datetime"])
+    names=regional_calendar.SOLAR_MONTHS[variant]
     rows=[]
-    for m in range(1,13):
-        data=regional_calendar.calculate_month(variant,date(year,m,1),lat,lon,tz,False)
-        # Emit month boundaries, not all 365 rows, to keep yearly aggregation concise.
-        if not data: continue
-        first=data[0]; last=data[-1]
-        rows.append({"title":str(first.get("regional_month") or first.get("month_name") or f"Month {m}"),
-          "date":first["date"],"time":f'{first["date"]} → {last["date"]}',
-          "meta":str(first.get("calendar_basis") or variant),
-          "detail":f'{len(data)} civil dates in this displayed Gregorian month',"link_date":first["date"]})
-    return rows
+    for i,e in enumerate(events):
+        start=datetime.fromisoformat(e["datetime"])
+        if start.year not in (year-1,year): continue
+        nxt=datetime.fromisoformat(events[i+1]["datetime"]) if i+1<len(events) else None
+        if not nxt or nxt.year<year or start.year>year: continue
+        a=max(start.date(),date(year,1,1)); b=min((nxt-timedelta(seconds=1)).date(),date(year,12,31))
+        if a>b: continue
+        sid=int(e["rashi_id"])
+        rows.append({"title":names[sid],"date":a.isoformat(),"time":f"{a.isoformat()} → {b.isoformat()}",
+          "meta":"nirayana-solar","detail":f'Exact Lahiri solar-month span · {variant.title()} profile',"link_date":a.isoformat()})
+    # Keep one row per regional solar month in chronological order.
+    seen=set(); out=[]
+    for r in rows:
+        if r["title"] in seen: continue
+        seen.add(r["title"]); out.append(r)
+    return out
 
 def theme_rows(slug,year,major):
     vals=CALENDAR_THEMES[slug]; bytitle={r["title"].lower():r for r in major};rows=[]
