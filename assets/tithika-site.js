@@ -15,6 +15,15 @@
     'vrat/masik-shivaratri':'shivaratri',
     'festivals/maha-shivaratri':'shivaratri'
   };
+  const festivalKinds={
+    'festivals/ganesha-chaturthi':'ganesh-chaturthi',
+    'festivals/raksha-bandhan':'raksha-bandhan',
+    'festivals/navratri':'navratri',
+    'festivals/dussehra':'dussehra',
+    'festivals/holi':'holi',
+    'festivals/karwa-chauth':'karwa-chauth',
+    'festivals/diwali':'diwali'
+  };
   const dwadashiPages=['vrat/dwadashi'];
   const mahadwadashiPages=['vrat/mahadwadashi'];
   const sankrantiPages=['vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti'];
@@ -29,7 +38,7 @@
     lat:19.076,lon:72.8777,city:'Mumbai, Maharashtra, India',
     timezone:'Asia/Kolkata',
     data:null,panchang:null,searchTimer:null,dateTouched:false,
-    monthData:null,monthKey:'',lunarCache:new Map(),observanceCache:new Map(),dwadashiCache:new Map(),mahadwadashiCache:new Map(),sankrantiCache:new Map()
+    monthData:null,monthKey:'',lunarCache:new Map(),observanceCache:new Map(),festivalCache:new Map(),dwadashiCache:new Map(),mahadwadashiCache:new Map(),sankrantiCache:new Map()
   };
 
   function isoToday(timeZone=state.timezone){
@@ -95,6 +104,7 @@
       if(monthPages.includes(pageSlug)) await calculateMonth();
       if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
       if(observanceKinds[pageSlug]) await calculateObservances();
+      if(festivalKinds[pageSlug]) await calculateFestival();
       if(dwadashiPages.includes(pageSlug)) await calculateDwadashi();
       if(mahadwadashiPages.includes(pageSlug)) await calculateMahadwadashi();
       if(sankrantiPages.includes(pageSlug)) await calculateSankranti();
@@ -188,6 +198,67 @@
         <a href="${base}panchang/daily/?date=${encodeURIComponent(row.date)}">Panchang →</a>
       </article>`;
     }).join('');
+  }
+
+  async function calculateFestival(){
+    const loading=$('#tkFestivalLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating festival rule…'}
+    try{
+      const kind=festivalKinds[pageSlug];
+      const p=payload();
+      const cacheKey=`${kind}|${p.date.slice(0,4)}|${Number(p.lat).toFixed(5)}|${Number(p.lon).toFixed(5)}|${p.timezone}`;
+      if(state.festivalCache.has(cacheKey)){
+        renderFestival(state.festivalCache.get(cacheKey));
+        return;
+      }
+      const r=await fetch(`${base}api.php?action=festival&kind=${encodeURIComponent(kind)}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Unable to calculate festival');
+      state.festivalCache.set(cacheKey,j);
+      renderFestival(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Festival engine unavailable'}
+      toast(e.message||'Festival engine unavailable');
+    }
+  }
+
+  function renderFestival(d){
+    const loading=$('#tkFestivalLoading');if(loading)loading.hidden=true;
+    const note=$('#tkFestivalNote');if(note)note.textContent=d.note||'';
+    const el=$('#tkFestivalResult');if(!el)return;
+    const row=d.event;
+    if(!row){
+      el.innerHTML='<div class="tk-panchang-empty">No matching festival rule found for this year.</div>';
+      return;
+    }
+    const title=$('#tkFestivalTitle');
+    if(title)title.textContent=`${row.title} ${d.year}`;
+    const timings=[];
+    if(row.puja)timings.push(['Puja',row.puja.start_label+' – '+row.puja.end_label]);
+    if(row.thread_ceremony)timings.push(['Thread ceremony',row.thread_ceremony.start_label+' – '+row.thread_ceremony.end_label]);
+    if(row.ghatasthapana)timings.push(['Ghatasthapana',row.ghatasthapana.start_label+' – '+row.ghatasthapana.end_label]);
+    if(row.vijay_muhurat)timings.push(['Vijay Muhurat',row.vijay_muhurat.start_label+' – '+row.vijay_muhurat.end_label]);
+    if(row.aparahna)timings.push(['Aparahna',row.aparahna.start_label+' – '+row.aparahna.end_label]);
+    if(row.pradosh)timings.push(['Pradosh',row.pradosh.start_label+' – '+row.pradosh.end_label]);
+    if(row.moonrise_label)timings.push(['Moonrise',row.moonrise_label]);
+    if(row.upavasa)timings.push(['Upavasa',row.upavasa.start_label+' – '+row.upavasa.end_label]);
+    if(row.rangwali_holi_date)timings.push(['Rangwali Holi',row.rangwali_holi_date]);
+    const pending=[];
+    if(row.vrishabha_lagna_status)pending.push('Vrishabha Lagna refinement pending');
+    if(row.puja_muhurat_status)pending.push('Evening Puja refinement pending');
+    el.innerHTML=`<article class="tk-festival-card">
+      <div class="tk-festival-date"><b>${esc(row.date)}</b><span>${esc(row.weekday||'')}</span></div>
+      <div class="tk-festival-main">
+        <h4>${esc(row.title)}</h4>
+        <p>${esc(row.month)} · ${esc(row.paksha)} · ${esc(row.tithi_start_label)} → ${esc(row.tithi_end_label)}</p>
+        <div class="tk-festival-times">${timings.map(([k,v])=>`<span><b>${esc(k)}</b>${esc(v)}</span>`).join('')}</div>
+        ${pending.length?`<small>${pending.map(esc).join(' · ')}</small>`:''}
+      </div>
+      <a href="${base}panchang/daily/?date=${encodeURIComponent(row.date)}">Daily Panchang →</a>
+    </article>`;
   }
 
   async function calculateDwadashi(){
@@ -643,7 +714,7 @@
     if(pageSlug==='panchang/month'){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)){
+    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
