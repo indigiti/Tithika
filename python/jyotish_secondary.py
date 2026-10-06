@@ -49,10 +49,10 @@ def gemstone(moment,lat,lon):
 
 def rudraksha(moment,lat,lon):
     moon,_,asc,_=base_state(moment,lat,lon); lord=RASHI_LORD.get(asc["lagna"],"")
-    return [row("Lagna lord",lord,asc["lagna"],"Traditional baseline"),row("Traditional Rudraksha",RUDRA.get(lord,"5 Mukhi"),"Reference profile","Sectarian practice and suitability can differ."),row("Janma Nakshatra",moon["nakshatra"],f'Pada {moon["nakshatra_pada"]}',"Birth-Moon context")]
+    return [row("Lagna lord",lord,asc["lagna"],"Traditional baseline"),row("Traditional Rudraksha",RUDRA.get(lord,"5 Mukhi"),"Reference profile","Sectarian practice and suitability can differ."),row("Janma Nakshatra",moon["nakshatra"],f'Pada {moon["pada"]}',"Birth-Moon context")]
 
 def baby(moment):
-    moon=planetary.planet_state("Moon",moment); nak=moon["nakshatra"];pada=int(moon["nakshatra_pada"]);syll=NAK_SYLLABLES.get(nak,[])
+    moon=planetary.planet_state("Moon",moment); nak=moon["nakshatra"];pada=int(moon["pada"]);syll=NAK_SYLLABLES.get(nak,[])
     return [row("Janma Nakshatra",nak,f"Pada {pada}","Nirayana Moon"),row("Naming syllable",syll[pada-1] if len(syll)>=pada else "—","Traditional Namakarana sound","Use as a starting sound, not a compulsory spelling."),row("All four Pada sounds",", ".join(syll),"","Reference")]
 
 def initials(name=""):
