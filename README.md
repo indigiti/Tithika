@@ -100,7 +100,44 @@ Current migrated festivals include Ganesh Chaturthi, Raksha Bandhan, Navratri, V
 - auditable accepted/rejected-window reasons
 - Abhijit/Vijaya overlap flags
 
-The common engine is exposed through `api.php?action=muhurat-rules`. Vivah, Griha Pravesh, property, vehicle and Sanskar profiles are intentionally layered on top in the next stage.
+The common engine is exposed through `api.php?action=muhurat-rules`.
+
+### Specialized Muhurat profiles
+
+Stage 5 layers versioned ceremony rules on the shared substrate:
+
+- `/muhurat/vivah/`
+- `/muhurat/griha-pravesh/`
+- `/muhurat/property/`
+- `/muhurat/vehicle/`
+- selectable Namakarana, Annaprashana and Mundana Sanskar profiles
+- weekday, Tithi and Nakshatra Shuddhi
+- Rahu Kaal, Yamaganda, Gulika, Vishti/Bhadra and blocked-Yoga subtraction
+- Adhika-month rejection where required
+- Guru/Shukra combustion checks for Vivah/Griha profiles
+- minimum-window enforcement and evidence attached to each accepted window
+
+### Panchang decision utilities
+
+Stage 6 makes these mapped tools calculation-backed:
+
+- `/panchang/tarabalam/` — personalized 9-Tara cycle; favourable Tara 2/4/6/8/9
+- `/panchang/chandrabalam/` — personalized Moon-house strength; favourable houses 1/3/6/7/10/11
+- `/panchang/panchak/` — exact Moon-longitude Panchak intervals
+- `/panchang/bhadra/` — exact Vishti Karana intervals
+
+### Regional calendar engine
+
+Stage 7 reuses one Lahiri astronomy core while keeping regional month conventions explicit:
+
+- solar calendars: Tamil, Malayalam, Bengali, Odia and Assamese
+- Amanta lunar calendars: Telugu, Kannada, Gujarati and Marathi
+- Purnimanta lunar calendar: Hindi
+- Gaudiya/ISKCON month naming on the Purnimanta lunar substrate
+- regional month/day labels rendered in the shared month grid
+- Malayalam Kollavarsham and Bengali Era rollover metadata
+
+Nepali and Jain calendars remain mapped but require their own specialized civil-calendar conversion layers.
 
 ### Sankranti / solar ingress
 
@@ -214,6 +251,9 @@ python/mahadwadashi.py         eight Mahadwadashi classifier
 python/festival_rules.py       declarative major-festival rule registry
 python/festivals.py            festival API adapter
 python/muhurat_rules.py        shared Muhurat filtering substrate
+python/specialized_muhurat.py  Vivah/Griha/Property/Vehicle/Sanskar profiles
+python/panchang_utilities.py    Tarabalam/Chandrabalam/Panchak/Bhadra
+python/regional_calendar.py     regional solar/Amanta/Purnimanta calendars
 python/sankranti.py           Nirayana solar-ingress engine
 python/seasons.py             equinox/solstice engine
 python/horoscope_analysis.py  unified Jyotish synthesis layer
@@ -279,13 +319,16 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 8. Equinox/solstice astronomy pages. ✓
 9. Smarta/Vaishnava/ISKCON Ekadashi + Dwadashi/Mahadwadashi + Parana rules. ✓
 10. Shared festival rule engine + migration of verified major festivals. ✓
-11. Shared Muhurat rule engine foundation. ✓ (specialized Muhurat profiles follow in Stage 5)
-12. Planet ephemeris/transit/retrograde/combustion. ✓
-13. Birth/Jyotish calculators. ✓
-14. Shodashavarga + structural Yogas + complete Shadbala. ✓
-15. Unified evidence-first horoscope analysis. ✓
-16. Auditable Jyotish interpretation knowledge layer. ✓
-17. Jyotish timing and forecast timeline engine. ✓
-18. Personalized daily/weekly/monthly/yearly Rashifal engine. ✓
+11. Shared Muhurat rule engine foundation. ✓
+12. Specialized Vivah/Griha/Property/Vehicle/Sanskar Muhurat profiles. ✓
+13. Tarabalam, Chandrabalam, Panchak and Bhadra decision utilities. ✓
+14. Regional solar/Amanta/Purnimanta calendar engine. ✓
+15. Planet ephemeris/transit/retrograde/combustion. ✓
+16. Birth/Jyotish calculators. ✓
+17. Shodashavarga + structural Yogas + complete Shadbala. ✓
+18. Unified evidence-first horoscope analysis. ✓
+19. Auditable Jyotish interpretation knowledge layer. ✓
+20. Jyotish timing and forecast timeline engine. ✓
+21. Personalized daily/weekly/monthly/yearly Rashifal engine. ✓
 
 See `docs/DRIKPANCHANG_AUDIT.md` and `docs/TITHIKA_PAGE_MAP.md` for the full implementation plan.
