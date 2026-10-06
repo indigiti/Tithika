@@ -272,7 +272,7 @@ def named_tithi_events(year,rules,lat,lon,tz,hour24):
             info=month_for_window(start,end)
             if strip_adhika(info.get("purnimanta"))!=month or info.get("adhika"):
                 continue
-            if month=="Vaishakha" and tithi_id==2:
+            if (month=="Vaishakha" and tithi_id==2) or name=="Varaha Kalpadi":
                 d,sr,basis=select_daytime_overlap(start,end,lat,lon,tz)
             else:
                 d,sr,basis=select_tithi_day(start,end,lat,lon,tz)
