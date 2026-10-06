@@ -8,7 +8,7 @@ keeps observance selectors explicit. It currently supports:
 - Satyanarayana Puja: Purnima occurrence calendar
 - Masik Durgashtami: Shukla Ashtami at local sunrise
 - Skanda Sashti: documented Panchami-Sashti conjunction rule
-- Karthigai: Krittika Nakshatra at local sunrise
+- Karthigai: Krittika Nakshatra prevailing at local sunset
 - Rohini Vrat: Rohini Nakshatra prevailing after local sunrise
 - Sawan Somwar: Mondays inside Shravana, both Purnimanta and Amanta profiles
 - Mangala Gauri: Tuesdays inside Shravana, both Purnimanta and Amanta profiles
