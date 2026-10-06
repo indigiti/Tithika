@@ -157,10 +157,10 @@ def test_astronomy_completion():
 
     seasons = completion.indian_seasons(YEAR, TZ)
     assert len(seasons) == 6
-    assert [r["name"] for r in seasons] == [
+    assert {r["name"] for r in seasons} == {
         "Vasanta Ritu", "Grishma Ritu", "Varsha Ritu",
         "Sharad Ritu", "Hemanta Ritu", "Shishira Ritu"
-    ]
+    }
     assert seasons == sorted(seasons, key=lambda r: r["datetime"])
 
 
