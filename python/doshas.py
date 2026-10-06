@@ -18,16 +18,59 @@ def parse_birth(p,tz):
 def house_of(sign,ref):
     return ((sign-ref)%12)+1
 
+def sign_distance(from_sign,to_sign):
+    return ((to_sign-from_sign)%12)+1
+
+def mangal_cancellation_evidence(states):
+    mars=states["Mars"]
+    jupiter=states["Jupiter"]
+    evidence=[]
+
+    if mars["rashi"] in ("Mesha","Vrischika","Makara"):
+        evidence.append({
+            "rule":"mars-own-or-exalted-sign",
+            "strength":"strong",
+            "description":f"Mars is in {mars['rashi']} (own/exalted dignity under this profile)."
+        })
+
+    jd=sign_distance(jupiter["rashi_id"],mars["rashi_id"])
+    if jd==1:
+        evidence.append({
+            "rule":"jupiter-conjunct-mars",
+            "strength":"strong",
+            "description":"Jupiter is conjunct Mars by whole-sign placement."
+        })
+    elif jd in (5,7,9):
+        evidence.append({
+            "rule":"jupiter-classical-aspect-mars",
+            "strength":"strong",
+            "description":f"Jupiter casts its classical {jd}th-house aspect to Mars."
+        })
+
+    return evidence
+
 def mangal(birth,lat,lon,node_model):
     asc=lagna.lagna_state(birth,lat,lon)
-    states={n:planetary.planet_state(n,birth,node_model) for n in ["Moon","Venus","Mars","Sun","Saturn","Rahu","Ketu"]}
+    states={n:planetary.planet_state(n,birth,node_model) for n in ["Moon","Venus","Mars","Sun","Mercury","Jupiter","Saturn","Rahu","Ketu"]}
     refs={"Lagna":asc["lagna_id"],"Moon":states["Moon"]["rashi_id"],"Venus":states["Venus"]["rashi_id"]}
     checks=[]
     for ref,sign in refs.items():
         h=house_of(states["Mars"]["rashi_id"],sign)
         checks.append({"reference":ref,"mars_house":h,"afflicted":h in MANGAL_HOUSES})
     afflicted=[x for x in checks if x["afflicted"]]
-    return {"present":bool(afflicted),"checks":checks,"afflicted_references":[x["reference"] for x in afflicted],"rule_houses":sorted(MANGAL_HOUSES),"cancellation_status":"not-applied","note":"Base Mangal Dosha is evaluated from Lagna, Moon and Venus. Cancellation combinations are deliberately reported separately and are not guessed in this stage."}
+    evidence=mangal_cancellation_evidence(states) if afflicted else []
+    status="not-needed" if not afflicted else "evidence-present" if evidence else "none-found"
+    return {
+        "present":bool(afflicted),
+        "checks":checks,
+        "afflicted_references":[x["reference"] for x in afflicted],
+        "rule_houses":sorted(MANGAL_HOUSES),
+        "cancellation_status":status,
+        "cancellation_evidence":evidence,
+        "effective_present":bool(afflicted) and not bool(evidence),
+        "cancellation_profile":"conservative-own-exalted-plus-jupiter",
+        "note":"Base Mangal Dosha is evaluated from Lagna, Moon and Venus. Cancellation evidence is limited to widely accepted chart-computable rules in this profile; regional/lineage-specific exceptions are not auto-applied."
+    }
 
 def in_arc(x,start,end):
     span=(end-start)%360.0
