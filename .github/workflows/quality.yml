@@ -82,6 +82,9 @@ jobs:
       - name: Ashtakoota matching regression fixtures
         run: python scripts/test-matching.py
 
+      - name: Deep marriage analysis regression fixture
+        run: python scripts/test-marriage-analysis.py
+
       - name: Planetary aspects and Yuddha regression fixtures
         run: python scripts/test-aspects.py
 
