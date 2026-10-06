@@ -167,7 +167,8 @@ def tribhaga(name,birth,sunrise,sunset,next_sunrise):
   return 60.0 if TRI_NIGHT[part]==name else 0.0
  return 0.0
 
-def sun_sign(moment):return planetary.planet_state("Sun",moment)["rashi_id"]
+def sun_sign(moment):
+ return planetary.classify_longitude(planetary.sidereal_coordinates("Sun",moment)[0])["rashi_id"]
 
 def refine_ingress(left,right,target):
  lo,hi=left,right
