@@ -58,6 +58,9 @@ jobs:
       - name: Vrat observance regression fixtures
         run: python scripts/test-observances.py
 
+      - name: Vrat recurrence regression fixture
+        run: python scripts/test-vrat-recurrence.py
+
       - name: Mahadwadashi regression fixture
         run: python scripts/test-mahadwadashi.py
 
