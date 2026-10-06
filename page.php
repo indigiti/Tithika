@@ -671,12 +671,12 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <?php endif; ?>
         <div id="tkUtilityLoading" class="tk-panchang-loading">Calculating Panchang utility…</div>
         <div id="tkUtilityResult" class="tk-observance-list"></div>
-      <?php elseif (in_array($page['slug'], ['panchang/hindi','panchang/tamil','panchang/telugu','panchang/kannada','panchang/malayalam','panchang/gujarati','panchang/marathi','panchang/bengali','panchang/odia','panchang/assamese','panchang/iskcon','calendars/tamil','calendars/telugu','calendars/kannada','calendars/malayalam','calendars/gujarati','calendars/marathi','calendars/bengali','calendars/odia','calendars/assamese','calendars/iskcon'], true)): ?>
+      <?php elseif (in_array($page['slug'], ['panchang/hindi','panchang/tamil','panchang/telugu','panchang/kannada','panchang/malayalam','panchang/gujarati','panchang/marathi','panchang/bengali','panchang/odia','panchang/assamese','panchang/iskcon','panchang/nepali','calendars/tamil','calendars/telugu','calendars/kannada','calendars/malayalam','calendars/gujarati','calendars/marathi','calendars/bengali','calendars/odia','calendars/assamese','calendars/iskcon','calendars/nepali','calendars/jain'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
             <span class="tk-card-tag">Regional calendar engine</span>
             <h3 id="tkRegionalTitle"><?= htmlspecialchars($page['title']) ?></h3>
-            <p>One Lahiri astronomy core with the regional month convention kept explicit—Nirayana solar, Amanta lunar or Purnimanta lunar.</p>
+            <p>Regional calendar conventions stay explicit: Nirayana solar, Amanta/Purnimanta lunar, Nepali Bikram Sambat civil dates, or Kartikadi Jain Vikram/Veer Samvat.</p>
           </div>
           <div class="tk-panchang-engine" id="tkRegionalBasis">Regional convention</div>
         </div>
