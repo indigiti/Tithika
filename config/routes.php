@@ -234,6 +234,7 @@ return [
             ['slug'=>'jyotish/shani-sadesati','title'=>'Shani Sadesati Calculator','template'=>'calculator'],
             ['slug'=>'jyotish/baby-name','title'=>'Baby Name Calculator','template'=>'calculator'],
             ['slug'=>'jyotish/horoscope-match','title'=>'Horoscope Matching','template'=>'calculator'],
+            ['slug'=>'jyotish/marriage-analysis','title'=>'Deep Marriage Analysis','template'=>'calculator'],
             ['slug'=>'jyotish/nakshatra-compatibility','title'=>'Nakshatra Compatibility','template'=>'calculator'],
             ['slug'=>'jyotish/moonsign','title'=>'Janmarashi Calculator','template'=>'calculator'],
             ['slug'=>'jyotish/rashifal','title'=>'Vedic Rashifal','template'=>'list'],
