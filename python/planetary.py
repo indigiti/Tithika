@@ -96,7 +96,8 @@ def tropical_coordinates(name: str, moment: datetime) -> tuple[float, float, flo
     body = PLANETS[name]
     vec = panchang.astronomy.GeoVector(body, t, True)
     ecl = panchang.astronomy.Ecliptic(vec)
-    return panchang.norm(ecl.elon), float(ecl.elat), float(ecl.ecdist)
+    dist = math.sqrt(ecl.vec.x*ecl.vec.x + ecl.vec.y*ecl.vec.y + ecl.vec.z*ecl.vec.z)
+    return panchang.norm(ecl.elon), float(ecl.elat), float(dist)
 
 
 def sidereal_coordinates(name: str, moment: datetime) -> tuple[float, float, float, float]:
