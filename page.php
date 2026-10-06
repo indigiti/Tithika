@@ -649,6 +649,25 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <div id="tkSpecialMuhuratLoading" class="tk-panchang-loading">Evaluating monthly Muhurat windows…</div>
         <div id="tkSpecialMuhuratSummary" class="tk-lunar-note"></div>
         <div id="tkSpecialMuhuratList" class="tk-observance-list"></div>
+      <?php elseif (in_array($page['slug'], ['panchang/sunrise','panchang/abhijit-nakshatra','panchang/ganda-moola','panchang/manvadi-tithi','panchang/yugadi-tithi','panchang/kalpadi-tithi','panchang/vinchudo','panchang/jwalamukhi-yoga','panchang/sankalpa','panchang/nakshatra','panchang/vedic-clock'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Verified Panchang reuse engine</span>
+            <h3 id="tkReuseTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Built from the same Lahiri Sun/Moon, sunrise-state and transition primitives used by Daily Panchang. Route-specific rules remain explicit and regression-tested.</p>
+          </div>
+          <div class="tk-panchang-engine" id="tkReuseEngine">Tithika Panchang core</div>
+        </div>
+        <?php if (in_array($page['slug'], ['panchang/sankalpa','panchang/vedic-clock'], true)): ?>
+        <div class="tk-birth-controls">
+          <label><span>Local time</span><input id="tkReuseTime" type="time" step="60"></label>
+          <button id="tkReuseCalculate" type="button">Recalculate</button>
+        </div>
+        <?php endif; ?>
+        <div id="tkReuseLoading" class="tk-panchang-loading">Calculating Panchang result…</div>
+        <div id="tkReuseSummary" class="tk-lunar-note"></div>
+        <div id="tkReuseMetrics" class="tk-panchang-summary"></div>
+        <div id="tkReuseList" class="tk-observance-list"></div>
       <?php elseif (in_array($page['slug'], ['panchang/tarabalam','panchang/chandrabalam','panchang/panchak','panchang/bhadra'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
