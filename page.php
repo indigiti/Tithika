@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -182,7 +182,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <div class="tk-muhurat-item avoid"><small>Yamaganda</small><strong id="tkMuhuratYamaganda">—</strong></div>
           <div class="tk-muhurat-item avoid"><small>Gulika</small><strong id="tkMuhuratGulika">—</strong></div>
         </div>
-      <?php elseif (in_array($page['slug'], ['festivals/ganesha-chaturthi','festivals/raksha-bandhan','festivals/navratri','festivals/dussehra','festivals/holi','festivals/karwa-chauth','festivals/diwali'], true)): ?>
+      <?php elseif (in_array($page['slug'], ['festivals/ganesha-chaturthi','festivals/raksha-bandhan','festivals/navratri','festivals/dussehra','festivals/holi','festivals/karwa-chauth','festivals/janmashtami','festivals/diwali'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
             <span class="tk-card-tag">Verified festival rule</span>
@@ -269,6 +269,17 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <strong id="tkSeasonResult">—</strong>
         </div>
         <div id="tkSeasonAll" class="tk-season-all"></div>
+      <?php elseif (in_array($page['slug'], ['muhurat/lagna','panchang/lagna-kundali'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Live Lagna engine</span>
+            <h3 id="tkLagnaTitle">Sidereal Lagna timeline</h3>
+            <p>Location-aware Lahiri ascendant periods derived from local apparent sidereal time. Sign lengths are calculated, not assumed.</p>
+          </div>
+          <div class="tk-panchang-engine">GAST · true obliquity · Lahiri</div>
+        </div>
+        <div id="tkLagnaLoading" class="tk-panchang-loading">Calculating Lagna periods…</div>
+        <div id="tkLagnaList" class="tk-observance-list"></div>
       <?php elseif (in_array($page['slug'], ['panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
