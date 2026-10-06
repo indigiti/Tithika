@@ -285,6 +285,13 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'shadbala') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/shadbala.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'seasons') {
         $payload = readPayload();
         $data = runPythonEngine('python/seasons.py', $payload);
