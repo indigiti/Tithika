@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign','jyotish/janma-kundali','planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha','astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse','jyotish/vimshottari-dasha','jyotish/mangal-dosha','jyotish/kalasarpa','jyotish/shani-sadesati','jyotish/ashtakavarga','jyotish/shadbala'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign','jyotish/janma-kundali','planets/mutual-aspects','planets/lunar-aspects','planets/conjunctions','planets/graha-yuddha','astronomy/eclipses','astronomy/solar-eclipse','astronomy/lunar-eclipse','jyotish/vimshottari-dasha','jyotish/mangal-dosha','jyotish/kalasarpa','jyotish/shani-sadesati','jyotish/ashtakavarga','jyotish/shadbala','jyotish/horoscope-match','jyotish/nakshatra-compatibility'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -304,6 +304,55 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <div id="tkPlanetaryLoading" class="tk-panchang-loading">Calculating planetary ephemeris…</div>
         <div id="tkPlanetaryNote" class="tk-lunar-note"></div>
         <div id="tkPlanetaryResult" class="tk-planetary-result"></div>
+      <?php elseif ($page['slug'] === 'jyotish/horoscope-match'): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Ashtakoota · 36 Guna</span>
+            <h3>Horoscope Matching</h3>
+            <p>Vara and Kanya use independent birth date, time, place and timezone. The Moon-based 36-point score is kept separate from Mangal, Lagna and Vimshottari context.</p>
+          </div>
+          <div class="tk-panchang-engine">Lahiri · Ashtakoota + Kundali context</div>
+        </div>
+        <div class="tk-match-profiles">
+          <?php foreach (['groom'=>'Vara / Groom','bride'=>'Kanya / Bride'] as $role=>$label): ?>
+          <section class="tk-match-person" data-match-role="<?= $role ?>">
+            <header><span><?= $role === 'groom' ? '01' : '02' ?></span><div><small>Birth profile</small><h4><?= htmlspecialchars($label) ?></h4></div></header>
+            <div class="tk-match-fields">
+              <label><span>Name</span><input id="tkMatch<?= ucfirst($role) ?>Name" type="text" placeholder="<?= $role === 'groom' ? 'Groom name' : 'Bride name' ?>"></label>
+              <label><span>Birth date</span><input id="tkMatch<?= ucfirst($role) ?>Date" type="date"></label>
+              <label><span>Birth time</span><input id="tkMatch<?= ucfirst($role) ?>Time" type="time" step="1" value="12:00:00"></label>
+              <label class="wide"><span>Birth city</span><input id="tkMatch<?= ucfirst($role) ?>City" type="search" autocomplete="off" placeholder="Search city"></label>
+              <div id="tkMatch<?= ucfirst($role) ?>Results" class="tk-match-search wide"></div>
+            </div>
+            <button type="button" class="tk-match-use-current" data-match-use-current="<?= $role ?>">Use selected Tithika location</button>
+            <small id="tkMatch<?= ucfirst($role) ?>Meta" class="tk-match-meta">Choose the correct birth city for timezone and coordinates.</small>
+          </section>
+          <?php endforeach; ?>
+        </div>
+        <button id="tkMatchCalculate" class="tk-match-submit" type="button">Match Horoscopes</button>
+        <div id="tkMatchLoading" class="tk-panchang-loading" hidden>Calculating both birth charts and Ashtakoota…</div>
+        <div id="tkMatchResult" class="tk-match-result"></div>
+      <?php elseif ($page['slug'] === 'jyotish/nakshatra-compatibility'): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Nakshatra + Pada matching</span>
+            <h3>Nakshatra Compatibility</h3>
+            <p>A lightweight Ashtakoota view for known birth stars. Pada is required because some Nakshatras cross Rashi boundaries.</p>
+          </div>
+          <div class="tk-panchang-engine">Same 36-point scoring tables</div>
+        </div>
+        <div class="tk-nak-match-grid">
+          <?php foreach (['groom'=>'Vara / Groom','bride'=>'Kanya / Bride'] as $role=>$label): ?>
+          <section>
+            <small><?= htmlspecialchars($label) ?></small>
+            <label><span>Nakshatra</span><select id="tkNak<?= ucfirst($role) ?>"></select></label>
+            <label><span>Pada</span><select id="tkNak<?= ucfirst($role) ?>Pada"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+          </section>
+          <?php endforeach; ?>
+        </div>
+        <button id="tkNakMatchCalculate" class="tk-match-submit" type="button">Check Compatibility</button>
+        <div id="tkNakMatchLoading" class="tk-panchang-loading" hidden>Calculating Nakshatra compatibility…</div>
+        <div id="tkNakMatchResult" class="tk-match-result"></div>
       <?php elseif (in_array($page['slug'], ['jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
