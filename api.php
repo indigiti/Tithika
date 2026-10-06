@@ -292,6 +292,20 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'vargas') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/vargas.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
+    if ($action === 'yogas') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/yogas.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'matching') {
         $payload = readPayload();
         $mode = strtolower(trim((string)($_GET['mode'] ?? 'horoscope')));
