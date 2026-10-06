@@ -10,9 +10,9 @@ override the base Ekadashi/Parana selector.
 Primary rule profile used by Tithika
 ------------------------------------
 - Unmilini: preceding Ekadashi spans two local sunrises.
-- Vanjuli: Dwadashi itself spans two local sunrises.
-- Trisparsha: Ekadashi at sunrise, shortened Dwadashi between sunrises,
-  Trayodashi at the following sunrise.
+- Vanjuli: an extended Dwadashi remains Shuddha from sunrise through sunset.
+- Trisparsha: Ekadashi ends during Arunodaya, Dwadashi prevails at sunrise/daytime
+  and Trayodashi prevails by the following sunrise.
 - Pakshavarddhini: the Purnima/Amavasya ending that fortnight spans two sunrises.
 - Jaya: Dwadashi day with Pushya Nakshatra from sunrise to sunset.
 - Vijaya: Shukla Dwadashi day with Shravana Nakshatra from sunrise to sunset.
@@ -122,7 +122,6 @@ def ordinary_dwadashi_date(start_dt: datetime, end_dt: datetime, lat, lon, tz):
 
 
 def trisparsha_date(rule: dict, start_dt: datetime, end_dt: datetime, lat, lon, tz):
-    prev_id = rule["tithi_id"] - 1
     next_id = (rule["tithi_id"] + 1) % 30
     d = start_dt.date() - timedelta(days=1)
     last = end_dt.date() + timedelta(days=1)
@@ -130,10 +129,14 @@ def trisparsha_date(rule: dict, start_dt: datetime, end_dt: datetime, lat, lon, 
         sunrise = local_sunrise(d, lat, lon, tz)
         next_sunrise = local_sunrise(d + timedelta(days=1), lat, lon, tz)
         if sunrise and next_sunrise:
+            arunodaya = sunrise - timedelta(minutes=96)
+            sunrise_state = panchang.state_at(sunrise + timedelta(seconds=1))
+            next_state = panchang.state_at(next_sunrise + timedelta(seconds=1))
             if (
-                sunrise < start_dt < end_dt < next_sunrise
-                and panchang.state_at(sunrise)["tithi_id"] == prev_id
-                and panchang.state_at(next_sunrise)["tithi_id"] == next_id
+                arunodaya <= start_dt <= sunrise
+                and sunrise < end_dt < next_sunrise
+                and sunrise_state["tithi_id"] == rule["tithi_id"]
+                and next_state["tithi_id"] == next_id
             ):
                 return d
         d += timedelta(days=1)
@@ -168,9 +171,22 @@ def classify_window(rule: dict, start_dt: datetime, end_dt: datetime, lat, lon, 
 
     dwa_sunrises = sunrises_between(start_dt, end_dt, lat, lon, tz)
     evidence["dwadashi_sunrises"] = [x.isoformat() for x in dwa_sunrises]
-    if len(dwa_sunrises) >= 2:
+    duration_hours = (end_dt - start_dt).total_seconds() / 3600.0
+    evidence["dwadashi_duration_hours"] = round(duration_hours, 4)
+
+    vanjuli_date = None
+    for sunrise in dwa_sunrises:
+        sunset = local_sunset(sunrise.date(), lat, lon, tz)
+        if (
+            sunset is not None
+            and start_dt <= sunrise < sunset < end_dt
+            and duration_hours >= 24.0
+        ):
+            vanjuli_date = sunrise.date()
+            break
+    if vanjuli_date is not None:
         yogas.append("Vanjuli Mahadwadashi")
-        ordinary_date = dwa_sunrises[0].date()
+        ordinary_date = vanjuli_date
 
     tri_date = trisparsha_date(rule, start_dt, end_dt, lat, lon, tz)
     if tri_date is not None:
