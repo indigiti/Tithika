@@ -30,6 +30,7 @@
     'jyotish/shani-sadesati':'sade-sati'
   };
   const ashtaPages=['jyotish/ashtakavarga'];
+  const shadbalaPages=['jyotish/shadbala'];
   const jyotishModes={
     'jyotish/birthstar':'birthstar',
     'jyotish/janma-lagna':'janma-lagna',
@@ -148,6 +149,7 @@
       if(dashaPages.includes(pageSlug)) await calculateDasha();
       if(doshaModes[pageSlug]) await calculateDosha();
       if(ashtaPages.includes(pageSlug)) await calculateAshtakavarga();
+      if(shadbalaPages.includes(pageSlug)) await calculateShadbala();
       if(jyotishModes[pageSlug]) await calculateJyotish();
       if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
       if(observanceKinds[pageSlug]) await calculateObservances();
@@ -391,6 +393,19 @@
       const planets=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'];
       el.innerHTML=`<div class="tk-ashta-summary"><span><small>SAV Total</small><b>${j.sav?.total||0}</b></span><span><small>Integrity</small><b>${j.integrity?.valid?'337 ✓':'Check failed'}</b></span></div><div class="tk-ashta-table"><div class="head"><b>Rashi</b>${planets.map(p=>`<b>${esc(p.slice(0,3))}</b>`).join('')}<b>SAV</b></div>${(j.rows||[]).map(row=>`<div><strong>H${row.house} · ${esc(row.rashi)}</strong>${planets.map(p=>`<span>${row.bav?.[p]??0}</span>`).join('')}<b>${row.sav}</b></div>`).join('')}</div>`;
     }catch(e){if(loading)loading.textContent=e.message||'Ashtakavarga engine unavailable';toast(e.message||'Ashtakavarga engine unavailable')}
+  }
+
+  async function calculateShadbala(){
+    const loading=$('#tkShadbalaLoading');
+    if(loading){loading.hidden=false;loading.textContent='Calculating strength components…'}
+    try{
+      const p=payload();p.time=$('#tkShadbalaTime')?.value||'12:00:00';
+      const r=await fetch(`${base}api.php?action=shadbala`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+      const j=await r.json();if(!j.ok)throw new Error(j.error||'Shadbala foundation unavailable');
+      if(loading)loading.hidden=true;
+      const el=$('#tkShadbalaResult');if(!el)return;
+      el.innerHTML=`<div class="tk-lunar-note">${esc(j.note||'')}</div><div class="tk-shadbala-grid">${(j.planets||[]).map(row=>`<article><header><b>${esc(row.planet)}</b><span>${esc(row.rashi)} · H${row.house}</span></header><div class="tk-shadbala-components"><span><small>Uchcha</small>${Number(row.components?.uchcha||0).toFixed(1)}</span><span><small>Dig</small>${Number(row.components?.dig||0).toFixed(1)}</span><span><small>Kendra</small>${Number(row.components?.kendra||0).toFixed(1)}</span><span><small>Drekkana</small>${Number(row.components?.drekkana||0).toFixed(1)}</span><span><small>Naisargika</small>${Number(row.components?.naisargika||0).toFixed(1)}</span><span><small>Chesta proxy</small>${row.components?.chesta_proxy===null?'—':Number(row.components?.chesta_proxy||0).toFixed(1)}</span></div></article>`).join('')}</div><div class="tk-rule-flag">Final Shadbala total withheld: ${esc((j.withheld||[]).join(' · '))}</div>`;
+    }catch(e){if(loading)loading.textContent=e.message||'Shadbala foundation unavailable';toast(e.message||'Shadbala foundation unavailable')}
   }
 
   async function calculateLagna(){
@@ -1019,6 +1034,8 @@
   $('#tkDoshaNode')?.addEventListener('change',()=>{if(doshaModes[pageSlug])calculateDosha()});
   $('#tkAshtaCalculate')?.addEventListener('click',()=>calculateAshtakavarga());
   $('#tkAshtaTime')?.addEventListener('change',()=>{if(ashtaPages.includes(pageSlug))calculateAshtakavarga()});
+  $('#tkShadbalaCalculate')?.addEventListener('click',()=>calculateShadbala());
+  $('#tkShadbalaTime')?.addEventListener('change',()=>{if(shadbalaPages.includes(pageSlug))calculateShadbala()});
   $('#tkKundaliCalculate')?.addEventListener('click',()=>calculateKundali());
   $('#tkKundaliTime')?.addEventListener('change',()=>{if(kundaliPages.includes(pageSlug))calculateKundali()});
   $('#tkKundaliNode')?.addEventListener('change',()=>{if(kundaliPages.includes(pageSlug))calculateKundali()});
