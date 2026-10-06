@@ -59,7 +59,7 @@ AMRIT_SIDDHI = {
 
 PUSHKAR_WEEKDAYS = {6, 1, 5}  # Sunday, Tuesday, Saturday
 PUSHKAR_TITHIS = {2, 7, 12}
-DWI_NAKSHATRAS = {"Mrigashira", "Chitra", "Dhanishta"}
+DWI_NAKSHATRAS = {"Mrigashira", "Chitra", "Dhanishtha"}
 TRI_NAKSHATRAS = {
     "Krittika", "Punarvasu", "Uttara Phalguni",
     "Vishakha", "Uttara Ashadha", "Purva Bhadrapada",
