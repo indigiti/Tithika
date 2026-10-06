@@ -159,3 +159,6 @@ jobs:
 
       - name: Sankranti ingress regression fixture
         run: python scripts/test-sankranti.py
+
+      - name: Six-phase completion regression fixture
+        run: python scripts/test-completion.py
