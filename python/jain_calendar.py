@@ -43,7 +43,20 @@ def canonical_month(value: str | None) -> tuple[str, bool]:
 
 def jain_new_year(year: int, lat: float, lon: float, tz: ZoneInfo, hour24: bool) -> date:
     diwali = festival_rules.calculate_event("diwali", year, lat, lon, tz, hour24)
-    return date.fromisoformat(diwali["date"]) + timedelta(days=1)
+    start = date.fromisoformat(diwali["date"])
+    for offset in range(1, 5):
+        candidate = start + timedelta(days=offset)
+        sunrise = panchang.rise_set(
+            candidate, lat, lon, tz,
+            panchang.astronomy.Body.Sun,
+            panchang.astronomy.Direction.Rise,
+        )
+        if not sunrise:
+            continue
+        state = panchang.state_at(sunrise)
+        if state["paksha"] == "Shukla Paksha" and state["tithi"] == "Pratipada":
+            return candidate
+    raise ValueError("Unable to resolve Kartika Shukla Pratipada after Diwali")
 
 
 def kartikadi_year(d: date, lat: float, lon: float, tz: ZoneInfo, hour24: bool) -> int:
@@ -105,9 +118,9 @@ def calculate_month(selected: date, lat: float, lon: float, tz: ZoneInfo, hour24
             "vir_samvat": vir,
             "calendar_basis": "kartikadi-amanta-jain",
             "jain_observance": {
-                "aatham": state["tithi_number"] in (8, 23),
-                "chaudas": state["tithi_number"] in (14, 29),
-                "amavasya": state["tithi_number"] == 30,
+                "aatham": state["tithi_number"] == 8,
+                "chaudas": state["tithi_number"] == 14,
+                "amavasya": state["tithi"] == "Amavasya",
             },
         })
     return rows
@@ -158,7 +171,7 @@ def main():
         "days": rows,
         "note": (
             "This adapter uses a Kartikadi Amanta Jain/Gujarati-style convention: "
-            "the year turns on Kartika Shukla Pratipada after Diwali. Vir Samvat is "
+            "the year turns on the sunrise observance of Kartika Shukla Pratipada after Diwali. Vir Samvat is "
             "shown alongside Vikram Samvat. Jain sect, region and published Sangh "
             "calendars can apply additional observance rules."
         ),
