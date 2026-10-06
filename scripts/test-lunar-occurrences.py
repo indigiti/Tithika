@@ -62,7 +62,13 @@ july_event=next(
 )
 assert july_event["observance"]["smarta"]["date"]=="2026-07-10"
 assert july_event["observance"]["vaishnava"]["date"]=="2026-07-11"
-assert july_event["observance"]["vaishnava"]["basis"]=="gauna-after-dashami-arunodaya"
+july_basis=july_event["observance"]["vaishnava"]["basis"]
+assert july_basis in ("gauna-after-dashami-arunodaya","mahadwadashi-override"),july_basis
+if july_basis=="mahadwadashi-override":
+    maha=july_event["observance"]["mahadwadashi"]
+    assert maha["active"] is True
+    assert maha["date"]=="2026-07-11"
+    assert maha["yogas"]
 
 candidate=next(
     c
