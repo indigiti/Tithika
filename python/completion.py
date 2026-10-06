@@ -332,4 +332,132 @@ def pachchakkhan(d,lat,lon,tz):
         ("Sunrise",sr),("Navkarshi",sr+timedelta(minutes=48)),("Porshi",sr+daylight/4),
         ("Sadha Porshi",sr+daylight*3/8),("Purimaddha",sr+daylight/2),("Avaddha",sr+daylight*3/4),
         ("Chovihar",ss-timedelta(minutes=48)),("Evening Pratikraman",ss),
-        ("Santhara Porshi",ss+night/4),("Nishita",ss+night/2),("Morning Pratikram
+        ("Santhara Porshi",ss+night/4),("Nishita",ss+night/2),("Morning Pratikraman",ss+night*3/4),
+        ("Next Sunrise",ns),
+    ]
+    return [{"name":n,"datetime":t.isoformat(),"time_label":panchang.transition_label(t,d,False),"basis":"local sunrise/sunset prahar division"} for n,t in points]
+
+
+def pancha_pakshi(d,lat,lon,tz,payload):
+    sr=rise(d,lat,lon,tz); ss=set_(d,lat,lon,tz); ns=rise(d+timedelta(days=1),lat,lon,tz)
+    if not sr or not ss or not ns: return {"events":[]}
+    birth_nak=str(payload.get("birth_nakshatra") or panchang.state_at(sr)["nakshatra"])
+    paksha=panchang.state_at(sr)["paksha"]
+    bird=BRIGHT_BIRD.get(birth_nak,"Crow");
+    if paksha=="Krishna Paksha": bird=DARK_SWAP[bird]
+    if paksha=="Shukla Paksha":
+        group="A" if d.weekday() in (6,1) else "B" if d.weekday() in (0,2,5) else "C" if d.weekday()==3 else "D"
+        seq=BRIGHT_GROUPS[group]
+    else:
+        group="A" if d.weekday() in (6,1) else "B" if d.weekday() in (0,5) else "C" if d.weekday()==2 else "D" if d.weekday()==3 else "E"
+        seq=DARK_GROUPS[group]
+    bird_index=BIRDS.index(bird)
+    # Rotate published base sequence by bird position. Night sequence advances two activities.
+    day_seq=[seq[(i+bird_index)%5] for i in range(5)]
+    night_seq=[day_seq[(i+2)%5] for i in range(5)]
+    events=[]
+    for period,start,end,acts in (("day",sr,ss,day_seq),("night",ss,ns,night_seq)):
+        for row,act in zip(split_period(start,end,5),acts):
+            row.update({"name":act,"activity":act,"period":period,"bird":bird,"score":ACTIVITY_SCORE[act],
+                        "quality":"best" if act=="Ruling" else "good" if act=="Eating" else "neutral" if act=="Walking" else "avoid"})
+            events.append(row)
+    return {"birth_nakshatra":birth_nak,"paksha":paksha,"bird":bird,"weekday_group":group,"events":events,
+            "note":"Pancha Pakshi main-yama reference profile; sub-yama lineage variations are intentionally not mixed into this route."}
+
+
+def do_ghati(d,lat,lon,tz):
+    sr=rise(d,lat,lon,tz); ss=set_(d,lat,lon,tz); ns=rise(d+timedelta(days=1),lat,lon,tz)
+    if not sr or not ss or not ns: return []
+    rows=[]
+    for offset,(period,start,end) in enumerate((("day",sr,ss),("night",ss,ns))):
+        for row,(name,good) in zip(split_period(start,end,15),DO_GHATI_NAMES[offset*15:(offset+1)*15]):
+            row.update({"name":name,"period":period,"auspicious":good,"basis":"2 Ghati; local day/night each divided into 15 Muhurtas"}); rows.append(row)
+    return rows
+
+
+def shubha_dates(year,lat,lon,tz):
+    good_yoga={"Siddhi","Sadhya","Shubha","Shukla","Brahma","Indra","Saubhagya","Sukarma","Dhriti","Harshana"}
+    rows=[]; d=date(year,1,1)
+    while d.year==year:
+        sr=rise(d,lat,lon,tz)
+        if sr:
+            st=panchang.state_at(sr+timedelta(seconds=1)); score=0; reasons=[]
+            if st["yoga"] in good_yoga: score+=2; reasons.append(st["yoga"]+" Yoga")
+            if st["nakshatra"] in {"Rohini","Mrigashira","Punarvasu","Pushya","Hasta","Anuradha","Shravana","Revati"}: score+=2; reasons.append(st["nakshatra"]+" Nakshatra")
+            if d.weekday() in (0,2,3,4): score+=1; reasons.append(d.strftime("%A"))
+            if st["tithi_number"] in {2,3,5,7,10,11,13}: score+=1; reasons.append(st["tithi"])
+            if score>=5:
+                rows.append({"name":"Shubha Date","date":d.isoformat(),"weekday":d.strftime("%A"),"score":score,"reasons":reasons,
+                             "tithi":st["tithi"],"nakshatra":st["nakshatra"],"yoga":st["yoga"],"basis":"transparent Panchang quality score; ceremony-specific Muhurat rules still take precedence"})
+        d+=timedelta(days=1)
+    return rows
+
+
+def iskcon_ekadashi(year,lat,lon,tz,hour24):
+    rows=[]
+    for rule in lunar_occurrences.KINDS["ekadashi"]:
+        for start,end in tithi_windows(year,rule["tithi_id"],tz):
+            mid=start+(end-start)/2
+            if mid.year not in (year-1,year,year+1): continue
+            dw_id=11 if rule["tithi_id"]==10 else 26
+            dw_end_event=panchang.astronomy.SearchMoonPhase(((dw_id+1)*12)%360,panchang.astronomy_time(end),3.0)
+            if dw_end_event is None: continue
+            dw_end=panchang.datetime_from_astronomy(dw_end_event,tz)
+            obs=vrat_rules.integrated_ekadashi_observance(rule,start,end,dw_end,lat,lon,tz,hour24)
+            x=obs["iskcon"]; d=date.fromisoformat(x["date"])
+            if d.year!=year: continue
+            info=panchang.lunar_month_info(mid,panchang.state_at(mid))
+            rows.append({"name":"ISKCON Ekadashi","date":x["date"],"weekday":x["weekday"],"basis":x["basis"],"parana":x.get("parana"),
+                         "paksha":rule["paksha"],"month":strip_adhika(info.get("purnimanta")),"tithi_start":start.isoformat(),"tithi_end":end.isoformat(),
+                         "mahadwadashi":obs["mahadwadashi"]})
+    uniq={r["date"]:r for r in rows}
+    return sorted(uniq.values(),key=lambda r:r["date"])
+
+
+def kalashtami(year,lat,lon,tz,hour24):
+    rows=[]
+    for start,end in tithi_windows(year,22,tz):
+        info=month_for_window(start,end); d0=start.date()-timedelta(days=1); choices=[]
+        for d in (d0,d0+timedelta(days=1),d0+timedelta(days=2)):
+            ss=set_(d,lat,lon,tz)
+            if ss:
+                ghati=(rise(d+timedelta(days=1),lat,lon,tz)-ss)/30 if rise(d+timedelta(days=1),lat,lon,tz) else timedelta(minutes=24)
+                threshold=ss+ghati
+                overlap=max(timedelta(0),min(end,threshold)-max(start,ss))
+                choices.append((overlap,d,ss,threshold))
+        if not choices: continue
+        choices.sort(reverse=True,key=lambda x:x[0]); overlap,d,ss,threshold=choices[0]
+        if overlap<=timedelta(0):
+            # choose the night with maximum Ashtami overlap after sunset
+            alt=[]
+            for _,dd,sunset,_ in choices:
+                ns=rise(dd+timedelta(days=1),lat,lon,tz)
+                if ns: alt.append((max(timedelta(0),min(end,ns)-max(start,sunset)),dd,sunset))
+            if alt: _,d,ss=max(alt,key=lambda x:x[0])
+        if d.year==year:
+            rows.append({"name":"Kalashtami","date":d.isoformat(),"weekday":d.strftime("%A"),"month":strip_adhika(info.get("purnimanta")),
+                         "tithi_start":start.isoformat(),"tithi_end":end.isoformat(),"sunset_label":panchang.fmt(ss,hour24),
+                         "basis":"Krishna Ashtami selected for Pradosh/night prevalence; one-Ghati-after-sunset rule applied"})
+    return sorted(rows,key=lambda r:r["date"])
+
+
+def chandra_darshan(year,lat,lon,tz,hour24):
+    rows=[]
+    for ama_start,ama_end in tithi_windows(year,29,tz):
+        for offset in (0,1,2):
+            d=ama_end.date()+timedelta(days=offset); ss=set_(d,lat,lon,tz); ms=set_(d,lat,lon,tz,panchang.astronomy.Body.Moon)
+            if ss and ms and ms>ss:
+                if d.year==year:
+                    rows.append({"name":"Chandra Darshan","date":d.isoformat(),"weekday":d.strftime("%A"),"start":ss.isoformat(),"end":ms.isoformat(),
+                                 "start_label":panchang.fmt(ss,hour24),"end_label":panchang.fmt(ms,hour24),
+                                 "basis":"first geometric post-Amavasya sunset-to-moonset visibility window"})
+                break
+    return sorted({r["date"]:r for r in rows}.values(),key=lambda r:r["date"])
+
+
+def masik_janmashtami(year,lat,lon,tz,hour24):
+    rows=[]
+    for start,end in tithi_windows(year,22,tz):
+        info=month_for_window(start,end); candidates=[]
+        for d in (start.date()-timedelta(days=1),start.date(),end.date()):
+            
