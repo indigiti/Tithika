@@ -33,6 +33,21 @@ assert aug30["regional_day"]==13,aug30
 assert aug30["era"]["name"]=="Bengali Era"
 assert aug30["era"]["year"]==1433,aug30
 
+assert bby["2026-08-17"]["regional_month"]=="Srabon",bby["2026-08-17"]
+assert bby["2026-08-17"]["regional_day"]==32,bby["2026-08-17"]
+assert bby["2026-08-18"]["regional_month"]=="Bhadro",bby["2026-08-18"]
+assert bby["2026-08-18"]["regional_day"]==1,bby["2026-08-18"]
+
+# Assamese follows the same first-sunrise-after-Sankranti month rollover.
+assam=regional_calendar.calculate_month(
+    "assamese",datetime(2026,8,1).date(),20.7690,72.9613,tz,False
+)
+aby={row["date"]:row for row in assam if row.get("available")}
+assert aby["2026-08-17"]["regional_month"]=="Sawan",aby["2026-08-17"]
+assert aby["2026-08-17"]["regional_day"]==32,aby["2026-08-17"]
+assert aby["2026-08-18"]["regional_month"]=="Bhad",aby["2026-08-18"]
+assert aby["2026-08-18"]["regional_day"]==1,aby["2026-08-18"]
+
 # Solar and lunar convention contracts.
 for variant in ("tamil","malayalam","bengali","odia","assamese"):
     rows=regional_calendar.calculate_month(
