@@ -64,15 +64,43 @@ The same engine is reused by `/panchang/moonrise-moonset/`, `/panchang/rahu-kala
 - shared month-result browser cache
 - backend reuse of adjacent-day solar events
 
-### Vrat occurrence foundation
+### Vrat rule engine
 
-Live astronomical occurrence calendars:
+The Vrat stack now separates exact Tithi occurrence from observance selection and supports:
 
-- `/vrat/ekadashi/`
-- `/vrat/purnima/`
-- `/vrat/amavasya/`
+- `/vrat/ekadashi/`, `/vrat/dwadashi/` and Mahadwadashi classification
+- Smarta, Vaishnava and ISKCON-compatible Ekadashi date profiles
+- 96-minute Arunodaya purity and Vriddhi handling
+- all eight Mahadwadashi classifiers: Unmilini, Vanjuli, Trisparsha, Pakshavarddhini, Jaya, Vijaya, Jayanti and Papanashini
+- Mahadwadashi priority over ordinary Vaishnava/ISKCON Ekadashi
+- Hari Vasara-aware Ekadashi Parana
+- Shravana Yoga / Vishnushrinkhala Dwadashi detection
+- special Shravana/Sangava-aware Parana handling
+- machine-readable evidence for every override
 
-Ekadashi candidates also include next-day Parana constraints derived from sunrise, Hari Vasara end and Dwadashi end. Smarta/Vaishnava fasting-date selection remains a separate rule layer.
+Purnima and Amavasya remain exact astronomical occurrence surfaces for festival/observance rule layers.
+
+### Shared festival rule engine
+
+All 13 currently verified major festivals now use one declarative rule registry instead of a monolithic selector switch. Shared selectors cover sunrise, Madhyahna, Aparahna, Pradosh, Nishita, moonrise, Sandhi, Ghatasthapana, Bhadra-aware Purnima and auspicious Choghadiya windows.
+
+Current migrated festivals include Ganesh Chaturthi, Raksha Bandhan, Navratri, Vijayadashami, Holi, Karwa Chauth, Janmashtami, Rama Navami, Hanuman Jayanti, Akshaya Tritiya, Vat Savitri, Durga Puja and Diwali.
+
+### Shared Muhurat rule foundation
+
+`python/muhurat_rules.py` provides the common substrate for the next specialized Muhurat stage:
+
+- local sunrise/sunset context
+- Rahu Kaal, Yamaganda and Gulika exclusion
+- Vishti/Bhadra Karana exclusion
+- interval merge/subtraction
+- minimum-duration filtering
+- configurable weekday/Tithi/Nakshatra/Yoga/Karana allow/block rules
+- midpoint Panchang evidence
+- auditable accepted/rejected-window reasons
+- Abhijit/Vijaya overlap flags
+
+The common engine is exposed through `api.php?action=muhurat-rules`. Vivah, Griha Pravesh, property, vehicle and Sanskar profiles are intentionally layered on top in the next stage.
 
 ### Sankranti / solar ingress
 
@@ -179,7 +207,13 @@ api.php                       PHP API / geocoding bridge
 python/choghadiya.py          solar + Choghadiya engine
 python/panchang.py            Daily Panchang astronomy/rule engine
 python/panchang_month.py      Month Panchang engine
-python/lunar_occurrences.py   lunar Vrat occurrence/Parana substrate
+python/lunar_occurrences.py   lunar Vrat occurrence adapter
+python/vrat_rules.py           Smarta/Vaishnava/ISKCON + Mahadwadashi rules
+python/dwadashi.py             Dwadashi + Shravana/Vishnushrinkhala rules
+python/mahadwadashi.py         eight Mahadwadashi classifier
+python/festival_rules.py       declarative major-festival rule registry
+python/festivals.py            festival API adapter
+python/muhurat_rules.py        shared Muhurat filtering substrate
 python/sankranti.py           Nirayana solar-ingress engine
 python/seasons.py             equinox/solstice engine
 python/horoscope_analysis.py  unified Jyotish synthesis layer
@@ -243,9 +277,9 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 6. Base lunar Vrat occurrence engine. ✓
 7. Nirayana Sankranti ingress engine. ✓
 8. Equinox/solstice astronomy pages. ✓
-9. Smarta/Vaishnava Ekadashi observance selection + complete Parana rules.
-10. Festival rule engine.
-11. Extended Muhurat rule engine.
+9. Smarta/Vaishnava/ISKCON Ekadashi + Dwadashi/Mahadwadashi + Parana rules. ✓
+10. Shared festival rule engine + migration of verified major festivals. ✓
+11. Shared Muhurat rule engine foundation. ✓ (specialized Muhurat profiles follow in Stage 5)
 12. Planet ephemeris/transit/retrograde/combustion. ✓
 13. Birth/Jyotish calculators. ✓
 14. Shodashavarga + structural Yogas + complete Shadbala. ✓
