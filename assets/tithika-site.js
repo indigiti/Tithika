@@ -25,6 +25,7 @@
   const kundaliPages=['jyotish/janma-kundali'];
   const analysisPages=['jyotish/horoscope-analysis'];
   const interpretationPages=['jyotish/interpretation-report'];
+  const timelinePages=['jyotish/timing-timeline'];
   const dashaPages=['jyotish/vimshottari-dasha'];
   const doshaModes={
     'jyotish/mangal-dosha':'mangal',
@@ -160,6 +161,7 @@
       if(kundaliPages.includes(pageSlug)) await calculateKundali();
       if(analysisPages.includes(pageSlug)) await calculateHoroscopeAnalysis();
       if(interpretationPages.includes(pageSlug)) await calculateInterpretation();
+      if(timelinePages.includes(pageSlug)) await calculateTimeline();
       if(dashaPages.includes(pageSlug)) await calculateDasha();
       if(doshaModes[pageSlug]) await calculateDosha();
       if(ashtaPages.includes(pageSlug)) await calculateAshtakavarga();
@@ -390,6 +392,48 @@
         <div class="tk-analysis-section"><header><small>Structural combinations</small><h4>${j.yogas?.count||0} detected Yogas</h4></header><div class="tk-yoga-list">${(j.yogas?.items||[]).slice(0,12).map(y=>`<article><div class="tk-yoga-title"><span>${esc(y.category)}</span><h4>${esc(y.name)}</h4></div><p>${esc(y.rule)}</p></article>`).join('')||'<div class="tk-panchang-empty">No Yoga from the current curated rule set was detected.</div>'}</div></div>
         <div class="tk-lunar-note">${esc(j.note||'')} ${esc((j.methodology||[]).join(' · '))}</div>`;
     }catch(e){if(loading)loading.textContent=e.message||'Unified analysis engine unavailable';toast(e.message||'Unified analysis engine unavailable')}
+  }
+
+  async function calculateTimeline(){
+    const loading=$('#tkTimelineLoading');
+    if(loading){loading.hidden=false;loading.textContent='Building Dasha and transit activation timeline…'}
+    try{
+      const p=payload();
+      p.time=$('#tkTimelineBirthTime')?.value||'12:00:00';
+      p.start_month=$('#tkTimelineStart')?.value||isoToday(state.timezone).slice(0,7);
+      p.months=Number($('#tkTimelineMonths')?.value||12);
+      p.node_model=$('#tkTimelineNode')?.value||'mean';
+      const r=await fetch(`${base}api.php?action=jyotish-timeline`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Timing timeline engine unavailable');
+      if(loading)loading.hidden=true;
+      const el=$('#tkTimelineResult');if(!el)return;
+      const months=j.monthly_timeline||[],windows=j.activation_windows||[],years=j.yearly_summary||[],markers=j.markers||[];
+      const bp=j.birth_profile||{};
+      const fmtMonth=x=>{const [y,m]=String(x||'').split('-').map(Number);return y&&m?new Date(Date.UTC(y,m-1,1)).toLocaleDateString('en-IN',{timeZone:'UTC',year:'numeric',month:'short'}):esc(x||'—')};
+      const endLabel=fmtMonth(j.end_month_exclusive);
+      el.innerHTML=`
+        <div class="tk-timeline-hero">
+          <div><small>Forecast span</small><strong>${fmtMonth(j.start_month)} → ${endLabel}</strong><span>${j.months||0} monthly activation samples</span></div>
+          <div><small>Janma Lagna</small><strong>${esc(bp.lagna?.rashi||'—')} ${Number(bp.lagna?.degree_in_rashi||0).toFixed(2)}°</strong><span>${esc(bp.nakshatra||'—')} · Pada ${bp.nakshatra_pada||'—'}</span></div>
+          <div><small>Exact timing markers</small><strong>${markers.length}</strong><span>Mahadasha / Antardasha changes + slow-planet ingresses</span></div>
+        </div>
+        <section class="tk-timeline-section"><header><small>Condensed view</small><h4>Activation windows</h4></header>
+          <div class="tk-timeline-windows">${windows.map(w=>`<article><span class="${esc(w.band)}">${esc(w.band)}</span><div><small>${fmtMonth(w.start_month)} → ${fmtMonth(w.end_month)} · ${w.months} month${w.months===1?'':'s'}</small><h5>${esc(w.focus_title)}</h5><p>${esc(w.quality)} activation</p></div><strong>${Number(w.average_activation_index||0).toFixed(0)}</strong></article>`).join('')||'<div class="tk-panchang-empty">No activation windows available.</div>'}</div>
+        </section>
+        <section class="tk-timeline-section"><header><small>Year overview</small><h4>Annual emphasis</h4></header>
+          <div class="tk-timeline-years">${years.map(y=>`<article><header><b>${y.year}</b><small>${y.months_covered} months covered</small></header>${(y.top_focus||[]).map(x=>`<div><span>${esc(x.title)}</span><b>${Number(x.average_activation_index||0).toFixed(0)}</b><small>peak ${Number(x.peak_activation_index||0).toFixed(0)} · ${fmtMonth(x.peak_month)}</small></div>`).join('')}</article>`).join('')}</div>
+        </section>
+        <section class="tk-timeline-section"><header><small>Month-by-month</small><h4>Activation timeline</h4></header>
+          <div class="tk-timeline-months">${months.map(m=>{const ds=(m.dasha||[]).map(x=>`${esc(x.planet)} ${esc(x.level.replace('dasha',''))}`).join(' · ');return `<article><header><div><small>${esc(ds||'Dasha context')}</small><h5>${esc(m.label)}</h5></div><span>${(m.transits||[]).map(x=>esc(x.planet)+' H'+x.house_from_lagna).join(' · ')}</span></header><div class="tk-timeline-focus">${(m.top_focus||[]).map(x=>`<div class="${esc(x.band)}"><span>${esc(x.title)}</span><strong>${Number(x.activation_index||0).toFixed(0)}</strong><small>${esc(x.band)} · ${esc(x.quality)}</small></div>`).join('')}</div><p>${esc((m.domains?.[m.top_focus?.[0]?.key]?.interpretation)||'')}</p></article>`}).join('')}</div>
+        </section>
+        <section class="tk-timeline-section"><header><small>Boundary events</small><h4>Dasha & transit markers</h4></header>
+          <div class="tk-timeline-markers">${markers.map(x=>`<article><time>${esc(new Date(x.datetime).toLocaleDateString('en-IN',{timeZone:state.timezone,dateStyle:'medium'}))}</time><span class="${esc(x.type)}">${esc(x.type)}</span><b>${esc(x.label)}</b></article>`).join('')||'<div class="tk-panchang-empty">No major boundary markers in this horizon.</div>'}</div>
+        </section>
+        <div class="tk-lunar-note">${esc(j.note||'')} ${esc(j.methodology?.meaning||'')}</div>`;
+    }catch(e){if(loading)loading.textContent=e.message||'Timing timeline engine unavailable';toast(e.message||'Timing timeline engine unavailable')}
   }
 
   async function calculateInterpretation(){
@@ -1334,6 +1378,11 @@
   $('#tkYogaTime')?.addEventListener('change',()=>{if(yogaPages.includes(pageSlug))calculateYogas()});
   $('#tkShadbalaCalculate')?.addEventListener('click',()=>calculateShadbala());
   $('#tkShadbalaTime')?.addEventListener('change',()=>{if(shadbalaPages.includes(pageSlug))calculateShadbala()});
+  $('#tkTimelineCalculate')?.addEventListener('click',()=>calculateTimeline());
+  $('#tkTimelineBirthTime')?.addEventListener('change',()=>{if(timelinePages.includes(pageSlug))calculateTimeline()});
+  $('#tkTimelineStart')?.addEventListener('change',()=>{if(timelinePages.includes(pageSlug))calculateTimeline()});
+  $('#tkTimelineMonths')?.addEventListener('change',()=>{if(timelinePages.includes(pageSlug))calculateTimeline()});
+  $('#tkTimelineNode')?.addEventListener('change',()=>{if(timelinePages.includes(pageSlug))calculateTimeline()});
   $('#tkInterpretCalculate')?.addEventListener('click',()=>calculateInterpretation());
   $('#tkInterpretTime')?.addEventListener('change',()=>{if(interpretationPages.includes(pageSlug))calculateInterpretation()});
   $('#tkInterpretNode')?.addEventListener('change',()=>{if(interpretationPages.includes(pageSlug))calculateInterpretation()});
@@ -1354,6 +1403,7 @@
   }else if(input&&!input.value){
     input.value=isoToday(state.timezone);
   }
+  const timelineStart=$('#tkTimelineStart');if(timelineStart&&!timelineStart.value)timelineStart.value=isoToday(state.timezone).slice(0,7);
   initMatching();
   locate(true);
 })();

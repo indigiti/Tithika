@@ -273,6 +273,13 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'jyotish-timeline') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/timing_timeline.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'vimshottari') {
         $payload = readPayload();
         $data = runPythonEngine('python/vimshottari.py', $payload);
