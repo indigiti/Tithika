@@ -26,6 +26,7 @@
   const analysisPages=['jyotish/horoscope-analysis'];
   const interpretationPages=['jyotish/interpretation-report'];
   const timelinePages=['jyotish/timing-timeline'];
+  const rashifalPages=['jyotish/rashifal','jyotish/rashifal/daily','jyotish/rashifal/weekly','jyotish/rashifal/monthly','jyotish/rashifal/yearly'];
   const dashaPages=['jyotish/vimshottari-dasha'];
   const doshaModes={
     'jyotish/mangal-dosha':'mangal',
@@ -162,6 +163,7 @@
       if(analysisPages.includes(pageSlug)) await calculateHoroscopeAnalysis();
       if(interpretationPages.includes(pageSlug)) await calculateInterpretation();
       if(timelinePages.includes(pageSlug)) await calculateTimeline();
+      if(rashifalPages.includes(pageSlug)) await calculateRashifal();
       if(dashaPages.includes(pageSlug)) await calculateDasha();
       if(doshaModes[pageSlug]) await calculateDosha();
       if(ashtaPages.includes(pageSlug)) await calculateAshtakavarga();
@@ -392,6 +394,61 @@
         <div class="tk-analysis-section"><header><small>Structural combinations</small><h4>${j.yogas?.count||0} detected Yogas</h4></header><div class="tk-yoga-list">${(j.yogas?.items||[]).slice(0,12).map(y=>`<article><div class="tk-yoga-title"><span>${esc(y.category)}</span><h4>${esc(y.name)}</h4></div><p>${esc(y.rule)}</p></article>`).join('')||'<div class="tk-panchang-empty">No Yoga from the current curated rule set was detected.</div>'}</div></div>
         <div class="tk-lunar-note">${esc(j.note||'')} ${esc((j.methodology||[]).join(' · '))}</div>`;
     }catch(e){if(loading)loading.textContent=e.message||'Unified analysis engine unavailable';toast(e.message||'Unified analysis engine unavailable')}
+  }
+
+  async function calculateRashifal(){
+    const loading=$('#tkRashifalLoading');
+    if(loading){loading.hidden=false;loading.textContent='Building personalized Rashifal…'}
+    try{
+      const mode=$('#tkRashifalMode')?.value||'overview';
+      const p=payload();
+      p.date=$('#tkRashifalBirthDate')?.value||p.date;
+      p.time=$('#tkRashifalBirthTime')?.value||'12:00:00';
+      p.target_date=$('#tkRashifalTargetDate')?.value||isoToday(state.timezone);
+      p.node_model=$('#tkRashifalNode')?.value||'mean';
+      const r=await fetch(`${base}api.php?action=personal-rashifal&mode=${encodeURIComponent(mode)}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Personalized Rashifal engine unavailable');
+      if(loading)loading.hidden=true;
+      const el=$('#tkRashifalResult');if(!el)return;
+      const bp=j.birth_profile||{},periods=j.periods||{},ctx=j.current_context||{};
+      const fmtDate=x=>x?new Date(x).toLocaleDateString('en-IN',{timeZone:state.timezone,dateStyle:'medium'}):'—';
+      const modeTitle=x=>({daily:'Daily',weekly:'Weekly',monthly:'Monthly',yearly:'Yearly'}[x]||x);
+      const scoreCard=x=>`<article class="tk-rashifal-domain ${esc(x.band||'background')}">
+        <header><div><small>${esc(x.quality||'contextual')}</small><h5>${esc(x.title||'')}</h5></div><strong>${Number(x.activation_index||0).toFixed(0)}</strong></header>
+        <div class="tk-analysis-meter"><i style="width:${Math.max(0,Math.min(100,Number(x.activation_index||0)))}%"></i></div>
+        <p>${esc(x.interpretation||'')}</p>
+        <footer><span>Natal ${Number(x.average_base_points??x.base_points??0).toFixed(1)}</span><span>Dasha ${Number(x.average_dasha_points??x.dasha_points??0).toFixed(1)}</span><span>Transit ${Number(x.average_transit_points??x.transit_points??0).toFixed(1)}</span></footer>
+      </article>`;
+      const renderPeriod=(period,compact=false)=>{
+        if(!period)return '';
+        const top=period.top_focus||[];
+        return `<section class="tk-rashifal-period ${compact?'compact':''}">
+          <header><div><small>${esc(modeTitle(period.mode))} forecast</small><h4>${esc(period.label||'')}</h4></div><span>${period.sample_count||0} evidence sample${period.sample_count===1?'':'s'}</span></header>
+          <div class="tk-rashifal-focus">${top.map(x=>`<div class="${esc(x.band||'background')}"><small>${esc(x.quality||'contextual')}</small><b>${esc(x.title||'')}</b><strong>${Number(x.activation_index||0).toFixed(0)}</strong></div>`).join('')}</div>
+          ${compact?'':`<div class="tk-rashifal-domains">${Object.values(period.domains||{}).map(scoreCard).join('')}</div>
+          <div class="tk-rashifal-samples">${(period.samples||[]).map(x=>`<article><header><b>${esc(x.weekday||'')}</b><time>${fmtDate(x.datetime)}</time></header><div>${(x.top_focus||[]).map(y=>`<span class="${esc(y.band||'background')}">${esc(y.title)} <b>${Number(y.activation_index||0).toFixed(0)}</b></span>`).join('')}</div></article>`).join('')}</div>
+          <div class="tk-timeline-markers">${(period.markers||[]).map(x=>`<article><time>${fmtDate(x.datetime)}</time><span class="${esc(x.type||'')}">${esc(x.type||'')}</span><b>${esc(x.label||'')}</b></article>`).join('')||'<div class="tk-panchang-empty">No major Dasha or slow-transit boundary in this period.</div>'}</div>`}
+        </section>`;
+      };
+      const currentDasha=(ctx.active_dasha||[]).map(x=>`${esc(x.planet)} ${esc(x.level.replace('dasha',''))}`).join(' · ');
+      const slow=(ctx.slow_transits||[]).map(x=>`${esc(x.planet)} H${x.house_from_lagna}${x.retrograde?' ℞':''}`).join(' · ');
+      const overview=j.mode==='overview'
+        ? `<section class="tk-rashifal-overview"><header><small>Four horizons</small><h4>Personal forecast overview</h4></header><div>${['daily','weekly','monthly','yearly'].map(k=>renderPeriod(periods[k],true)).join('')}</div></section>`
+        : renderPeriod(periods[j.mode],false);
+      const detail=j.mode==='overview'?'': '';
+      el.innerHTML=`
+        <div class="tk-rashifal-hero">
+          <div><small>Janma Lagna</small><strong>${esc(bp.lagna?.rashi||'—')} ${Number(bp.lagna?.degree_in_rashi||0).toFixed(2)}°</strong><span>${esc(bp.nakshatra||'—')} · Pada ${bp.nakshatra_pada||'—'}</span></div>
+          <div><small>Active Vimshottari</small><strong>${currentDasha||'—'}</strong><span>Forecast target ${fmtDate(j.target_date+'T12:00:00')}</span></div>
+          <div><small>Slow transit context</small><strong>${slow||'—'}</strong><span>Jupiter · Saturn · Rahu · Ketu from Lagna</span></div>
+        </div>
+        ${overview}
+        ${detail}
+        <div class="tk-lunar-note">${esc(j.note||'')} ${esc(j.methodology?.meaning||'')}</div>`;
+    }catch(e){if(loading)loading.textContent=e.message||'Personalized Rashifal engine unavailable';toast(e.message||'Personalized Rashifal engine unavailable')}
   }
 
   async function calculateTimeline(){
@@ -1378,6 +1435,11 @@
   $('#tkYogaTime')?.addEventListener('change',()=>{if(yogaPages.includes(pageSlug))calculateYogas()});
   $('#tkShadbalaCalculate')?.addEventListener('click',()=>calculateShadbala());
   $('#tkShadbalaTime')?.addEventListener('change',()=>{if(shadbalaPages.includes(pageSlug))calculateShadbala()});
+  $('#tkRashifalCalculate')?.addEventListener('click',()=>calculateRashifal());
+  $('#tkRashifalBirthDate')?.addEventListener('change',()=>{if(rashifalPages.includes(pageSlug))calculateRashifal()});
+  $('#tkRashifalBirthTime')?.addEventListener('change',()=>{if(rashifalPages.includes(pageSlug))calculateRashifal()});
+  $('#tkRashifalTargetDate')?.addEventListener('change',()=>{if(rashifalPages.includes(pageSlug))calculateRashifal()});
+  $('#tkRashifalNode')?.addEventListener('change',()=>{if(rashifalPages.includes(pageSlug))calculateRashifal()});
   $('#tkTimelineCalculate')?.addEventListener('click',()=>calculateTimeline());
   $('#tkTimelineBirthTime')?.addEventListener('change',()=>{if(timelinePages.includes(pageSlug))calculateTimeline()});
   $('#tkTimelineStart')?.addEventListener('change',()=>{if(timelinePages.includes(pageSlug))calculateTimeline()});
@@ -1403,6 +1465,8 @@
   }else if(input&&!input.value){
     input.value=isoToday(state.timezone);
   }
+  const rashBirth=$('#tkRashifalBirthDate');if(rashBirth&&!rashBirth.value)rashBirth.value=input?.value||isoToday(state.timezone);
+  const rashTarget=$('#tkRashifalTargetDate');if(rashTarget&&!rashTarget.value)rashTarget.value=isoToday(state.timezone);
   const timelineStart=$('#tkTimelineStart');if(timelineStart&&!timelineStart.value)timelineStart.value=isoToday(state.timezone).slice(0,7);
   initMatching();
   locate(true);
