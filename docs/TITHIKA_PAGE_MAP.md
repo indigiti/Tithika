@@ -40,13 +40,13 @@ Tutorials, Panchang concepts, Choghadiya, Muhurat, Nakshatra, Rahu Kala, FAQ and
 
 Current certified detail-route state:
 
-- **130** verified/live calculation routes
+- **179** verified/live calculation routes
 - **62** structured editorial routes
 - **1** canonical live redirect (`muhurat/choghadiya`)
-- **193** production-quality/indexable detail routes
-- **99** mapped `noindex,follow` shells
+- **242** production-quality/indexable detail routes
+- **50** mapped `noindex,follow` shells
 
-The exact contract and promotion queue are documented in `docs/RELEASE_CERTIFICATION.md` and enforced by CI.
+The exact contract is documented in `docs/RELEASE_CERTIFICATION.md` and enforced by CI. The six planned completion batches are closed; the remaining 50 shells belong to other specialized or editorial families and remain deliberately gated.
 
 ## SEO and release state
 
