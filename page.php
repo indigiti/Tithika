@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','muhurat/lagna','panchang/lagna-kundali','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','festivals/diwali','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/holi','festivals/dussehra','festivals/navratri','festivals/raksha-bandhan','festivals/ganesha-chaturthi','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice','planets/positions','planets/transit','planets/combustion','planets/retrograde','jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -182,6 +182,33 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <div class="tk-muhurat-item avoid"><small>Yamaganda</small><strong id="tkMuhuratYamaganda">—</strong></div>
           <div class="tk-muhurat-item avoid"><small>Gulika</small><strong id="tkMuhuratGulika">—</strong></div>
         </div>
+      <?php elseif (in_array($page['slug'], ['planets/positions','planets/transit','planets/combustion','planets/retrograde'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Sidereal planetary engine</span>
+            <h3 id="tkPlanetaryTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Apparent geocentric true-ecliptic positions are converted to Lahiri Nirayana longitude with Rashi, Nakshatra, motion and event state.</p>
+          </div>
+          <div class="tk-panchang-engine">Astronomy Engine · Lahiri · mean nodes</div>
+        </div>
+        <div id="tkPlanetaryLoading" class="tk-panchang-loading">Calculating planetary ephemeris…</div>
+        <div id="tkPlanetaryNote" class="tk-lunar-note"></div>
+        <div id="tkPlanetaryResult" class="tk-planetary-result"></div>
+      <?php elseif (in_array($page['slug'], ['jyotish/birthstar','jyotish/janma-lagna','jyotish/moonsign','jyotish/sunsign'], true)): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Birth calculator · Lahiri</span>
+            <h3 id="tkJyotishTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p>Choose the birth date in the toolbar, enter the exact local birth time, and use the selected location for Janma Nakshatra, Rashi or Lagna.</p>
+          </div>
+          <div class="tk-panchang-engine">Moon + Sun + Ascendant</div>
+        </div>
+        <div class="tk-birth-controls">
+          <label><span>Birth time</span><input id="tkBirthTime" type="time" step="1" value="12:00:00"></label>
+          <button id="tkBirthCalculate" type="button">Calculate birth chart</button>
+        </div>
+        <div id="tkJyotishLoading" class="tk-panchang-loading">Calculating birth factors…</div>
+        <div id="tkJyotishResult" class="tk-jyotish-result"></div>
       <?php elseif (in_array($page['slug'], ['festivals/ganesha-chaturthi','festivals/raksha-bandhan','festivals/navratri','festivals/dussehra','festivals/holi','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/diwali'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
