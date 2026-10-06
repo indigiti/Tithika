@@ -159,3 +159,21 @@ jobs:
 
       - name: Sankranti ingress regression fixture
         run: python scripts/test-sankranti.py
+
+      - name: Panchang completion regression fixture
+        run: python scripts/test-panchang-completion.py
+
+      - name: Muhurat completion regression fixture
+        run: python scripts/test-muhurat-completion.py
+
+      - name: Vrat completion regression fixture
+        run: python scripts/test-vrat-completion.py
+
+      - name: Festival calendar completion regression fixture
+        run: python scripts/test-festival-calendar-completion.py
+
+      - name: Secondary Jyotish regression fixture
+        run: python scripts/test-jyotish-secondary.py
+
+      - name: Astronomy reference regression fixture
+        run: python scripts/test-astronomy-reference.py
