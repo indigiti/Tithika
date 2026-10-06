@@ -259,6 +259,7 @@ return [
             ['slug'=>'planets/combustion','title'=>'Planet Combustion','template'=>'astronomy'],
             ['slug'=>'planets/retrograde','title'=>'Planet Retrograde','template'=>'astronomy'],
             ['slug'=>'planets/mutual-aspects','title'=>'Planets Mutual Aspects','template'=>'astronomy'],
+            ['slug'=>'planets/conjunctions','title'=>'Planet Conjunctions','template'=>'astronomy'],
             ['slug'=>'planets/lunar-aspects','title'=>'Lunar Aspects','template'=>'astronomy'],
             ['slug'=>'planets/parallel','title'=>'Planets Mutual Parallel','template'=>'astronomy'],
             ['slug'=>'planets/ecliptic-crossings','title'=>'Planets Ecliptic Crossings','template'=>'astronomy'],
