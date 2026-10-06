@@ -83,7 +83,8 @@ def tropical_coordinates(name: str, moment: datetime) -> tuple[float, float, flo
     t = panchang.astronomy_time(moment)
     if name == "Sun":
         sun = panchang.astronomy.SunPosition(t)
-        return panchang.norm(sun.elon), float(sun.elat), float(sun.dist)
+        dist = math.sqrt(sun.vec.x*sun.vec.x + sun.vec.y*sun.vec.y + sun.vec.z*sun.vec.z)
+        return panchang.norm(sun.elon), float(sun.elat), float(dist)
     if name == "Moon":
         moon = panchang.astronomy.EclipticGeoMoon(t)
         return panchang.norm(moon.lon), float(moon.lat), float(moon.dist)
