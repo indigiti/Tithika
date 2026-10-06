@@ -67,7 +67,7 @@ def refine_aspect(a: str, b: str, target: float, left: datetime, right: datetime
 def aspect_events(year: int, tz: ZoneInfo, lunar_only: bool = False, conjunction_only: bool = False):
     start = datetime(year, 1, 1, 0, 0, tzinfo=tz)
     end = datetime(year + 1, 1, 1, 0, 0, tzinfo=tz)
-    step = timedelta(hours=3)
+    step = timedelta(hours=6)
 
     pairs = []
     for a, b in combinations(ASPECT_PLANETS, 2):
@@ -185,7 +185,7 @@ def yuddha_winner(pa: dict, pb: dict) -> str | None:
 def graha_yuddha_events(year: int, tz: ZoneInfo):
     start = datetime(year, 1, 1, 0, 0, tzinfo=tz)
     end = datetime(year + 1, 1, 1, 0, 0, tzinfo=tz)
-    step = timedelta(hours=1)
+    step = timedelta(hours=3)
     rows = []
 
     for a, b in combinations(YUDDHA_PLANETS, 2):
