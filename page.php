@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','vrat/mahadwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -194,6 +194,18 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <div id="tkObservanceLoading" class="tk-panchang-loading">Calculating yearly observances…</div>
         <div id="tkObservanceNote" class="tk-lunar-note"></div>
         <div id="tkObservanceList" class="tk-observance-list"></div>
+      <?php elseif ($page['slug'] === 'vrat/mahadwadashi'): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Mahadwadashi rule detector</span>
+            <h3 id="tkMahadwadashiTitle">Mahadwadashi</h3>
+            <p>Eight Mahadwadashi combinations are detected from Tithi extension, local sunrise/sunset and full-day Nakshatra evidence. Multiple yogas may occur together.</p>
+          </div>
+          <div class="tk-panchang-engine">Evidence-first classifier</div>
+        </div>
+        <div id="tkMahadwadashiLoading" class="tk-panchang-loading">Detecting Mahadwadashi yogas…</div>
+        <div id="tkMahadwadashiNote" class="tk-lunar-note"></div>
+        <div id="tkMahadwadashiList" class="tk-mahadwadashi-list"></div>
       <?php elseif (in_array($page['slug'], ['vrat/ekadashi','vrat/purnima','vrat/amavasya'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
