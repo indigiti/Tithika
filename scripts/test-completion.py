@@ -36,7 +36,9 @@ def test_panchang_completion():
     assert actual_yugadi == expected_yugadi, f"Yugadi mismatch: {sorted(actual_yugadi)}"
 
     kalpadi = completion.named_tithi_events(YEAR, completion.KALPADI_RULES, LAT, LON, TZ, False)
-    assert {"2026-01-30", "2026-03-06", "2026-03-19", "2026-03-23", "2026-04-19", "2026-11-16", "2026-12-18"} <= dates(kalpadi)
+    expected_kalpadi = {"2026-01-30", "2026-03-06", "2026-03-19", "2026-03-23", "2026-04-19", "2026-11-16", "2026-12-18"}
+    actual_kalpadi = dates(kalpadi)
+    assert expected_kalpadi <= actual_kalpadi, f"Kalpadi mismatch: {sorted(actual_kalpadi)}"
 
     kranti = completion.kranti_samya(YEAR, LAT, LON, TZ, False)
     assert all(r["yoga"] in {"Vyatipata", "Vaidhriti"} for r in kranti)
