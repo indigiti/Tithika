@@ -28,13 +28,19 @@ Kundali, unified horoscope synthesis, evidence-backed interpretation, Dasha/tran
 Positions, transit, combustion, retrograde, aspects, ecliptic events, Graha Yuddha, eclipses, seasons, equinoxes and solstices.
 
 ### 8. Devotion
-Aarti, Chalisa, Stotram, Mantra, Namavali, Durga Saptashati, Ashtakam, Kavacham, Sundarkand, Hanuman Bahuk and Ramayana collections.
+Aarti, Chalisa, Stotram, Mantra, Namavali, Durga Saptashati, Ashtakam, Kavacham, Sundarkand, Hanuman Bahuk and Ramayana collections. Every mapped Devotion route now resolves through the structured editorial layer with practice context and related verified Tithika tools rather than a generic reading placeholder.
 
 ### 9. Gallery
-Rangoli, greetings, Mehandi, festival/deity collections, Krishna art, Hindu symbols and paintings.
+Rangoli, greetings, Mehandi, festival/deity collections, Krishna art, Hindu symbols and paintings. Gallery routes now use lightweight original visual indexes, remain separate from calculation payloads and do not depend on third-party artwork.
 
 ### 10. Learn
-Tutorials, Panchang concepts, Choghadiya, Muhurat, Nakshatra, Rahu Kala, FAQ and contact/reference content.
+Tutorials, Panchang concepts, Choghadiya, Muhurat, Nakshatra, Rahu Kala, FAQ and contact/reference content. These routes now contain structured original editorial guides with deep links into the verified calculation engines.
+
+## SEO and release state
+
+The 292-route map is intentionally larger than the set exposed to search engines. A centralized live-route registry plus structured editorial coverage determines which detail pages receive `index,follow`; unfinished mapped shells receive `noindex,follow`. The XML sitemap contains only production-quality routes plus family landing pages.
+
+The shared shell now emits canonical/OpenGraph/Twitter metadata, JSON-LD and breadcrumbs; related links are topic-aware across families. The human site map labels routes as Live, Editorial or Mapped.
 
 ## Rendering templates
 
