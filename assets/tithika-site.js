@@ -23,6 +23,7 @@
     'astronomy/lunar-eclipse':'lunar'
   };
   const kundaliPages=['jyotish/janma-kundali'];
+  const analysisPages=['jyotish/horoscope-analysis'];
   const dashaPages=['jyotish/vimshottari-dasha'];
   const doshaModes={
     'jyotish/mangal-dosha':'mangal',
@@ -156,6 +157,7 @@
       if(aspectsModes[pageSlug]) await calculateAspects();
       if(eclipseModes[pageSlug]) await calculateEclipses();
       if(kundaliPages.includes(pageSlug)) await calculateKundali();
+      if(analysisPages.includes(pageSlug)) await calculateHoroscopeAnalysis();
       if(dashaPages.includes(pageSlug)) await calculateDasha();
       if(doshaModes[pageSlug]) await calculateDosha();
       if(ashtaPages.includes(pageSlug)) await calculateAshtakavarga();
@@ -355,6 +357,37 @@
         <div class="tk-kundali-grahas">${(j.d1?.placements||[]).map(p=>`<span><b>${esc(p.name)}</b>${esc(p.rashi)} ${Number(p.degree_in_rashi).toFixed(2)}° · H${p.house}</span>`).join('')}</div>
         <div class="tk-lunar-note">Tithi ${esc(j.panchang?.tithi||'—')} · Yoga ${esc(j.panchang?.yoga||'—')} · Karana ${esc(j.panchang?.karana||'—')}${yuddha?' · Graha Yuddha: '+yuddha:''}</div>`;
     }catch(e){if(loading)loading.textContent=e.message||'Kundali engine unavailable';toast(e.message||'Kundali engine unavailable')}
+  }
+
+  async function calculateHoroscopeAnalysis(){
+    const loading=$('#tkAnalysisLoading');
+    if(loading){loading.hidden=false;loading.textContent='Building unified Jyotish evidence report…'}
+    try{
+      const p=payload();
+      p.time=$('#tkAnalysisTime')?.value||'12:00:00';
+      p.node_model=$('#tkAnalysisNode')?.value||'mean';
+      const r=await fetch(`${base}api.php?action=horoscope-analysis`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Unified analysis engine unavailable');
+      if(loading)loading.hidden=true;
+      const el=$('#tkAnalysisResult');if(!el)return;
+      const bp=j.birth_profile||{}, current=j.dasha?.current||{}, md=current.mahadasha||{}, ad=current.antardasha||{};
+      const domains=Object.values(j.domains||{});
+      const strength=new Map((j.strengths||[]).map(x=>[x.planet,x]));
+      const currentLords=j.timing?.active_dasha_lords||[];
+      el.innerHTML=`
+        <div class="tk-analysis-hero">
+          <div><small>Janma Lagna</small><strong>${esc(bp.lagna?.rashi||'—')} ${Number(bp.lagna?.degree_in_rashi||0).toFixed(2)}°</strong><span>${esc(bp.nakshatra||'—')} · Pada ${bp.nakshatra_pada||'—'}</span></div>
+          <div><small>Current Vimshottari</small><strong>${esc(md.lord||'—')} / ${esc(ad.lord||'—')}</strong><span>As of ${esc(new Date(j.as_of).toLocaleDateString('en-IN',{timeZone:state.timezone,dateStyle:'medium'}))}</span></div>
+          <div><small>Varga sensitivity</small><strong>${esc(j.sensitivity?.level||'—')}</strong><span>Nearest D9/D10 boundary ${Number(j.sensitivity?.varga_boundary_margin_deg||0).toFixed(3)}°</span></div>
+        </div>
+        <div class="tk-analysis-domain-grid">${domains.map(d=>`<article><header><small>${esc(d.title)}</small><b>${Number(d.evidence_index||0).toFixed(0)}</b></header><div class="tk-analysis-meter"><i style="width:${Math.max(0,Math.min(100,Number(d.evidence_index||0)))}%"></i></div><p>${esc(d.band)}</p><span>Houses ${(d.houses||[]).join(', ')} · Lords ${(d.house_lords||[]).map(esc).join(', ')}</span><small>${esc(d.description||'')}</small></article>`).join('')}</div>
+        <div class="tk-analysis-section"><header><small>Divisional evidence</small><h4>D1 · D9 · D10</h4></header><div class="tk-kundali-charts">${renderKundaliChart(j.charts?.D1?.cells,'D1 · Rashi')}${renderKundaliChart(j.charts?.D9?.cells,'D9 · Navamsha')}${renderKundaliChart(j.charts?.D10?.cells,'D10 · Dashamsha')}</div></div>
+        <div class="tk-analysis-section"><header><small>Planetary capacity</small><h4>Shadbala snapshot</h4></header><div class="tk-analysis-strengths">${(j.strengths||[]).map(x=>`<span><b>${esc(x.planet)}</b><strong class="${x.meets_required?'pass':'fail'}">${Number(x.ratio||0).toFixed(2)}×</strong><small>${Number(x.total_rupa||0).toFixed(2)} / ${Number(x.required_rupa||0).toFixed(1)} Rupa</small></span>`).join('')}</div></div>
+        <div class="tk-analysis-section"><header><small>Active timing</small><h4>Dasha lords + major transits</h4></header><div class="tk-analysis-timing">${currentLords.map(x=>`<article><b>${esc(x.level)} · ${esc(x.planet)}</b><span>Natal H${x.natal_house||'—'} · ${esc(x.natal_rashi||'—')} · strength ${x.strength_ratio===null||x.strength_ratio===undefined?'—':Number(x.strength_ratio).toFixed(2)+'×'}</span></article>`).join('')}${(j.timing?.major_transits||[]).map(x=>`<article><b>${esc(x.planet)} transit${x.retrograde?' ℞':''}</b><span>${esc(x.rashi)} · H${x.house_from_lagna} from Lagna · H${x.house_from_moon} from Moon</span></article>`).join('')}</div></div>
+        <div class="tk-analysis-section"><header><small>Structural combinations</small><h4>${j.yogas?.count||0} detected Yogas</h4></header><div class="tk-yoga-list">${(j.yogas?.items||[]).slice(0,12).map(y=>`<article><div class="tk-yoga-title"><span>${esc(y.category)}</span><h4>${esc(y.name)}</h4></div><p>${esc(y.rule)}</p></article>`).join('')||'<div class="tk-panchang-empty">No Yoga from the current curated rule set was detected.</div>'}</div></div>
+        <div class="tk-lunar-note">${esc(j.note||'')} ${esc((j.methodology||[]).join(' · '))}</div>`;
+    }catch(e){if(loading)loading.textContent=e.message||'Unified analysis engine unavailable';toast(e.message||'Unified analysis engine unavailable')}
   }
 
   async function calculateDasha(){
@@ -1258,6 +1291,9 @@
   $('#tkYogaTime')?.addEventListener('change',()=>{if(yogaPages.includes(pageSlug))calculateYogas()});
   $('#tkShadbalaCalculate')?.addEventListener('click',()=>calculateShadbala());
   $('#tkShadbalaTime')?.addEventListener('change',()=>{if(shadbalaPages.includes(pageSlug))calculateShadbala()});
+  $('#tkAnalysisCalculate')?.addEventListener('click',()=>calculateHoroscopeAnalysis());
+  $('#tkAnalysisTime')?.addEventListener('change',()=>{if(analysisPages.includes(pageSlug))calculateHoroscopeAnalysis()});
+  $('#tkAnalysisNode')?.addEventListener('change',()=>{if(analysisPages.includes(pageSlug))calculateHoroscopeAnalysis()});
   $('#tkKundaliCalculate')?.addEventListener('click',()=>calculateKundali());
   $('#tkKundaliTime')?.addEventListener('change',()=>{if(kundaliPages.includes(pageSlug))calculateKundali()});
   $('#tkKundaliNode')?.addEventListener('change',()=>{if(kundaliPages.includes(pageSlug))calculateKundali()});
