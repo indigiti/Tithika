@@ -161,6 +161,10 @@
     try{
       const mode=planetaryModes[pageSlug];
       const p=payload();
+      if(mode==='positions'){
+        const time=$('#tkPlanetTime')?.value||'12:00:00';
+        p.datetime=`${p.date}T${time}`;
+      }
       const r=await fetch(`${base}api.php?action=planetary&mode=${encodeURIComponent(mode)}`,{
         method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
       });
@@ -849,6 +853,8 @@
     calculate();
   }));
   $('#tkToday')?.addEventListener('click',()=>{const input=$('#tkDate');state.dateTouched=false;if(input)input.value=isoToday(state.timezone);calculate()});
+  $('#tkPlanetCalculate')?.addEventListener('click',()=>calculatePlanetary());
+  $('#tkPlanetTime')?.addEventListener('change',()=>{if(pageSlug==='planets/positions')calculatePlanetary()});
   $('#tkBirthCalculate')?.addEventListener('click',()=>calculateJyotish());
   $('#tkBirthTime')?.addEventListener('change',()=>{if(jyotishModes[pageSlug])calculateJyotish()});
 
