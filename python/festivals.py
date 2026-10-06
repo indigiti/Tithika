@@ -24,6 +24,7 @@ from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import panchang
+import lagna
 
 KINDS = {
     "ganesh-chaturthi": {
@@ -79,6 +80,15 @@ KINDS = {
         "start_angle": 216.0,
         "end_angle": 228.0,
         "selector": "moonrise",
+    },
+    "janmashtami": {
+        "title": "Krishna Janmashtami",
+        "month": "Bhadrapada",
+        "paksha": "Krishna Paksha",
+        "tithi_id": 22,
+        "start_angle": 264.0,
+        "end_angle": 276.0,
+        "selector": "nishita",
     },
     "diwali": {
         "title": "Diwali / Lakshmi Puja",
@@ -308,7 +318,61 @@ def festival_event(kind, year, lat, lon, tz, hour24):
             if kind == "holi":
                 extra["rangwali_holi_date"] = (d + timedelta(days=1)).isoformat()
             if kind == "diwali":
-                extra["vrishabha_lagna_status"] = "lagna-engine-pending"
+                lagna_rows = lagna.timeline(
+                    selected["period"][0], selected["period"][1], lat, lon, hour24
+                )
+                vrishabha = next((row for row in lagna_rows if row["lagna"] == "Vrishabha"), None)
+                if vrishabha:
+                    lagna_start = datetime.fromisoformat(vrishabha["start"])
+                    lagna_end = datetime.fromisoformat(vrishabha["end"])
+                    puja_overlap = overlap(
+                        max(start_dt, selected["period"][0]),
+                        min(end_dt, selected["period"][1]),
+                        lagna_start,
+                        lagna_end,
+                    )
+                    extra["vrishabha_lagna"] = window(lagna_start, lagna_end, d, hour24)
+                    extra["lakshmi_puja"] = (
+                        window(puja_overlap[0], puja_overlap[1], d, hour24)
+                        if puja_overlap else None
+                    )
+                extra["vrishabha_lagna_status"] = "verified"
+
+    elif selector == "nishita":
+        selected = choose_by_period(
+            start_dt, end_dt,
+            lambda d: (
+                (lambda sunset, next_sunrise: (
+                    sunset + (next_sunrise - sunset) * 7 / 15,
+                    sunset + (next_sunrise - sunset) * 8 / 15,
+                ))(
+                    set_(d, lat, lon, tz),
+                    rise(d + timedelta(days=1), lat, lon, tz),
+                )
+                if set_(d, lat, lon, tz) and rise(d + timedelta(days=1), lat, lon, tz)
+                else None
+            ),
+        )
+        if selected:
+            d = selected["date"]
+            extra["nishita"] = window(selected["period"][0], selected["period"][1], d, hour24)
+            extra["nishita_tithi_overlap"] = window(selected["overlap"][0], selected["overlap"][1], d, hour24)
+            rohini = intervals_for_name(
+                start_dt - timedelta(days=1), end_dt + timedelta(days=1),
+                "nakshatra_id", "nakshatra", "Rohini"
+            )
+            extra["rohini_intervals"] = [window(a, b, d, hour24) for a, b in rohini]
+            next_sunrise = rise(d + timedelta(days=1), lat, lon, tz)
+            parana = max(
+                [x for x in [next_sunrise, end_dt] + [b for _, b in rohini] if x is not None]
+            )
+            extra["parana"] = {
+                "after": parana.isoformat(),
+                "after_label": panchang.transition_label(parana, d + timedelta(days=1), hour24),
+                "basis": "after-sunrise-ashtami-rohini-complete",
+            }
+            extra["dahi_handi_date"] = (d + timedelta(days=1)).isoformat()
+            extra["selection_status"] = "base-nishita-rule"
 
     elif selector == "moonrise":
         for d in candidate_dates(start_dt, end_dt):
