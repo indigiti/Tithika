@@ -18,11 +18,11 @@ $indexable = array_values(array_filter($flat, 'tithika_is_indexable_page'));
 $noindex = array_values(array_filter($flat, fn($p) => !tithika_is_indexable_page($p)));
 
 certify(count($flat) === 292, 'route contract must remain 292');
-certify(count($live) === 105, 'verified live route count must be 105');
-certify(count($indexable) === 168, 'production indexable route count must be 168');
-certify(count($noindex) === 124, 'mapped noindex route count must be 124');
+certify(count($live) === 113, 'verified live route count must be 113');
+certify(count($indexable) === 176, 'production indexable route count must be 176');
+certify(count($noindex) === 116, 'mapped noindex route count must be 116');
 
-foreach (['panchang/nepali','calendars/nepali','calendars/jain'] as $slug) {
+foreach (['panchang/nepali','calendars/nepali','calendars/jain','panchang/sunrise','panchang/nakshatra','panchang/ganda-moola','panchang/abhijit-nakshatra','panchang/vinchudo','panchang/jwalamukhi-yoga','panchang/sankalpa','panchang/vedic-clock' ] as $slug) {
     certify(in_array($slug, $live, true), "new regional adapter not promoted: {$slug}");
     certify(tithika_is_indexable_page($flat[$slug]), "new regional adapter is not indexable: {$slug}");
 }
@@ -34,6 +34,8 @@ foreach ([
     'python/vendor/nepali_bs_calendar.LICENSE',
     'scripts/test-nepali-calendar.py',
     'scripts/test-jain-calendar.py',
+    'python/panchang_reuse.py',
+    'scripts/test-panchang-reuse.py',
 ] as $path) {
     certify(is_file(dirname(__DIR__) . '/' . $path), "certification file missing: {$path}");
 }
@@ -55,5 +57,5 @@ echo json_encode([
     'indexable'=>count($indexable),
     'mapped_noindex'=>count($noindex),
     'noindex_by_family'=>$queue,
-    'newly_certified'=>['panchang/nepali','calendars/nepali','calendars/jain'],
+    'newly_certified'=>['panchang/nepali','calendars/nepali','calendars/jain','panchang/sunrise','panchang/nakshatra','panchang/ganda-moola','panchang/abhijit-nakshatra','panchang/vinchudo','panchang/jwalamukhi-yoga','panchang/sankalpa','panchang/vedic-clock'],
 ], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) . PHP_EOL;
