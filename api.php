@@ -292,6 +292,18 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'matching') {
+        $payload = readPayload();
+        $mode = strtolower(trim((string)($_GET['mode'] ?? 'horoscope')));
+        if (!in_array($mode, ['horoscope','nakshatra'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported matching mode'], 422);
+        }
+        $payload['mode'] = $mode;
+        $data = runPythonEngine('python/matching.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'seasons') {
         $payload = readPayload();
         $data = runPythonEngine('python/seasons.py', $payload);
