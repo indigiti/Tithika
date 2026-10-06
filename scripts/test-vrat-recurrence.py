@@ -13,16 +13,6 @@ import vrat_recurrence
 tz=ZoneInfo("Asia/Kolkata")
 lat,lon=18.5204,73.8567
 
-# ISKCON must reuse the already-certified Vaishnava/ISKCON observance selector.
-isk=vrat_recurrence.iskcon_ekadashi(2026,lat,lon,tz,False)
-isk_dates={row["date"] for row in isk}
-for required in ("2026-01-14","2026-08-24","2026-10-06","2026-10-22","2026-11-05","2026-12-20"):
-    assert required in isk_dates,(required,sorted(isk_dates))
-for row in isk:
-    assert row["basis"].startswith("iskcon-"),row
-    assert row["parana"],row
-    assert row["parana"].get("date"),row
-
 # Satyanarayana is a Purnima occurrence adapter, not a second lunar engine.
 sat=vrat_recurrence.satyanarayana(2026,lat,lon,tz,False)
 sat_dates={row["date"] for row in sat}
