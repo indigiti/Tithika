@@ -649,7 +649,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <div id="tkSpecialMuhuratLoading" class="tk-panchang-loading">Evaluating monthly Muhurat windows…</div>
         <div id="tkSpecialMuhuratSummary" class="tk-lunar-note"></div>
         <div id="tkSpecialMuhuratList" class="tk-observance-list"></div>
-      <?php elseif (in_array($page['slug'], ['panchang/sunrise','panchang/abhijit-nakshatra','panchang/ganda-moola','panchang/manvadi-tithi','panchang/yugadi-tithi','panchang/kalpadi-tithi','panchang/vinchudo','panchang/jwalamukhi-yoga','panchang/sankalpa','panchang/nakshatra','panchang/vedic-clock'], true)): ?>
+      <?php elseif (in_array($page['slug'], ['panchang/sunrise','panchang/abhijit-nakshatra','panchang/ganda-moola','panchang/vinchudo','panchang/jwalamukhi-yoga','panchang/sankalpa','panchang/nakshatra','panchang/vedic-clock'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
             <span class="tk-card-tag">Verified Panchang reuse engine</span>
