@@ -61,6 +61,12 @@ jobs:
       - name: Lagna regression fixture
         run: python scripts/test-lagna.py
 
+      - name: Planetary ephemeris regression fixtures
+        run: python scripts/test-planetary.py
+
+      - name: Jyotish calculator regression fixtures
+        run: python scripts/test-jyotish.py
+
       - name: Major festival regression fixtures
         run: python scripts/test-festivals.py
 
