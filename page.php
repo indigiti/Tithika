@@ -56,7 +56,7 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
 
 $group = $routes[$page['group']];
 $related = tithika_related($page);
-$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','vrat/mahadwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true);
+$isComputed = in_array($page['slug'], ['panchang/month','panchang/daily','panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit','vrat/ekadashi','vrat/purnima','vrat/amavasya','vrat/pradosham','vrat/sankashti-chaturthi','vrat/masik-shivaratri','festivals/maha-shivaratri','vrat/mahadwadashi','vrat/dwadashi','vrat/sankranti','calendars/sankranti','festivals/sankranti','festivals/makar-sankranti','astronomy/vernal-equinox','astronomy/summer-solstice','astronomy/autumnal-equinox','astronomy/winter-solstice'], true);
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -194,6 +194,18 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <div id="tkObservanceLoading" class="tk-panchang-loading">Calculating yearly observances…</div>
         <div id="tkObservanceNote" class="tk-lunar-note"></div>
         <div id="tkObservanceList" class="tk-observance-list"></div>
+      <?php elseif ($page['slug'] === 'vrat/dwadashi'): ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Dwadashi observance engine</span>
+            <h3 id="tkDwadashiTitle">Dwadashi Dates</h3>
+            <p>Exact Dwadashi Tithi spans are resolved into local observance dates with month-specific names and next-day Parana windows.</p>
+          </div>
+          <div class="tk-panchang-engine">Rule engine · Lahiri</div>
+        </div>
+        <div id="tkDwadashiLoading" class="tk-panchang-loading">Calculating Dwadashi observances…</div>
+        <div id="tkDwadashiNote" class="tk-lunar-note"></div>
+        <div id="tkDwadashiList" class="tk-dwadashi-list"></div>
       <?php elseif ($page['slug'] === 'vrat/mahadwadashi'): ?>
         <div class="tk-panchang-live-head">
           <div>
