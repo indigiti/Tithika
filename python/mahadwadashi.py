@@ -175,15 +175,18 @@ def classify_window(rule: dict, start_dt: datetime, end_dt: datetime, lat, lon, 
     evidence["dwadashi_duration_hours"] = round(duration_hours, 4)
 
     vanjuli_date = None
-    for sunrise in dwa_sunrises:
-        sunset = local_sunset(sunrise.date(), lat, lon, tz)
-        if (
-            sunset is not None
-            and start_dt <= sunrise < sunset < end_dt
-            and duration_hours >= 24.0
-        ):
-            vanjuli_date = sunrise.date()
-            break
+    # Vanjuli/Vyanjuli is a Vriddhi Dwadashi: Dwadashi must touch two local
+    # sunrises. Mere duration >24h with only one Dwadashi sunrise is not
+    # sufficient and otherwise creates false Mahadwadashi overrides.
+    if len(dwa_sunrises) >= 2:
+        for sunrise in dwa_sunrises:
+            sunset = local_sunset(sunrise.date(), lat, lon, tz)
+            if (
+                sunset is not None
+                and start_dt <= sunrise < sunset < end_dt
+            ):
+                vanjuli_date = sunrise.date()
+                break
     if vanjuli_date is not None:
         yogas.append("Vanjuli Mahadwadashi")
         ordinary_date = vanjuli_date
