@@ -79,7 +79,43 @@ def mean_node_tropical(t: panchang.astronomy.Time) -> float:
     return panchang.norm(omega)
 
 
-def tropical_coordinates(name: str, moment: datetime) -> tuple[float, float, float]:
+def true_node_tropical(moment: datetime) -> float:
+    """
+    Instantaneous/Spashta ascending lunar node from the osculating lunar
+    orbital plane in the true ecliptic-of-date frame.
+
+    The node vector is k × (r × v), using a centered finite-difference lunar
+    velocity. This naturally allows brief direct motion, unlike the mean node.
+    """
+    step = timedelta(minutes=30)
+
+    def moon_vec(dt: datetime):
+        t = panchang.astronomy_time(dt)
+        m = panchang.astronomy.EclipticGeoMoon(t)
+        lon = math.radians(m.lon)
+        lat = math.radians(m.lat)
+        r = float(m.dist)
+        cl = math.cos(lat)
+        return (
+            r * cl * math.cos(lon),
+            r * cl * math.sin(lon),
+            r * math.sin(lat),
+        )
+
+    r0 = moon_vec(moment)
+    rm = moon_vec(moment - step)
+    rp = moon_vec(moment + step)
+    scale = 1.0 / (2.0 * step.total_seconds())
+    v = tuple((rp[i] - rm[i]) * scale for i in range(3))
+
+    hx = r0[1]*v[2] - r0[2]*v[1]
+    hy = r0[2]*v[0] - r0[0]*v[2]
+    # hz is not needed for the node direction.
+    nx, ny = -hy, hx
+    return panchang.norm(math.degrees(math.atan2(ny, nx)))
+
+
+def tropical_coordinates(name: str, moment: datetime, node_model: str = "mean") -> tuple[float, float, float]:
     t = panchang.astronomy_time(moment)
     if name == "Sun":
         sun = panchang.astronomy.SunPosition(t)
@@ -89,7 +125,9 @@ def tropical_coordinates(name: str, moment: datetime) -> tuple[float, float, flo
         moon = panchang.astronomy.EclipticGeoMoon(t)
         return panchang.norm(moon.lon), float(moon.lat), float(moon.dist)
     if name in ("Rahu", "Ketu"):
-        lon = mean_node_tropical(t)
+        if node_model not in ("mean", "true"):
+            raise ValueError("node_model must be mean or true")
+        lon = mean_node_tropical(t) if node_model == "mean" else true_node_tropical(moment)
         if name == "Ketu":
             lon = panchang.norm(lon + 180.0)
         return lon, 0.0, 1.0
@@ -101,22 +139,22 @@ def tropical_coordinates(name: str, moment: datetime) -> tuple[float, float, flo
     return panchang.norm(ecl.elon), float(ecl.elat), float(dist)
 
 
-def sidereal_coordinates(name: str, moment: datetime) -> tuple[float, float, float, float]:
+def sidereal_coordinates(name: str, moment: datetime, node_model: str = "mean") -> tuple[float, float, float, float]:
     t = panchang.astronomy_time(moment)
-    lon, lat, dist = tropical_coordinates(name, moment)
+    lon, lat, dist = tropical_coordinates(name, moment, node_model)
     aya = panchang.lahiri_ayanamsha_deg(t, True)
     return panchang.norm(lon - aya), lat, dist, aya
 
 
-def longitude_speed(name: str, moment: datetime, hours: float = 6.0) -> float:
+def longitude_speed(name: str, moment: datetime, hours: float = 6.0, node_model: str = "mean") -> float:
     if name in ("Rahu", "Ketu"):
         # Mean nodes are always retrograde; numerical evaluation keeps the
         # same frame/ayanamsha treatment as other bodies.
         pass
     before = moment - timedelta(hours=hours)
     after = moment + timedelta(hours=hours)
-    a = sidereal_coordinates(name, before)[0]
-    b = sidereal_coordinates(name, after)[0]
+    a = sidereal_coordinates(name, before, node_model)[0]
+    b = sidereal_coordinates(name, after, node_model)[0]
     return signed_delta(b, a) / ((2.0 * hours) / 24.0)
 
 
@@ -136,9 +174,9 @@ def classify_longitude(longitude: float) -> dict:
     }
 
 
-def planet_state(name: str, moment: datetime) -> dict:
-    lon, lat, dist, aya = sidereal_coordinates(name, moment)
-    speed = longitude_speed(name, moment)
+def planet_state(name: str, moment: datetime, node_model: str = "mean") -> dict:
+    lon, lat, dist, aya = sidereal_coordinates(name, moment, node_model)
+    speed = longitude_speed(name, moment, node_model=node_model)
     retrograde = speed < -0.0005
     classification = classify_longitude(lon)
 
@@ -169,7 +207,7 @@ def planet_state(name: str, moment: datetime) -> dict:
         state.update({
             "motion": "mean-node-retrograde",
             "retrograde": True,
-            "node_model": "mean",
+            "node_model": node_model,
             "combust": False,
         })
     else:
@@ -178,11 +216,11 @@ def planet_state(name: str, moment: datetime) -> dict:
     return state
 
 
-def positions(moment: datetime, modern: bool = False) -> list[dict]:
+def positions(moment: datetime, modern: bool = False, node_model: str = "mean") -> list[dict]:
     names = list(CLASSICAL_ORDER)
     if modern:
         names.extend(["Uranus", "Neptune", "Pluto"])
-    return [planet_state(name, moment) for name in names]
+    return [planet_state(name, moment, node_model) for name in names]
 
 
 def refine_sign_change(
@@ -389,7 +427,12 @@ def main() -> None:
     }
 
     if mode == "positions":
-        output["planets"] = positions(moment, bool(payload.get("modern", False)))
+        node_model = str(payload.get("node_model") or "mean").lower()
+        if node_model not in ("mean", "true"):
+            raise ValueError("node_model must be mean or true")
+        output["engine"]["rahu_ketu"] = f"{node_model} nodes"
+        output["node_model"] = node_model
+        output["planets"] = positions(moment, bool(payload.get("modern", False)), node_model)
     elif mode == "transit":
         output["year"] = selected_date.year
         output["events"] = transit_events(selected_date.year, tz)
