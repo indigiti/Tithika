@@ -93,7 +93,7 @@ ok(str_contains($header, '<link rel="canonical"'), 'canonical not rendered');
 ok(str_contains($header, 'BreadcrumbList'), 'breadcrumb schema not rendered');
 
 ob_start();
-$shell = $flat['muhurat/gowri'];
+$shell = $flat['jyotish/prashnavali'];
 tithika_render_header($shell['title'], $shell);
 $thinHeader = ob_get_clean();
 ok(str_contains($thinHeader, '<meta name="robots" content="noindex,follow">'), 'unverified shell must be noindex');
