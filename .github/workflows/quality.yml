@@ -136,6 +136,9 @@ jobs:
       - name: Panchang utility regression fixture
         run: python scripts/test-panchang-utilities.py
 
+      - name: Panchang reuse regression fixture
+        run: python scripts/test-panchang-reuse.py
+
       - name: Regional calendar regression fixture
         run: python scripts/test-regional-calendar.py
 

@@ -7,7 +7,7 @@ Current mapped logical pages: **292**.
 ## Product families
 
 ### 1. Panchang
-Daily/monthly Panchang, regional Panjika/Panchang variants, ISKCON, solar/Panchang utilities, Chandrabalam, Tarabalam, Panchak, Bhadra, Ganda Moola, Nakshatra and Sankalpa. Tarabalam, Chandrabalam, Panchak and Bhadra are now engine-backed; Hindi, Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional month views are backed by the shared regional calendar engine. Nepali Patro is now backed by a dedicated offline Bikram Sambat civil-date adapter with local Tithika Panchang integration.
+Daily/monthly Panchang, regional Panjika/Panchang variants, ISKCON and solar/Panchang utilities. Tarabalam, Chandrabalam, Panchak and Bhadra are engine-backed; Hindu Sunrise, Nakshatra, Ganda Moola, Abhijit Nakshatra, Vinchudo, Jwalamukhi Yoga, Sankalpa and Vedic Clock now reuse the verified Lahiri Panchang core. Hindi, Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional month views are backed by the shared regional calendar engine. Nepali Patro uses a dedicated offline Bikram Sambat adapter. Manvadi/Yugadi/Kalpadi and Kranti Samya remain deliberately gated for dedicated rule engines.
 
 ### 2. Calendars
 Hindu/Indian and regional yearly calendars plus major festival calendars such as Diwali, Durga Puja, Navratri, Onam, Chhath, Sankranti, Dashain and Tihar. Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional calendar views now share the verified regional calendar engine; Nepali and Jain now use dedicated adapters: Bikram Sambat civil conversion for Nepali and Kartikadi Amanta Vikram/Veer Samvat for Jain.
@@ -40,11 +40,11 @@ Tutorials, Panchang concepts, Choghadiya, Muhurat, Nakshatra, Rahu Kala, FAQ and
 
 Current certified detail-route state:
 
-- **105** verified/live calculation routes
+- **113** verified/live calculation routes
 - **62** structured editorial routes
 - **1** canonical live redirect (`muhurat/choghadiya`)
-- **168** production-quality/indexable detail routes
-- **124** mapped `noindex,follow` shells
+- **176** production-quality/indexable detail routes
+- **116** mapped `noindex,follow` shells
 
 The exact contract and promotion queue are documented in `docs/RELEASE_CERTIFICATION.md` and enforced by CI.
 

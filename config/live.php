@@ -110,5 +110,13 @@ return [
     'calendars/iskcon',
     'panchang/nepali',
     'calendars/nepali',
-    'calendars/jain'
+    'calendars/jain',
+    'panchang/sunrise',
+    'panchang/nakshatra',
+    'panchang/ganda-moola',
+    'panchang/abhijit-nakshatra',
+    'panchang/vinchudo',
+    'panchang/jwalamukhi-yoga',
+    'panchang/sankalpa',
+    'panchang/vedic-clock'
 ];

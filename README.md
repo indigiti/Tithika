@@ -136,6 +136,21 @@ Stage 7 reuses one Lahiri astronomy core while keeping regional month convention
 
 Nepali and Jain calendar adapters are now live through dedicated engines. Nepali uses an offline Bikram Sambat civil-date table plus Tithika Panchang; Jain uses an explicit Kartikadi Amanta Vikram/Veer Samvat profile.
 
+### Reusable Panchang utilities
+
+A shared reuse engine now promotes eight additional Panchang surfaces without duplicating astronomical logic:
+
+- Hindu Sunrise
+- monthly Nakshatra intervals
+- Ganda Moola intervals
+- Abhijit Nakshatra
+- Vinchudo
+- Jwalamukhi Yoga
+- structured Sankalpa context
+- Vedic Clock with both 60-Ghati Ishtakala and 30+30 day/night models
+
+Manvadi, Yugadi and Kalpadi remain deliberately mapped-but-unreleased pending dedicated observance-day selectors. Kranti Samya remains pending a Mahapat declination-equality engine.
+
 ### Sankranti / solar ingress
 
 The Lahiri sidereal solar-ingress engine powers:
@@ -293,6 +308,7 @@ python/festivals.py            festival API adapter
 python/muhurat_rules.py        shared Muhurat filtering substrate
 python/specialized_muhurat.py  Vivah/Griha/Property/Vehicle/Sanskar profiles
 python/panchang_utilities.py    Tarabalam/Chandrabalam/Panchak/Bhadra
+python/panchang_reuse.py        Sunrise/Nakshatra/Ganda/Sankalpa/Vedic Clock reuse
 python/regional_calendar.py     regional solar/Amanta/Purnimanta calendars
 python/sankranti.py           Nirayana solar-ingress engine
 python/seasons.py             equinox/solstice engine
@@ -376,5 +392,6 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 24. Devotion/Learn/Gallery structured content layer. ✓
 25. Performance/mobile/accessibility/release hardening. ✓
 26. Production certification contract + remaining-shell queue. ✓
+27. Deterministic Panchang reuse batch (8 routes). ✓
 
 See `docs/DRIKPANCHANG_AUDIT.md` and `docs/TITHIKA_PAGE_MAP.md` for the full implementation plan.

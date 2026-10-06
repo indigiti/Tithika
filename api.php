@@ -228,6 +228,18 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'panchang-reuse') {
+        $payload = readPayload();
+        $mode = strtolower(trim((string)($_GET['mode'] ?? 'sunrise')));
+        if (!in_array($mode, ['sunrise','nakshatra','ganda-moola','abhijit-nakshatra','vinchudo','jwalamukhi','sankalpa','vedic-clock'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported Panchang reuse mode'], 422);
+        }
+        $payload['mode'] = $mode;
+        $data = runPythonEngine('python/panchang_reuse.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'regional-calendar') {
         $payload = readPayload();
         $variant = strtolower(trim((string)($_GET['variant'] ?? 'hindi')));
