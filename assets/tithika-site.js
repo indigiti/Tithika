@@ -32,6 +32,7 @@
   const ashtaPages=['jyotish/ashtakavarga'];
   const shadbalaPages=['jyotish/shadbala'];
   const matchPages=['jyotish/horoscope-match'];
+  const marriagePages=['jyotish/marriage-analysis'];
   const nakMatchPages=['jyotish/nakshatra-compatibility'];
   const NAKSHATRAS=['Ashwini','Bharani','Krittika','Rohini','Mrigashira','Ardra','Punarvasu','Pushya','Ashlesha','Magha','Purva Phalguni','Uttara Phalguni','Hasta','Chitra','Swati','Vishakha','Anuradha','Jyeshtha','Mula','Purva Ashadha','Uttara Ashadha','Shravana','Dhanishta','Shatabhisha','Purva Bhadrapada','Uttara Bhadrapada','Revati'];
   const jyotishModes={
@@ -379,7 +380,8 @@
       if(loading)loading.hidden=true;
       const x=j.result||{},el=$('#tkDoshaResult');if(!el)return;
       if(mode==='mangal'){
-        el.innerHTML=`<div class="tk-jyotish-primary"><small>Base Mangal Dosha</small><h3>${x.present?'Manglik':'Non-Manglik'}</h3><p>Checked from Lagna, Moon and Venus</p></div><div class="tk-jyotish-grid">${(x.checks||[]).map(c=>`<div><small>${esc(c.reference)}</small><strong>House ${c.mars_house}</strong><span>${c.afflicted?'Afflicted':'Clear'}</span></div>`).join('')}</div><div class="tk-lunar-note">Cancellation combinations are not auto-applied in this rule profile.</div>`;
+        const evidence=x.cancellation_evidence||[];
+        el.innerHTML=`<div class="tk-jyotish-primary"><small>Base Mangal Dosha</small><h3>${x.present?(x.effective_present?'Manglik':'Manglik · cancellation evidence'):'Non-Manglik'}</h3><p>Checked from Lagna, Moon and Venus</p></div><div class="tk-jyotish-grid">${(x.checks||[]).map(c=>`<div><small>${esc(c.reference)}</small><strong>House ${c.mars_house}</strong><span>${c.afflicted?'Afflicted':'Clear'}</span></div>`).join('')}</div>${evidence.length?`<div class="tk-rule-flag">${evidence.map(e=>esc(e.description)).join(' · ')}</div>`:''}<div class="tk-lunar-note">${esc(x.note||'')}</div>`;
       }else if(mode==='kalasarpa'){
         el.innerHTML=`<div class="tk-jyotish-primary"><small>Kalasarpa Yoga</small><h3>${x.present?esc(x.type):'Not Present'}</h3><p>${x.present?esc(x.direction||''):'Not all seven classical planets lie in one Rahu–Ketu half'} · ${esc(x.node_model||'mean')} nodes</p></div>`;
       }else{
@@ -478,7 +480,71 @@
     el.innerHTML=`<section class="tk-match-score"><div class="tk-match-score-ring" style="--score:${pct}%"><strong>${Number(m.total||0).toFixed(1)}</strong><span>/ 36</span></div><div><small>Ashtakoota result</small><h3>${esc(String(m.band||'').replaceAll('-',' '))}</h3><p>${esc(m.band_reason||'')}</p><div class="tk-match-flags">${flag('Bhakoot',m.bhakoot)}${flag('Nadi',m.nadi)}</div></div></section>
       <div class="tk-koota-list">${rows.map(r=>`<article><div><b>${esc(r.name)}</b><small>${esc(r.basis||'')}</small></div><div class="tk-koota-meter"><i style="width:${Math.max(0,Math.min(100,(Number(r.earned||0)/Number(r.maximum||1))*100))}%"></i></div><strong>${Number(r.earned||0).toFixed(1)} / ${Number(r.maximum||0).toFixed(0)}</strong></article>`).join('')}</div>
       ${j.mode==='horoscope'?`<div class="tk-match-charts">${person('Vara / Groom',j.groom)}${person('Kanya / Bride',j.bride)}</div><div class="tk-rule-flag ${j.integration?.mangal_compatible?'':'is-warning'}">Mangal compatibility: ${esc(j.integration?.mangal_note||'—')}</div>`:''}
+      ${compactDeepAnalysis(j.integration?.deep_analysis)}
       <div class="tk-lunar-note">${esc(j.note||'')}</div>`;
+  }
+
+  function compactDeepAnalysis(deep){
+    if(!deep)return '';
+    const g=deep.groom||{},b=deep.bride||{},p=deep.pair||{};
+    const relation=x=>esc((x||'—').replaceAll('-',' '));
+    return `<section class="tk-match-deep-compact">
+      <header><small>Beyond 36 Gunas</small><h4>D1 / D9 marriage structure</h4></header>
+      <div class="tk-match-deep-grid">
+        <div><small>Vara 7th lord</small><b>${esc(g.d1?.seventh_lord||'—')}</b><span>H${g.d1?.seventh_lord_house||'—'} · D9 ${esc(g.d9?.seventh_lord||'—')}</span></div>
+        <div><small>Kanya 7th lord</small><b>${esc(b.d1?.seventh_lord||'—')}</b><span>H${b.d1?.seventh_lord_house||'—'} · D9 ${esc(b.d9?.seventh_lord||'—')}</span></div>
+        <div><small>D9 Lagna relation</small><b>${relation(p.d9_lagna?.label)}</b><span>${esc(g.d9?.lagna?.rashi||'—')} × ${esc(b.d9?.lagna?.rashi||'—')}</span></div>
+        <div><small>Dasha overlaps</small><b>${deep.dasha_overlap?.windows?.length||0}</b><span>Candidate windows in ${deep.dasha_overlap?.horizon_years||12} years</span></div>
+      </div>
+    </section>`;
+  }
+
+  function renderMarriageAnalysis(j,target='#tkMarriageResult'){
+    const el=$(target);if(!el)return;
+    const g=j.groom||{},b=j.bride||{},pair=j.pair||{},m=j.mangal||{};
+    const person=(title,p)=>`<article class="tk-marriage-person">
+      <header><small>${title}</small><h4>${esc(p.name||p.location?.city||'Birth chart')}</h4></header>
+      <div class="tk-marriage-facts">
+        <span><small>D1 Lagna</small><b>${esc(p.lagna?.rashi||'—')}</b></span>
+        <span><small>7th house</small><b>${esc(p.d1?.seventh_sign||'—')}</b><em>Lord ${esc(p.d1?.seventh_lord||'—')} · H${p.d1?.seventh_lord_house||'—'}</em></span>
+        <span><small>D9 Lagna</small><b>${esc(p.d9?.lagna?.rashi||'—')}</b></span>
+        <span><small>D9 7th lord</small><b>${esc(p.d9?.seventh_lord||'—')}</b><em>H${p.d9?.seventh_lord_house||'—'} · ${esc(p.d9?.seventh_lord_rashi||'—')}</em></span>
+        <span><small>Venus</small><b>${esc(p.significators?.venus?.rashi||'—')}</b><em>H${p.significators?.venus?.house||'—'} · D9 ${esc(p.significators?.venus_d9?.rashi||'—')}</em></span>
+        <span><small>Jupiter</small><b>${esc(p.significators?.jupiter?.rashi||'—')}</b><em>H${p.significators?.jupiter?.house||'—'} · D9 ${esc(p.significators?.jupiter_d9?.rashi||'—')}</em></span>
+      </div>
+      <div class="tk-marriage-mangal ${p.mangal?.effective_present?'warning':'good'}"><b>Base Mangal: ${p.mangal?.present?'Present':'Clear'}</b><span>After conservative cancellation profile: ${p.mangal?.effective_present?'Still active':'Clear / mitigated'}</span>${(p.mangal?.cancellation_evidence||[]).map(x=>`<small>${esc(x.description)}</small>`).join('')}</div>
+    </article>`;
+
+    const windows=(j.dasha_overlap?.windows||[]);
+    el.innerHTML=`<div class="tk-marriage-two">${person('Vara / Groom',g)}${person('Kanya / Bride',b)}</div>
+      <section class="tk-marriage-pair">
+        <header><small>Pair comparison</small><h4>No added score — evidence only</h4></header>
+        <div class="tk-match-deep-grid">
+          <div><small>D1 7th lords</small><b>${esc(pair.seventh_lords?.groom||'—')} × ${esc(pair.seventh_lords?.bride||'—')}</b><span>${esc(pair.seventh_lords?.groom_to_bride_relation||'—')} / ${esc(pair.seventh_lords?.bride_to_groom_relation||'—')}</span></div>
+          <div><small>D9 7th lords</small><b>${esc(pair.d9_seventh_lords?.groom||'—')} × ${esc(pair.d9_seventh_lords?.bride||'—')}</b><span>${esc(pair.d9_seventh_lords?.groom_to_bride_relation||'—')} / ${esc(pair.d9_seventh_lords?.bride_to_groom_relation||'—')}</span></div>
+          <div><small>D9 Lagna relation</small><b>${esc(pair.d9_lagna?.label||'—')}</b><span>Whole-sign relationship</span></div>
+          <div><small>Venus relation</small><b>${esc(pair.venus?.sign_relation?.label||'—')}</b><span>D9 ${esc(pair.venus?.d9_sign_relation?.label||'—')}</span></div>
+          <div><small>Jupiter relation</small><b>${esc(pair.jupiter?.sign_relation?.label||'—')}</b><span>D9 ${esc(pair.jupiter?.d9_sign_relation?.label||'—')}</span></div>
+          <div><small>Mangal pair</small><b>${m.mutual_manglik?'Mutual Manglik':m.effective_mismatch?'Mismatch remains':'No effective mismatch'}</b><span>${(m.pair_cancellation_evidence||[]).map(x=>esc(x.rule)).join(' · ')||'Conservative profile'}</span></div>
+        </div>
+      </section>
+      <section class="tk-marriage-dasha"><header><small>Vimshottari overlap</small><h4>Candidate simultaneous periods</h4><p>${esc(j.dasha_overlap?.rule||'')}</p></header>
+        <div class="tk-marriage-windows">${windows.length?windows.map(w=>`<article><div><b>${esc(new Date(w.start).toLocaleDateString('en-IN',{dateStyle:'medium'}))} → ${esc(new Date(w.end).toLocaleDateString('en-IN',{dateStyle:'medium'}))}</b><small>${Math.round(w.duration_days)} days · strength ${w.combined_strength}/4</small></div><span>Vara ${esc(w.groom?.mahadasha||'—')}/${esc(w.groom?.antardasha||'—')} · Kanya ${esc(w.bride?.mahadasha||'—')}/${esc(w.bride?.antardasha||'—')}</span></article>`).join(''):'<div class="tk-panchang-empty">No overlap windows under this specific rule profile.</div>'}</div>
+      </section>
+      <div class="tk-lunar-note">${esc(j.disclaimer||'')}</div>`;
+  }
+
+  async function calculateMarriageAnalysis(){
+    const loading=$('#tkMarriageLoading');if(loading){loading.hidden=false;loading.textContent='Comparing D1, D9, Mangal and Dasha periods…'}
+    try{
+      const body={
+        groom:matchProfile('groom'),bride:matchProfile('bride'),
+        horizon_years:Number($('#tkMarriageHorizon')?.value||12)
+      };
+      const r=await fetch(`${base}api.php?action=marriage-analysis`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const j=await r.json();if(!j.ok)throw new Error(j.error||'Marriage analysis unavailable');
+      if(loading)loading.hidden=true;renderMarriageAnalysis(j);
+    }catch(e){if(loading){loading.hidden=false;loading.textContent=e.message||'Marriage analysis unavailable'};toast(e.message||'Marriage analysis unavailable')}
   }
 
   async function calculateHoroscopeMatch(){
@@ -502,7 +568,7 @@
   }
 
   function initMatching(){
-    if(matchPages.includes(pageSlug)){
+    if(matchPages.includes(pageSlug)||marriagePages.includes(pageSlug)){
       bindMatchCity('groom');bindMatchCity('bride');
       document.querySelectorAll('[data-match-use-current]').forEach(btn=>btn.addEventListener('click',()=>syncMatchLocation(btn.dataset.matchUseCurrent)));
     }
@@ -1128,6 +1194,7 @@
   }));
   $('#tkToday')?.addEventListener('click',()=>{const input=$('#tkDate');state.dateTouched=false;if(input)input.value=isoToday(state.timezone);calculate()});
   $('#tkMatchCalculate')?.addEventListener('click',()=>calculateHoroscopeMatch());
+  $('#tkMarriageCalculate')?.addEventListener('click',()=>calculateMarriageAnalysis());
   $('#tkNakMatchCalculate')?.addEventListener('click',()=>calculateNakshatraMatch());
   $('#tkPlanetCalculate')?.addEventListener('click',()=>calculatePlanetary());
   $('#tkPlanetTime')?.addEventListener('change',()=>{if(pageSlug==='planets/positions')calculatePlanetary()});
