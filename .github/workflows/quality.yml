@@ -67,6 +67,15 @@ jobs:
       - name: Jyotish calculator regression fixtures
         run: python scripts/test-jyotish.py
 
+      - name: Vimshottari Dasha regression fixture
+        run: python scripts/test-vimshottari.py
+
+      - name: Jyotish dosha regression fixtures
+        run: python scripts/test-doshas.py
+
+      - name: Ashtakavarga regression fixture
+        run: python scripts/test-ashtakavarga.py
+
       - name: Planetary aspects and Yuddha regression fixtures
         run: python scripts/test-aspects.py
 
