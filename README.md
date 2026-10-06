@@ -140,6 +140,20 @@ The shared Muhurat reuse engine now powers:
 
 Hora uses exact local day/night twelfths; Panchaka Rahita uses verified Lagna transitions plus the modulo-9 formula; recurring Yogas preserve separate weekday/Nakshatra/Tithi rule tables. Gowri, Jain Pachchakkhan, Pancha Pakshi, Do Ghati and generic Shubha Dates remain deliberately gated.
 
+### Reusable Vrat recurrences
+
+A shared recurrence engine now promotes seven additional Vrat calendars without duplicating Panchang astronomy:
+
+- `/vrat/satyanarayana/` — exact Purnima occurrence calendar
+- `/vrat/durgashtami/` — Shukla Ashtami at sunrise
+- `/vrat/skanda-sashti/` — Panchami/Sashti civil-day selector
+- `/vrat/karthigai/` — Krittika at local sunset
+- `/vrat/rohini/` — Rohini after local sunrise
+- `/vrat/sawan-somwar/` — Purnimanta + Amanta Shravana Monday profiles
+- `/vrat/mangala-gauri/` — Purnimanta + Amanta Shravana Tuesday profiles
+
+The mapped ISKCON Ekadashi route remains deliberately unreleased: regression against published 2026 Pune dates showed that the current simplified ISKCON-compatible layer is not yet fully GCal-compatible. Kalashtami, Chandra Darshan and other ritual/visibility-driven recurrences remain gated for dedicated selectors.
+
 ### Regional calendar engine
 
 Stage 7 reuses one Lahiri astronomy core while keeping regional month conventions explicit:
@@ -327,6 +341,7 @@ python/specialized_muhurat.py  Vivah/Griha/Property/Vehicle/Sanskar profiles
 python/panchang_utilities.py    Tarabalam/Chandrabalam/Panchak/Bhadra
 python/panchang_reuse.py        Sunrise/Nakshatra/Ganda/Sankalpa/Vedic Clock reuse
 python/muhurat_reuse.py         Hora/Panchaka Rahita/recurring auspicious Yogas
+python/vrat_recurrence.py        recurring Vrat selectors and regional Shravana profiles
 python/regional_calendar.py     regional solar/Amanta/Purnimanta calendars
 python/sankranti.py           Nirayana solar-ingress engine
 python/seasons.py             equinox/solstice engine
@@ -412,5 +427,6 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 26. Production certification contract + remaining-shell queue. ✓
 27. Deterministic Panchang reuse batch (8 routes). ✓
 28. Deterministic Muhurat reuse batch (10 routes). ✓
+29. Deterministic Vrat recurrence batch (7 routes). ✓
 
 See `docs/DRIKPANCHANG_AUDIT.md` and `docs/TITHIKA_PAGE_MAP.md` for the full implementation plan.
