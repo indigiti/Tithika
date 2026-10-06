@@ -5,7 +5,6 @@ Reusable Vrat recurrence engine.
 This layer deliberately reuses Tithika's verified Panchang/Vrat substrate and
 keeps observance selectors explicit. It currently supports:
 
-- ISKCON Ekadashi: existing Vaishnava/ISKCON observance + Parana rules
 - Satyanarayana Puja: Purnima occurrence calendar
 - Masik Durgashtami: Shukla Ashtami at local sunrise
 - Skanda Sashti: documented Panchami-Sashti conjunction rule
@@ -29,7 +28,6 @@ import panchang
 ENGINE_VERSION = "0.1.0"
 
 MODE_TITLES = {
-    "iskcon-ekadashi": "ISKCON Ekadashi",
     "satyanarayana": "Satyanarayana Puja",
     "durgashtami": "Masik Durgashtami",
     "skanda-sashti": "Skanda Sashti",
@@ -192,41 +190,6 @@ def skanda_sashti(
     return rows
 
 
-def iskcon_ekadashi(
-    year: int, lat: float, lon: float, tz: ZoneInfo, hour24: bool
-) -> list[dict]:
-    events = []
-    for rule in lunar_occurrences.KINDS["ekadashi"]:
-        events.extend(
-            lunar_occurrences.events_for_rule(
-                year, rule, lat, lon, tz, hour24
-            )
-        )
-    rows = []
-    for event in sorted(events, key=lambda row: row["start"]):
-        obs = (event.get("observance") or {}).get("iskcon")
-        if not obs:
-            continue
-        obs_date = date.fromisoformat(obs["date"])
-        if obs_date.year != year:
-            continue
-        rows.append({
-            "name": event["name"],
-            "date": obs["date"],
-            "date_label": obs_date.strftime("%B %d, %Y").replace(" 0", " "),
-            "weekday": obs["weekday"],
-            "paksha": event["paksha"],
-            "amanta_month": event.get("amanta_month"),
-            "purnimanta_month": event.get("purnimanta_month"),
-            "basis": obs.get("basis"),
-            "parana": obs.get("parana"),
-            "tithi_start": event["start"],
-            "tithi_end": event["end"],
-            "mahadwadashi": (event.get("observance") or {}).get("mahadwadashi"),
-        })
-    return rows
-
-
 def satyanarayana(
     year: int, lat: float, lon: float, tz: ZoneInfo, hour24: bool
 ) -> list[dict]:
@@ -370,9 +333,7 @@ def main():
     hour24 = bool(payload.get("hour24", False))
     year = selected.year
 
-    if mode == "iskcon-ekadashi":
-        result = {"events": iskcon_ekadashi(year, lat, lon, tz, hour24)}
-    elif mode == "satyanarayana":
+    if mode == "satyanarayana":
         result = {"events": satyanarayana(year, lat, lon, tz, hour24)}
     elif mode == "durgashtami":
         result = {"events": durgashtami(year, lat, lon, tz, hour24)}
