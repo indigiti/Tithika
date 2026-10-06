@@ -133,6 +133,23 @@ The timing layer turns the interpretation engine into a month/year emphasis time
 - supportive / mixed / challenging / contextual activation quality
 - no event probabilities or guaranteed outcome claims
 
+### Personalized Rashifal — `/jyotish/rashifal/`
+
+The mapped Rashifal family is now backed by the natal interpretation and timing stack:
+
+- `/jyotish/rashifal/` four-horizon personal overview
+- `/jyotish/rashifal/daily/` daily birth-chart forecast context
+- `/jyotish/rashifal/weekly/` seven-day aggregated context
+- `/jyotish/rashifal/monthly/` five-sample monthly context
+- `/jyotish/rashifal/yearly/` twelve-month annual context
+- separate birth date/time and forecast target date
+- Vimshottari Mahadasha/Antardasha/Pratyantardasha activation
+- Moon/Sun/Mercury/Venus/Mars short-horizon transit context
+- Jupiter/Saturn/Rahu/Ketu medium/long-horizon transit context
+- domain-level identity, resources, learning, career and relationship emphasis
+- disclosed natal/Dasha/transit score components
+- no event probabilities or guaranteed outcome claims
+
 ### Choghadiya — `choghadiya.php`
 
 Verified calculation surface with:
@@ -168,6 +185,7 @@ python/seasons.py             equinox/solstice engine
 python/horoscope_analysis.py  unified Jyotish synthesis layer
 python/interpretation.py      rule-based Jyotish interpretation layer
 python/timing_timeline.py      month/year Jyotish timing timeline
+python/personal_rashifal.py    personalized daily/weekly/monthly/yearly Rashifal
 python/vendor/astronomy.py    vendored Astronomy Engine (MIT)
 
 docs/DRIKPANCHANG_AUDIT.md    benchmark/product audit
@@ -234,5 +252,6 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 15. Unified evidence-first horoscope analysis. ✓
 16. Auditable Jyotish interpretation knowledge layer. ✓
 17. Jyotish timing and forecast timeline engine. ✓
+18. Personalized daily/weekly/monthly/yearly Rashifal engine. ✓
 
 See `docs/DRIKPANCHANG_AUDIT.md` and `docs/TITHIKA_PAGE_MAP.md` for the full implementation plan.
