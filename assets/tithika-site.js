@@ -322,11 +322,17 @@
           ${paranaText ? `<small>${paranaText}</small>` : ''}
         </div>`;
       }).join('');
+      const obs=row.observance;
+      const selection=obs ? `<div class="tk-ekadashi-selection">
+        <span><b>Smarta</b>${esc(obs.smarta?.date||'—')}</span>
+        <span><b>Vaishnava</b>${esc(obs.vaishnava?.date||'—')}</span>
+      </div>` : '';
       return `<article class="tk-lunar-event">
         <div class="tk-lunar-event-date"><b>${esc(fmtDate(row.start))}</b><span>${esc(row.paksha||'')}</span></div>
         <div class="tk-lunar-event-main">
           <h4>${esc(row.name)}</h4>
           <p>${esc(row.amanta_month||'')} · ${esc(row.start_label)} → ${esc(row.end_label)}</p>
+          ${selection}
           ${candidateRows ? `<div class="tk-lunar-candidates">${candidateRows}</div>` : '<small>No sunrise falls inside this Tithi window</small>'}
         </div>
       </article>`;
