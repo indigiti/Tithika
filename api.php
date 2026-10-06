@@ -197,6 +197,13 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'muhurat-rules') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/muhurat_rules.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'lagna') {
         $payload = readPayload();
         $data = runPythonEngine('python/lagna.py', $payload);
