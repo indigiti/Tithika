@@ -40,6 +40,9 @@ jobs:
       - name: Validate route map
         run: php scripts/validate-routes.php
 
+      - name: SEO content accessibility and release audit
+        run: php scripts/test-release-hardening.php
+
       - name: Panchang regression fixture
         run: python scripts/test-panchang.py
 
