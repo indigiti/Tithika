@@ -55,6 +55,9 @@ jobs:
       - name: Mahadwadashi regression fixture
         run: python scripts/test-mahadwadashi.py
 
+      - name: Dwadashi regression fixture
+        run: python scripts/test-dwadashi.py
+
       - name: Equinox and solstice regression fixture
         run: python scripts/test-seasons.py
 
