@@ -58,6 +58,17 @@
     'vrat/masik-shivaratri':'shivaratri',
     'festivals/maha-shivaratri':'shivaratri'
   };
+  const vratReuseModes={
+    'vrat/iskcon-ekadashi':'iskcon-ekadashi',
+    'vrat/satyanarayana':'satyanarayana',
+    'vrat/durgashtami':'durgashtami',
+    'vrat/skanda-sashti':'skanda-sashti',
+    'vrat/karthigai':'karthigai',
+    'vrat/rohini':'rohini',
+    'vrat/sawan-somwar':'sawan-somwar',
+    'vrat/mangala-gauri':'mangala-gauri'
+  };
+  const vratReuseYearly=new Set(Object.keys(vratReuseModes));
   const festivalKinds={
     'festivals/ganesha-chaturthi':'ganesh-chaturthi',
     'festivals/raksha-bandhan':'raksha-bandhan',
@@ -227,6 +238,7 @@
       if(jyotishModes[pageSlug]) await calculateJyotish();
       if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
       if(observanceKinds[pageSlug]) await calculateObservances();
+      if(vratReuseModes[pageSlug]) await calculateVratReuse();
       if(festivalKinds[pageSlug]) await calculateFestival();
       if(dwadashiPages.includes(pageSlug)) await calculateDwadashi();
       if(mahadwadashiPages.includes(pageSlug)) await calculateMahadwadashi();
@@ -1790,7 +1802,7 @@
     if(pageSlug==='panchang/month'||specializedMuhuratModes[pageSlug]||regionalVariants[pageSlug]||panchangReuseMonthly.has(pageSlug)){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)||muhuratReuseYearly.has(pageSlug)){
+    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)||muhuratReuseYearly.has(pageSlug)||vratReuseYearly.has(pageSlug)){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
