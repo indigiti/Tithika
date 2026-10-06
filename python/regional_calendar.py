@@ -138,11 +138,26 @@ def solar_era(variant, d, sign_id):
     return None
 
 
-def solar_day_row(variant, d, sunrise, state, events):
+def solar_day_row(variant, d, sunrise, state, events, lat, lon, tz):
     sign_id = state["sun_rashi_id"]
     ingress = latest_ingress(sunrise, events, sign_id)
     if ingress:
-        ingress_date = datetime.fromisoformat(ingress["datetime"]).date()
+        ingress_dt = datetime.fromisoformat(ingress["datetime"])
+        ingress_date = ingress_dt.date()
+
+        # Bengali and Assamese Suryasiddhanta-style day numbering rolls the
+        # solar month at the first sunrise after Sankranti when the ingress
+        # occurs after that civil day's sunrise. Tamil/Odia/Malayalam keep
+        # the Sankranti civil date as day 1 in Tithika's current profiles.
+        if variant in ("bengali", "assamese"):
+            ingress_sunrise = panchang.rise_set(
+                ingress_date, lat, lon, tz,
+                panchang.astronomy.Body.Sun,
+                panchang.astronomy.Direction.Rise,
+            )
+            if ingress_sunrise and ingress_dt > ingress_sunrise:
+                ingress_date += timedelta(days=1)
+
         day_number = (d - ingress_date).days + 1
     else:
         day_number = None
@@ -228,7 +243,9 @@ def calculate_month(variant, selected, lat, lon, tz, hour24):
             continue
         state = panchang.state_at(sunrise)
         regional = (
-            solar_day_row(variant, d, sunrise, state, ingresses)
+            solar_day_row(
+                variant, d, sunrise, state, ingresses, lat, lon, tz
+            )
             if variant in SOLAR_MONTHS
             else lunar_day_row(variant, sunrise, state)
         )
