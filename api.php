@@ -259,6 +259,32 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'vimshottari') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/vimshottari.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
+    if ($action === 'dosha') {
+        $payload = readPayload();
+        $mode = strtolower(trim((string)($_GET['mode'] ?? 'mangal')));
+        if (!in_array($mode, ['mangal','kalasarpa','sade-sati'], true)) {
+            out(['ok'=>false,'error'=>'Unsupported dosha mode'], 422);
+        }
+        $payload['mode'] = $mode;
+        $data = runPythonEngine('python/doshas.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
+    if ($action === 'ashtakavarga') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/ashtakavarga.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'seasons') {
         $payload = readPayload();
         $data = runPythonEngine('python/seasons.py', $payload);
