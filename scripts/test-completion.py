@@ -137,7 +137,7 @@ def test_secondary_jyotish():
     base = {"date": "2026-10-06", "time": "12:00:00"}
     prashna = completion.jyotish_secondary("prashna-kundali", base, LAT, LON, TZ)
     assert len(prashna["placements"]) == len(completion.planetary.CLASSICAL_ORDER)
-    assert prashna["lagna"]["rashi"] in completion.panchang.RASHI_NAMES
+    assert prashna["lagna"]["lagna"] in completion.panchang.RASHI_NAMES
 
     gemstone = completion.jyotish_secondary("gemstone", base, LAT, LON, TZ)
     rudraksha = completion.jyotish_secondary("rudraksha", base, LAT, LON, TZ)
