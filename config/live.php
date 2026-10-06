@@ -128,5 +128,12 @@ return [
     'muhurat/dwipushkar',
     'muhurat/tripushkar',
     'muhurat/ravi-pushya',
-    'muhurat/ravi-yoga'
+    'muhurat/ravi-yoga',
+    'vrat/satyanarayana',
+    'vrat/durgashtami',
+    'vrat/skanda-sashti',
+    'vrat/karthigai',
+    'vrat/rohini',
+    'vrat/sawan-somwar',
+    'vrat/mangala-gauri'
 ];
