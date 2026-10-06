@@ -80,7 +80,7 @@ for row in jwala:
     st=panchang.state_at(mid)
     assert (st["tithi_number"],st["nakshatra"]) in panchang_reuse.JWALAMUKHI_COMBINATIONS,(row,st)
 
-# Manvadi, Yugadi and Kalpadi are sunrise-state Purnimanta Tithi rules.
+# Manvadi, Yugadi and Kalpadi resolve one civil date from each exact target Tithi span.
 creation=panchang_reuse.creation_days(2026,lat,lon,tz,False)
 assert len(creation["manvadi"])==14,creation["manvadi"]
 assert len(creation["yugadi"])==4,creation["yugadi"]
@@ -94,6 +94,7 @@ assert man["Daksha Savarni Manvadi"]=="2026-10-20",man
 assert man["Tamasa Manvadi"]=="2026-11-21",man
 
 yuga={x["name"]:x["date"] for x in creation["yugadi"]}
+assert yuga["Dwapara Yuga Diwas"]=="2026-02-17",yuga
 assert yuga["Treta Yuga Diwas"]=="2026-04-19",yuga
 assert yuga["Kali Yuga Diwas"]=="2026-10-08",yuga
 assert yuga["Satya Yuga Diwas"]=="2026-11-18",yuga
