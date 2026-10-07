@@ -3,7 +3,9 @@
   const settings=window.TithikaSettings;
   if(!settings)return;
   const $=s=>document.querySelector(s);
-  const $$=s=>[...document.querySelectorAll(s)];
+  const $=s=>[...document.querySelectorAll(s)];
+  const messages=window.TITHIKA_I18N?.messages||{};
+  const tr=(key,fallback)=>messages[key]||fallback||key;
 
   function render(){
     const s=settings.get();
@@ -16,10 +18,10 @@
       });
     });
     const loc=s.defaultLocation;
-    $('#tkSettingsLocationName').textContent=loc&&loc.city?loc.city:'No saved location';
+    $('#tkSettingsLocationName').textContent=loc&&loc.city?loc.city:tr('settings.no_location','No saved location');
     $('#tkSettingsLocationMeta').textContent=loc
-      ? (loc.timezone+' · '+Number(loc.lat).toFixed(4)+', '+Number(loc.lon).toFixed(4))
-      : 'Tithika will continue using geolocation or the standard fallback.';
+      ? (loc.timezone+' · '+settings.formatDecimal(loc.lat,4)+', '+settings.formatDecimal(loc.lon,4))
+      : tr('settings.location_fallback','Tithika will continue using geolocation or the standard fallback.');
   }
 
   $$('[data-setting] [data-value]').forEach(btn=>btn.addEventListener('click',()=>{
@@ -41,7 +43,7 @@
     if(current && Number.isFinite(Number(current.lat)) && Number.isFinite(Number(current.lon))){
       settings.saveLocation(current);
       render();
-      window.dispatchEvent(new CustomEvent('tithika:toast',{detail:'Default location saved on this device.'}));
+      window.dispatchEvent(new CustomEvent('tithika:toast',{detail:tr('dynamic.location_saved','Default location saved on this device.')}));
     }
   });
 
