@@ -182,3 +182,25 @@ jobs:
       - name: Sankranti ingress regression fixture
         run: python scripts/test-sankranti.py
 
+  release:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build DigiOps release payload
+        run: php tools/package-release.php
+
+      - name: Verify DigiOps release payload
+        run: php tools/check-release-package.php
+
+      - name: Upload DigiOps release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: digiops-release
+          path: release/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+
