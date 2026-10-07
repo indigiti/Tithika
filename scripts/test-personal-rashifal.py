@@ -41,7 +41,7 @@ y0,y1=personal_rashifal.period_bounds("yearly",target)
 assert y0.date().isoformat()=="2026-01-01"
 assert y1.date().isoformat()=="2027-01-01"
 assert len(personal_rashifal.sample_moments("weekly",w0,w1))==7
-assert len(personal_rashifal.sample_moments("monthly",m0,m1))==5
+assert len(personal_rashifal.sample_moments("monthly",m0,m1))==31
 assert len(personal_rashifal.sample_moments("yearly",y0,y1))==12
 
 payload={
