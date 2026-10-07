@@ -105,10 +105,29 @@ def prashnavali(moment,lat,lon):
       row("Method note","Chart context only","","A complete Prashnavali answer requires a named traditional text/system; Tithika does not invent one.")
     ]
 
+PANCHA_PAKSHI_GROUPS=[
+    (0,4,"Vulture"),   # Ashwini .. Mrigashira
+    (5,10,"Owl"),      # Ardra .. Purva Phalguni
+    (11,15,"Crow"),    # Uttara Phalguni .. Vishakha
+    (16,21,"Cock"),    # Anuradha .. Shravana
+    (22,26,"Peacock"), # Dhanishtha .. Revati
+]
+PANCHA_PAKSHI_DARK_REVERSE={"Vulture":"Peacock","Owl":"Cock","Crow":"Crow","Cock":"Owl","Peacock":"Vulture"}
+
+def birth_bird(nakshatra,paksha):
+    idx=panchang.NAKSHATRA_NAMES.index(nakshatra)
+    bird=next(b for lo,hi,b in PANCHA_PAKSHI_GROUPS if lo<=idx<=hi)
+    return PANCHA_PAKSHI_DARK_REVERSE[bird] if paksha=="Krishna Paksha" else bird
+
 def pancha_pakshi(moment):
-    moon=planetary.planet_state("Moon",moment);idx=(panchang.NAKSHATRA_NAMES.index(moon["nakshatra"]) if moon["nakshatra"] in panchang.NAKSHATRA_NAMES else 0)%5
-    birds=["Vulture","Owl","Crow","Cock","Peacock"]
-    return [row("Birth bird",birds[idx],moon["nakshatra"],"Five-bird grouping profile"),row("Current Panchang",panchang.state_at(moment)["tithi"],moment.strftime("%A"),"Open the Pancha Pakshi Muhurat page for the full activity timeline.")]
+    moon=planetary.planet_state("Moon",moment);state=panchang.state_at(moment)
+    bird=birth_bird(moon["nakshatra"],state["paksha"])
+    return [
+      row("Birth bird",bird,moon["nakshatra"],f'{state["paksha"]} · Nakshatra/Paksha assignment profile'),
+      row("Birth Nakshatra",moon["nakshatra"],f'Pada {moon["pada"]}',"Lahiri sidereal Moon"),
+      row("Birth Paksha",state["paksha"],state["tithi"],"Paksha is part of the bird assignment profile."),
+      row("Current Panchang",state["tithi"],moment.strftime("%A"),"Open the Pancha Pakshi Muhurat page for the full activity timeline.")
+    ]
 
 def main():
     p=json.loads(sys.stdin.read() or "{}");slug=str(p.get("slug") or "").strip("/")
