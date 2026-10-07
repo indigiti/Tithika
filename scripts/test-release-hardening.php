@@ -57,6 +57,30 @@ ok($home !== false, 'index.php unreadable');
 ok(!str_contains($home, 'cdn.tailwindcss.com'), 'runtime Tailwind CDN reintroduced');
 ok(!preg_match('~<script[^>]+src=["\']https?://~i', $home), 'external runtime script found on homepage');
 
+$choghadiya = (string)file_get_contents(dirname(__DIR__) . '/choghadiya.php');
+ok($choghadiya !== '', 'choghadiya.php unreadable');
+ok(!str_contains($choghadiya, 'cdn.tailwindcss.com'), 'runtime Tailwind CDN reintroduced on Choghadiya');
+ok(str_contains($choghadiya, "tithika_asset_url('assets/choghadiya.css')"), 'Choghadiya production CSS is not base-path aware');
+ok(str_contains($choghadiya, "tithika_asset_url('assets/app.js')"), 'Choghadiya app asset is not base-path aware');
+
+$choghadiyaCss = dirname(__DIR__) . '/assets/choghadiya.css';
+ok(is_file($choghadiyaCss), 'compiled Choghadiya CSS missing');
+ok(filesize($choghadiyaCss) > 1000, 'compiled Choghadiya CSS unexpectedly small');
+
+$choghadiyaJs = (string)file_get_contents(dirname(__DIR__) . '/assets/app.js');
+ok(str_contains($choghadiyaJs, "window.TITHIKA_BASE"), 'Choghadiya JS missing application base path');
+ok(!preg_match("~fetch\\([\"\']api\\.php~", $choghadiyaJs), 'relative Choghadiya API request reintroduced');
+
+$originalScriptName = $_SERVER['SCRIPT_NAME'];
+$_SERVER['SCRIPT_NAME'] = '/tithika/choghadiya.php';
+ob_start();
+include dirname(__DIR__) . '/choghadiya.php';
+$choghadiyaHtml = ob_get_clean();
+$_SERVER['SCRIPT_NAME'] = $originalScriptName;
+ok(str_contains($choghadiyaHtml, '/tithika/assets/choghadiya.css?v='), 'Choghadiya CSS does not render from application root');
+ok(str_contains($choghadiyaHtml, '/tithika/assets/app.js?v='), 'Choghadiya JS does not render from application root');
+ok(str_contains($choghadiyaHtml, 'window.TITHIKA_BASE = "/tithika/"'), 'Choghadiya runtime base path is incorrect');
+
 $site = file_get_contents(dirname(__DIR__) . '/includes/site.php');
 ok($site !== false && str_contains($site, 'tk-skip-link'), 'skip link missing');
 ok(str_contains($site, 'aria-expanded="false"'), 'location expanded state missing');
