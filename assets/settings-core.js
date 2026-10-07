@@ -8,6 +8,7 @@
     lunarMonth:'amanta',
     tradition:'smarta',
     language:'en',
+    numerals:'latin',
     defaultLocation:null
   };
   const allowed={
@@ -15,7 +16,8 @@
     clock:new Set(['12','24']),
     lunarMonth:new Set(['amanta','purnimanta']),
     tradition:new Set(['smarta','vaishnava','iskcon']),
-    language:new Set(['en','hi'])
+    language:new Set(['en','hi']),
+    numerals:new Set(['latin','deva'])
   };
   function safe(raw){
     const out={...defaults};
@@ -63,7 +65,9 @@
   function get(){return JSON.parse(JSON.stringify(state))}
   function hour24(){return state.clock==='24'}
   function formatNumber(value){
-    return new Intl.NumberFormat(state.language==='en'?'en-IN':'en-IN').format(value);
+    const locale=state.language==='hi'?'hi-IN':'en-IN';
+    const numberingSystem=state.numerals==='deva'?'deva':'latn';
+    return new Intl.NumberFormat(locale,{numberingSystem}).format(value);
   }
   window.TithikaSettings={get,set,saveLocation,clearLocation:()=>saveLocation(null),apply,hour24,formatNumber,key:KEY};
   apply();
