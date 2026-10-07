@@ -39,7 +39,7 @@
   function persist(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
   function resolvedTheme(){
     if(state.theme!=='system')return state.theme;
-    return matchMedia?.('(prefers-color-scheme: dark)').matches?'dark':'light';
+    return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
   }
   function apply(){
     document.documentElement.dataset.tkTheme=resolvedTheme();
@@ -65,8 +65,8 @@
   }
   window.TithikaSettings={get,set,saveLocation,clearLocation:()=>saveLocation(null),apply,hour24,formatNumber,key:KEY};
   apply();
-  if(matchMedia){
-    const media=matchMedia('(prefers-color-scheme: dark)');
+  if(window.matchMedia){
+    const media=window.matchMedia('(prefers-color-scheme: dark)');
     media.addEventListener?.('change',()=>{if(state.theme==='system')apply()});
   }
 })();
