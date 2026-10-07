@@ -152,7 +152,7 @@ A shared recurrence engine now promotes seven additional Vrat calendars without 
 - `/vrat/sawan-somwar/` — Purnimanta + Amanta Shravana Monday profiles
 - `/vrat/mangala-gauri/` — Purnimanta + Amanta Shravana Tuesday profiles
 
-The mapped ISKCON Ekadashi route remains deliberately unreleased: regression against published 2026 Pune dates showed that the current simplified ISKCON-compatible layer is not yet fully GCal-compatible. Kalashtami, Chandra Darshan and other ritual/visibility-driven recurrences remain gated for dedicated selectors.
+The ISKCON Ekadashi route now reuses the integrated Arunodaya/Vriddhi/Mahadwadashi/Hari-Vasara substrate. Kalashtami and Masik Janmashtami have explicit night selectors, while Chandra Darshan is deliberately labeled as a conservative geometric crescent screen rather than a guaranteed naked-eye visibility prediction.
 
 ### Regional calendar engine
 
@@ -264,7 +264,7 @@ The shared shell now provides production SEO controls across Tithika:
 
 - absolute canonical URLs
 - unique title/description generation
-- index/noindex quality gating from the centralized verified-route registry
+- indexability and calculation certification are separate: verified calculators, calculated aggregations, structured references and editorial routes have distinct registries
 - OpenGraph + Twitter metadata
 - WebSite/WebPage/Article/CollectionPage JSON-LD
 - BreadcrumbList schema on detail pages
@@ -353,7 +353,7 @@ python/vendor/astronomy.py    vendored Astronomy Engine (MIT)
 
 docs/DRIKPANCHANG_AUDIT.md    benchmark/product audit
 docs/TITHIKA_PAGE_MAP.md      implementation map
-docs/RELEASE_CERTIFICATION.md production certification + shell queue
+docs/RELEASE_CERTIFICATION.md production certification + semantic route-quality tiers
 scripts/validate-routes.php   CI route validator
 ```
 
@@ -375,7 +375,7 @@ Pretty URLs are handled through Apache rewrite rules, for example:
 Tithika deliberately separates page creation from calculation-engine readiness:
 
 - **Live** — backed by a verified calculation/content engine.
-- **Mapped** — production URL and UI shell exist; specialized engine/content adapter is still pending.
+- **Reference/Aggregate** — production-quality indexable content exists, but it is intentionally not counted as a standalone verified calculation engine.
 - **Verified** — calculation rules have fixtures and cross-source tests.
 - **Released** — engine, UI, SEO, mobile and accessibility audit passed.
 
