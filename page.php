@@ -553,12 +553,12 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <div id="tkObservanceLoading" class="tk-panchang-loading">Calculating yearly observances…</div>
         <div id="tkObservanceNote" class="tk-lunar-note"></div>
         <div id="tkObservanceList" class="tk-observance-list"></div>
-      <?php elseif (in_array($page['slug'], ['vrat/satyanarayana','vrat/durgashtami','vrat/skanda-sashti','vrat/karthigai','vrat/rohini','vrat/sawan-somwar','vrat/mangala-gauri'], true)): ?>
+      <?php elseif (in_array($page['slug'], ['vrat/satyanarayana','vrat/durgashtami','vrat/skanda-sashti','vrat/karthigai','vrat/rohini','vrat/sawan-somwar','vrat/mangala-gauri','vrat/iskcon-ekadashi','vrat/kalashtami','vrat/chandra-darshan','vrat/masik-janmashtami','vrat/ishti-anvadhan','vrat/shraddha','vrat/purushottam-maas','vrat/chaturmasa'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
             <span class="tk-card-tag">Verified Vrat recurrence engine</span>
             <h3 id="tkVratReuseTitle"><?= htmlspecialchars($page['title']) ?></h3>
-            <p>Recurring observance dates reuse Tithika's Lahiri Panchang and sunrise state. Regional Shravana differences are shown as separate Purnimanta and Amanta profiles instead of being guessed.</p>
+            <p>Recurring observance dates reuse Tithika's Lahiri Panchang with explicit sunrise, sunset, night, visibility, Aparahna and lunar-month selectors. Where traditions differ, profiles are exposed instead of being guessed.</p>
           </div>
           <div class="tk-panchang-engine" id="tkVratReuseEngine">Vrat recurrence · Lahiri</div>
         </div>

@@ -65,7 +65,15 @@
     'vrat/karthigai':'karthigai',
     'vrat/rohini':'rohini',
     'vrat/sawan-somwar':'sawan-somwar',
-    'vrat/mangala-gauri':'mangala-gauri'
+    'vrat/mangala-gauri':'mangala-gauri',
+    'vrat/iskcon-ekadashi':'iskcon-ekadashi',
+    'vrat/kalashtami':'kalashtami',
+    'vrat/chandra-darshan':'chandra-darshan',
+    'vrat/masik-janmashtami':'masik-janmashtami',
+    'vrat/ishti-anvadhan':'ishti-anvadhan',
+    'vrat/shraddha':'shraddha',
+    'vrat/purushottam-maas':'purushottam-maas',
+    'vrat/chaturmasa':'chaturmasa'
   };
   const vratReuseYearly=new Set(Object.keys(vratReuseModes));
   const festivalKinds={
