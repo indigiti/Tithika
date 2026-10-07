@@ -1,6 +1,6 @@
 # Tithika Production Certification
 
-This document records the production-readiness contract enforced by CI. It is not a claim that every mapped route is complete; unfinished shells are deliberately excluded from search indexing until their calculation engine or editorial adapter is verified.
+This document records the production-readiness contract enforced by CI. Indexable status means a route has a calculation, aggregation, editorial, or structured-reference adapter; it does not imply that every route is an exact astronomical calculator. Semantic quality classes and rule-hardening findings are recorded in `docs/SEMANTIC_AUDIT.md`.
 
 ## Certified baseline
 
@@ -124,10 +124,11 @@ A release is certifiable only when all of the following pass on the exact merged
 6. Regional calendar regressions including Nepali and Jain adapters.
 7. Planetary/Jyotish/Kundali/Varga/Yoga/Shadbala/matching/timing/Rashifal regressions.
 8. Eclipse, season and Sankranti regression fixtures.
+9. Repository semantic-hardening guard and semantic completion fixtures.
 
 ## Final six-phase completion
 
-The former 99-route shell queue is complete. All mapped product routes now have a calculation engine, aggregation adapter, or structured reference adapter and are included in the production-quality indexable contract.
+The former 99-route shell queue is implemented. Every mapped product route now has a calculation engine, aggregation adapter, editorial adapter, or explicitly labelled structured-reference adapter. Exact calculators, deterministic traditional profiles and structured references are distinguished in `docs/SEMANTIC_AUDIT.md`.
 
 1. **Panchang rule-completion** — Manvadi, Yugadi and Kalpadi sunrise selectors; Kranti Samya/Mahapata declination geometry; Published Panchang and Utilities adapters.
 2. **Muhurat rule-completion** — versioned Gowri day/night cycles, Jain Pachchakkhan solar-Prahar timings, 30 Do-Ghati Muhurtas, Pancha Pakshi activity cycles and conservative generic Shubha Dates.
