@@ -1,4 +1,5 @@
 const $ = s => document.querySelector(s);
+const base = window.TITHIKA_BASE || '/';
 const state = {
   lat: 19.0760,
   lon: 72.8777,
@@ -55,7 +56,7 @@ $('#nightTab').addEventListener('click',()=>setMobileTab('night'));
 async function calculate(){
   document.documentElement.classList.add('is-loading');
   try{
-    const res=await fetch('api.php?action=calculate',{
+    const res=await fetch(`${base}api.php?action=calculate`,{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({lat:state.lat,lon:state.lon,city:state.city,date:$('#dateInput').value,timezone:state.timezone,hour24:state.hour24})
     });
@@ -138,7 +139,7 @@ setInterval(updateClock,1000);
 
 async function reverseLocation(lat,lon){
   try{
-    const r=await fetch(`api.php?action=reverse&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
+    const r=await fetch(`${base}api.php?action=reverse&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
     const j=await r.json(); if(j.ok&&j.label)state.city=j.label;
   }catch(e){}
 }
@@ -188,7 +189,7 @@ $('#citySearch').addEventListener('input',e=>{
 async function searchCity(q){
   const box=$('#searchResults');
   try{
-    const r=await fetch(`api.php?action=search&q=${encodeURIComponent(q)}`),j=await r.json();
+    const r=await fetch(`${base}api.php?action=search&q=${encodeURIComponent(q)}`),j=await r.json();
     if(!j.ok||!j.results?.length){box.innerHTML='<div class="p-3 text-xs font-semibold text-stone-400">No matching place</div>';box.classList.remove('hidden');return;}
     box.innerHTML=j.results.map((x,i)=>`<button data-i="${i}" class="placeResult block w-full rounded-xl px-3 py-3 text-left transition hover:bg-orange-50"><div class="text-sm font-black text-stone-800">${esc(x.label)}</div><div class="mt-0.5 truncate text-[11px] font-medium text-stone-400">${esc(x.display_name)}</div></button>`).join('');
     box._rows=j.results; box.classList.remove('hidden');
