@@ -1,3 +1,7 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/includes/site.php';
+?>
 <!doctype html>
 <html lang="en" class="h-full">
 <head>
@@ -6,39 +10,10 @@
   <meta name="theme-color" content="#1f1638" />
   <title>Choghadiya — Tithika</title>
   <meta name="description" content="Location-aware Choghadiya with local sunrise, sunset, Rahu Kaal and live Muhurat timings." />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','ui-sans-serif','system-ui','sans-serif']},boxShadow:{card:'0 18px 55px rgba(45,32,20,.08)',float:'0 22px 70px rgba(38,24,63,.18)'}}}}
-  </script>
-  <style>
-    :root{color-scheme:light;--ink:#20182f;--paper:#f7f3ec;--saffron:#f08a24;--violet:#211836}
-    *{box-sizing:border-box}
-    html{background:var(--paper)}
-    body{background:
-      radial-gradient(circle at 8% -5%,rgba(244,183,91,.28),transparent 27rem),
-      radial-gradient(circle at 100% 0%,rgba(149,126,197,.16),transparent 30rem),
-      var(--paper)}
-    .surface{background:rgba(255,255,255,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-    .hero-grid{background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:28px 28px}
-    .quality-best,.quality-good,.quality-gain{--q:#16724b;--qt:#0f6240;--qb:#eaf7ef;--qd:#bfe9cf}
-    .quality-neutral{--q:#526174;--qt:#445063;--qb:#eef2f5;--qd:#d8e0e6}
-    .quality-avoid{--q:#b44635;--qt:#983828;--qb:#fff0ec;--qd:#f4c9bf}
-    .period-row{border-color:#ece7df;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease}
-    .period-row:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(45,32,20,.07);border-color:var(--qd)}
-    .period-dot{background:var(--qb);color:var(--q);border:1px solid var(--qd)}
-    .period-pill{background:var(--qb);color:var(--qt)}
-    .active-ring{border-color:#f5a14d!important;background:linear-gradient(90deg,#fff9f1,#fff)!important;box-shadow:0 14px 34px rgba(240,138,36,.13)}
-    .active-ring .period-dot{box-shadow:0 0 0 4px rgba(240,138,36,.10)}
-    .hide-scroll::-webkit-scrollbar{display:none}.hide-scroll{scrollbar-width:none}
-    .progress-track{background:rgba(255,255,255,.12)}
-    .progress-fill{width:var(--progress,0%);transition:width .5s linear}
-    .shine:before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:linear-gradient(135deg,rgba(255,255,255,.75),rgba(255,255,255,.08),rgba(255,255,255,.35));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
-    .segmented button[aria-selected="true"]{background:#211836;color:#fff;box-shadow:0 8px 24px rgba(33,24,54,.18)}
-    @media (max-width: 767px){.schedule-panel[data-mobile-hidden="true"]{display:none}}
-  </style>
+  <link rel="stylesheet" href="<?= htmlspecialchars(tithika_asset_url('assets/choghadiya.css')) ?>">
 </head>
 <body class="min-h-full text-[#20182f] antialiased selection:bg-orange-200/70">
-  <a href="index.php" class="fixed left-4 top-4 z-[60] rounded-full border border-white/70 bg-white/90 px-3 py-2 text-xs font-black text-[#211836] shadow-lg backdrop-blur hover:bg-white">← Tithika Home</a>
+  <a href="<?= htmlspecialchars(tithika_url()) ?>" class="fixed left-4 top-4 z-[60] rounded-full border border-white/70 bg-white/90 px-3 py-2 text-xs font-black text-[#211836] shadow-lg backdrop-blur hover:bg-white">← Tithika Home</a>
   <main class="mx-auto max-w-[1440px] px-3 pb-10 pt-3 sm:px-5 sm:pt-5 lg:px-8 lg:pt-7">
 
     <header class="mb-4 flex items-center justify-between gap-3 px-1 sm:mb-5">
@@ -182,6 +157,7 @@
   </main>
 
   <div id="toast" class="pointer-events-none fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-50 hidden max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-2xl bg-[#211836] px-4 py-3 text-center text-sm font-bold text-white shadow-2xl"></div>
-  <script src="assets/app.js?v=2"></script>
+  <script>window.TITHIKA_BASE = <?= json_encode(tithika_base_path(), JSON_UNESCAPED_SLASHES) ?>;</script>
+  <script src="<?= htmlspecialchars(tithika_asset_url('assets/app.js')) ?>"></script>
 </body>
 </html>
