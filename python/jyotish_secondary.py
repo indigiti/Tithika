@@ -4,7 +4,7 @@ from __future__ import annotations
 import json, math, sys
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import panchang, planetary, lagna, panchang_reuse
+import panchang, planetary, lagna, panchang_reuse, kundali, vimshottari
 
 ENGINE_VERSION="1.0.0"
 NAK_SYLLABLES={
@@ -17,11 +17,26 @@ NAK_SYLLABLES={
 "Purva Bhadrapada":["Se","So","Da","Di"],"Uttara Bhadrapada":["Du","Tha","Jha","Na"],"Revati":["De","Do","Cha","Chi"]
 }
 RASHI_LORD={"Mesha":"Mars","Vrishabha":"Venus","Mithuna":"Mercury","Karka":"Moon","Simha":"Sun","Kanya":"Mercury","Tula":"Venus","Vrishchika":"Mars","Dhanu":"Jupiter","Makara":"Saturn","Kumbha":"Saturn","Meena":"Jupiter"}
-GEMS={"Sun":"Ruby","Moon":"Pearl","Mars":"Red Coral","Mercury":"Emerald","Jupiter":"Yellow Sapphire","Venus":"Diamond / White Sapphire","Saturn":"Blue Sapphire"}
-RUDRA={"Sun":"1 Mukhi","Moon":"2 Mukhi","Mars":"3 Mukhi","Mercury":"4 Mukhi","Jupiter":"5 Mukhi","Venus":"6 Mukhi","Saturn":"7 Mukhi"}
+GEMS={"Sun":"Ruby","Moon":"Pearl","Mars":"Red Coral","Mercury":"Emerald","Jupiter":"Yellow Sapphire","Venus":"Diamond / White Sapphire","Saturn":"Blue Sapphire","Rahu":"Hessonite","Ketu":"Cat\'s Eye"}
+RUDRA={"Sun":"1 Mukhi","Moon":"2 Mukhi","Mars":"3 Mukhi","Mercury":"4 Mukhi","Jupiter":"5 Mukhi","Venus":"6 Mukhi","Saturn":"7 Mukhi","Rahu":"8 Mukhi","Ketu":"9 Mukhi"}
 RASHI_INITIALS={
 "Mesha":["A","L","E"],"Vrishabha":["B","V","U"],"Mithuna":["K","Chh","Gh"],"Karka":["D","H"],"Simha":["M","T"],"Kanya":["P","Th","N"],"Tula":["R","T"],"Vrishchika":["N","Y"],"Dhanu":["Bh","Dh","Ph"],"Makara":["Kh","J"],"Kumbha":["G","S","Sh"],"Meena":["D","Ch","Z"]
 }
+
+BRIGHT_BIRD_GROUPS=[
+ ("Vulture",{"Ashwini","Bharani","Krittika","Rohini","Mrigashira"}),
+ ("Owl",{"Ardra","Punarvasu","Pushya","Ashlesha","Magha"}),
+ ("Crow",{"Purva Phalguni","Uttara Phalguni","Hasta","Chitra","Swati"}),
+ ("Cock",{"Vishakha","Anuradha","Jyeshtha","Mula","Purva Ashadha"}),
+ ("Peacock",{"Uttara Ashadha","Shravana","Dhanishtha","Shatabhisha","Purva Bhadrapada","Uttara Bhadrapada","Revati"}),
+]
+DARK_BIRD_GROUPS=[
+ ("Vulture",{"Revati","Uttara Bhadrapada","Purva Bhadrapada","Shatabhisha","Dhanishtha"}),
+ ("Owl",{"Shravana","Uttara Ashadha","Purva Ashadha","Mula","Jyeshtha"}),
+ ("Crow",{"Anuradha","Vishakha","Swati","Chitra","Hasta"}),
+ ("Cock",{"Uttara Phalguni","Purva Phalguni","Magha","Ashlesha","Pushya"}),
+ ("Peacock",{"Punarvasu","Ardra","Mrigashira","Rohini","Krittika","Bharani","Ashwini"}),
+]
 
 def parse_dt(p,tz):
     d=str(p.get("birth_date") or p.get("date") or datetime.now(tz).strftime("%Y-%m-%d"))
@@ -38,18 +53,45 @@ def row(title,value,meta="",detail=""):
 
 def prashna(moment,lat,lon):
     moon,sun,asc,st=base_state(moment,lat,lon)
+    planets=planetary.positions(moment,False,"mean")
+    placements=[]
+    for p in planets:
+        placements.append({**p,"house":((p["rashi_id"]-asc["lagna_id"])%12)+1})
+    houses=[]
+    for h in range(1,13):
+        occupants=[p["name"] for p in placements if p["house"]==h]
+        sign_id=(asc["lagna_id"]+h-1)%12
+        houses.append(row(f"House {h}",panchang.RASHI_NAMES[sign_id],", ".join(occupants) or "No classical Graha","Whole-sign Prashna house"))
     return [row("Prashna Lagna",asc["lagna"],f'{asc["degree_in_sign"]:.2f}°',"Question-time ascendant"),
       row("Moon",moon["rashi"],moon["nakshatra"],"Question-time Moon"),
       row("Tithi",st["tithi"],st["paksha"],"Question-time Panchang"),
-      row("Yoga",st["yoga"],"","Question-time Nitya Yoga")]
+      row("Yoga",st["yoga"],"","Question-time Nitya Yoga")]+houses
+
+def traditional_lords(moment,lat,lon):
+    moon,_,asc,_=base_state(moment,lat,lon)
+    lagna_lord=RASHI_LORD.get(asc["lagna"],"")
+    moon_lord=RASHI_LORD.get(moon["rashi"],"")
+    dasha=vimshottari.calculate(moment,moment)
+    current=((dasha.get("current") or {}).get("mahadasha") or {}).get("lord")
+    return moon,asc,lagna_lord,moon_lord,current
 
 def gemstone(moment,lat,lon):
-    moon,_,asc,_=base_state(moment,lat,lon); lord=RASHI_LORD.get(asc["lagna"],"")
-    return [row("Lagna lord",lord,asc["lagna"],"Traditional baseline"),row("Traditional gemstone",GEMS.get(lord,"Consult a qualified practitioner"),"Not a medical or financial recommendation","Gem prescriptions require chart-strength and contraindication review."),row("Moon sign",moon["rashi"],moon["nakshatra"],"Context only")]
+    moon,asc,lagna_lord,moon_lord,dasha_lord=traditional_lords(moment,lat,lon)
+    candidates=[]
+    for basis,lord in [("Lagna lord",lagna_lord),("Moon-sign lord",moon_lord),("Birth Mahadasha lord",dasha_lord)]:
+        if lord and lord in GEMS:
+            candidates.append(row(basis+" gemstone",GEMS[lord],lord,"Traditional correspondence; not a universal prescription."))
+    return [row("Lagna lord",lagna_lord,asc["lagna"],"Chart baseline"),
+            row("Moon sign",moon["rashi"],moon["nakshatra"],"Janma Chandra context")]+candidates+[
+            row("Prescription status","Reference candidates only","Chart strength/exaltation, functional lordship and contraindications not collapsed into one automatic recommendation.","Use a qualified practitioner before treating a gemstone as remedial advice." )]
 
 def rudraksha(moment,lat,lon):
-    moon,_,asc,_=base_state(moment,lat,lon); lord=RASHI_LORD.get(asc["lagna"],"")
-    return [row("Lagna lord",lord,asc["lagna"],"Traditional baseline"),row("Traditional Rudraksha",RUDRA.get(lord,"5 Mukhi"),"Reference profile","Sectarian practice and suitability can differ."),row("Janma Nakshatra",moon["nakshatra"],f'Pada {moon["pada"]}',"Birth-Moon context")]
+    moon,asc,lagna_lord,moon_lord,dasha_lord=traditional_lords(moment,lat,lon)
+    vals=[]
+    for basis,lord in [("Lagna lord",lagna_lord),("Moon-sign lord",moon_lord),("Birth Mahadasha lord",dasha_lord)]:
+        if lord and lord in RUDRA:
+            vals.append(row(basis+" Rudraksha",RUDRA[lord],lord,"Traditional correspondence; sectarian practice can differ."))
+    return [row("Janma Nakshatra",moon["nakshatra"],f'Pada {moon["pada"]}',"Birth-Moon context")]+vals
 
 def baby(moment):
     moon=planetary.planet_state("Moon",moment); nak=moon["nakshatra"];pada=int(moon["pada"]);syll=NAK_SYLLABLES.get(nak,[])
@@ -63,8 +105,20 @@ def initials(name=""):
     return [row("Name initial",initial or "Enter a name","Traditional name-Rashi heuristic","Birth chart remains authoritative"),row("Possible Rashis",", ".join(matches) if matches else "No unique mapping","","Initial-based Rashi is approximate by tradition.")]
 
 def sahasra(moment):
-    synodic=29.530588861; target=moment+timedelta(days=synodic*1000)
-    return [row("1000th lunar-cycle estimate",target.date().isoformat(),f"{synodic:.9f} days × 1000","Astronomical mean-synodic estimate; ritual celebration date should be verified against local Panchang."),row("Elapsed mean days",f"{synodic*1000:.3f}","","Mean cycle, not a phase-by-phase ephemeris count.")]
+    # First full Moon strictly after birth is Chandrodaya #1.
+    cursor=panchang.astronomy_time(moment)
+    event=panchang.astronomy.SearchMoonPhase(180.0,cursor,35.0)
+    if event is None: raise ValueError("First full Moon unavailable")
+    first=panchang.datetime_from_astronomy(event,moment.tzinfo)
+    last=first
+    for _ in range(999):
+        event=panchang.astronomy.SearchMoonPhase(180.0,panchang.astronomy_time(last+timedelta(days=20)),20.0)
+        if event is None: raise ValueError("Full Moon sequence interrupted")
+        last=panchang.datetime_from_astronomy(event,moment.tzinfo)
+    age_days=(last-moment).total_seconds()/86400.0
+    return [row("First full Moon after birth",first.isoformat(),"Chandrodaya #1","Exact 180° Sun-Moon phase"),
+            row("1000th full Moon",last.isoformat(),f"Age {age_days/365.2422:.2f} tropical years","Exact iterative full-Moon search, not mean-synodic multiplication."),
+            row("Elapsed days",f"{age_days:.3f}","","Birth instant to 1000th full Moon.")]
 
 def vedic_time(moment,lat,lon,tz):
     d=moment.date();sr=panchang_reuse.sunrise_for(d,lat,lon,tz)
@@ -89,13 +143,18 @@ def shraddha_tithi(moment,lat,lon,tz):
 
 def prashnavali(moment,lat,lon):
     _,_,asc,st=base_state(moment,lat,lon)
-    tone=("Favourable" if st["nakshatra_id"]%3==0 else "Mixed" if st["nakshatra_id"]%3==1 else "Cautious")
-    return [row("Question-time signal",tone,st["nakshatra"],"Deterministic reflection aid, not divination certainty."),row("Lagna",asc["lagna"],st["tithi"],"Use this context to frame the question and next practical action."),row("Reflection prompt","What evidence would change your decision?","","Tithika does not generate random prophetic answers.")]
+    return [row("Prashna Lagna",asc["lagna"],st["tithi"],"Question-time chart context"),
+            row("Nakshatra",st["nakshatra"],st["paksha"],"Question-time Moon"),
+            row("Result policy","No synthetic omen score","","Tithika does not manufacture a favourable/mixed/cautious answer from an arbitrary numeric remainder. A named textual Prashnavali requires its own sourced corpus and selection method.")]
 
 def pancha_pakshi(moment):
-    moon=planetary.planet_state("Moon",moment);idx=(panchang.NAKSHATRA_NAMES.index(moon["nakshatra"]) if moon["nakshatra"] in panchang.NAKSHATRA_NAMES else 0)%5
-    birds=["Vulture","Owl","Crow","Cock","Peacock"]
-    return [row("Birth bird",birds[idx],moon["nakshatra"],"Five-bird grouping profile"),row("Current Panchang",panchang.state_at(moment)["tithi"],moment.strftime("%A"),"Open the Pancha Pakshi Muhurat page for the full activity timeline.")]
+    moon=planetary.planet_state("Moon",moment);st=panchang.state_at(moment)
+    groups=BRIGHT_BIRD_GROUPS if st["paksha"]=="Shukla Paksha" else DARK_BIRD_GROUPS
+    bird=next((b for b,naks in groups if moon["nakshatra"] in naks),None)
+    if bird is None: raise ValueError("Birth bird mapping unavailable")
+    return [row("Birth bird",bird,moon["nakshatra"],f'{st["paksha"]} Nakshatra assignment'),
+            row("Janma Nakshatra",moon["nakshatra"],f'Pada {moon["pada"]}',"Lahiri sidereal Moon"),
+            row("Current Panchang",st["tithi"],moment.strftime("%A"),"Use this fixed birth bird on the Pancha Pakshi Muhurat page.")]
 
 def main():
     p=json.loads(sys.stdin.read() or "{}");slug=str(p.get("slug") or "").strip("/")
