@@ -23,6 +23,22 @@ RASHI_INITIALS={
 "Mesha":["A","L","E"],"Vrishabha":["B","V","U"],"Mithuna":["K","Chh","Gh"],"Karka":["D","H"],"Simha":["M","T"],"Kanya":["P","Th","N"],"Tula":["R","T"],"Vrishchika":["N","Y"],"Dhanu":["Bh","Dh","Ph"],"Makara":["Kh","J"],"Kumbha":["G","S","Sh"],"Meena":["D","Ch","Z"]
 }
 BIRDS=["Vulture","Owl","Crow","Cock","Peacock"]
+PANCHA_BIRD_BY_PAKSHA={
+ "Shukla Paksha":{
+  "Vulture":{"Ashwini","Bharani","Krittika","Rohini","Mrigashira"},
+  "Owl":{"Ardra","Punarvasu","Pushya","Ashlesha","Magha"},
+  "Crow":{"Purva Phalguni","Uttara Phalguni","Hasta","Chitra","Swati"},
+  "Cock":{"Vishakha","Anuradha","Jyeshtha","Mula","Purva Ashadha"},
+  "Peacock":{"Uttara Ashadha","Shravana","Dhanishta","Shatabhisha","Purva Bhadrapada","Uttara Bhadrapada","Revati"},
+ },
+ "Krishna Paksha":{
+  "Vulture":{"Revati","Uttara Bhadrapada","Purva Bhadrapada","Shatabhisha","Dhanishta"},
+  "Owl":{"Shravana","Uttara Ashadha","Purva Ashadha","Mula","Jyeshtha"},
+  "Crow":{"Anuradha","Vishakha","Swati","Chitra","Hasta"},
+  "Cock":{"Uttara Phalguni","Purva Phalguni","Magha","Ashlesha","Pushya"},
+  "Peacock":{"Punarvasu","Ardra","Mrigashira","Rohini","Krittika","Bharani","Ashwini"},
+ },
+}
 
 def parse_dt(p,tz):
     d=str(p.get("birth_date") or p.get("date") or datetime.now(tz).strftime("%Y-%m-%d"))
@@ -117,12 +133,18 @@ def prashnavali(moment,lat,lon):
     st=panchang.state_at(moment);asc=lagna.lagna_state(moment,lat,lon);moon=planetary.planet_state("Moon",moment)
     return [row("Prashna context",f'{asc["lagna"]} Lagna',st["tithi"],"No synthetic favourable/unfavourable verdict is generated."),row("Question-time Moon",moon["rashi"],moon["nakshatra"],"Use a named Prashnavali text/grid for a textual oracle result."),row("Input requirement","Traditional selection required","Grid/cell/verse","Tithika will not infer an oracle answer from an unrelated Nakshatra modulo.")]
 
+def pancha_birth_bird(nakshatra,paksha):
+    table=PANCHA_BIRD_BY_PAKSHA.get(paksha) or PANCHA_BIRD_BY_PAKSHA["Shukla Paksha"]
+    return next((bird for bird,naks in table.items() if nakshatra in naks),None)
+
 def pancha_pakshi(moment):
-    moon=planetary.planet_state("Moon",moment);st=panchang.state_at(moment);lon=float(moon["longitude"])
-    bounds=(66.6666666667,133.3333333333,200.0,266.6666666667)
-    band=0 if lon<bounds[0] else 1 if lon<bounds[1] else 2 if lon<bounds[2] else 3 if lon<bounds[3] else 4
-    bird=BIRDS[band] if st["paksha"]=="Shukla Paksha" else list(reversed(BIRDS))[band]
-    return [row("Birth bird",bird,moon["nakshatra"],f'{st["paksha"]} · Moon {lon:.2f}°'),row("Assignment profile","Pulippani longitude bands","0–66°40′, 66°40′–133°20′, 133°20′–200°, 200°–266°40′, 266°40′–360°","Dark-half bird order reverses the bright-half mapping."),row("Current Panchang",st["tithi"],moment.strftime("%A"),"Open Pancha Pakshi Muhurat for location-aware Yama/sub-Yama timing.")]
+    moon=planetary.planet_state("Moon",moment);st=panchang.state_at(moment)
+    bird=pancha_birth_bird(moon["nakshatra"],st["paksha"]) or "Unresolved"
+    return [
+      row("Birth bird",bird,moon["nakshatra"],f'{st["paksha"]} · Nakshatra/Paksha assignment'),
+      row("Assignment profile","Explicit 27-Nakshatra bright/dark table","Named traditional profile","Pancha Pakshi lineages publish variant groupings; Tithika keeps this table explicit instead of deriving a hidden longitude shortcut."),
+      row("Current Panchang",st["tithi"],moment.strftime("%A"),"Open Pancha Pakshi Muhurat for location-aware Yama/sub-Yama timing.")
+    ]
 
 def main():
     p=json.loads(sys.stdin.read() or "{}");slug=str(p.get("slug") or "").strip("/")
