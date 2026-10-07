@@ -160,12 +160,17 @@ def ishti_anvadhan(year,lat,lon,tz):
     for kind in ("purnima","amavasya"):
         rule=lunar_occurrences.KINDS[kind][0]
         for e in lunar_occurrences.events_for_rule(year,rule,lat,lon,tz,False):
-            a=datetime.fromisoformat(e["start"]); b=datetime.fromisoformat(e["end"]); mid=a+(b-a)/2; d=mid.date()
+            a=datetime.fromisoformat(e["start"]); b=datetime.fromisoformat(e["end"])
+            # Darsha/Purnamasa Ishti is assigned to the civil date on which the
+            # exact Amavasya/Purnima Tithi concludes; Anvadhan is the preceding
+            # civil day. This preserves observed calendar pairs even when the
+            # Tithi begins on the previous evening or ends before sunrise.
+            d=b.date()
             if d.year!=year: continue
             prev=d-timedelta(days=1)
             rows.extend([
               {"title":"Anvadhan","date":prev.isoformat(),"time":"Previous civil day","meta":f"Before {kind.title()} Ishti","detail":"Anvadhan paired with the following Ishti occurrence.","link_date":prev.isoformat()},
-              {"title":"Ishti","date":d.isoformat(),"time":f"{fmt(a)} → {fmt(b)}","meta":kind.title(),"detail":"Exact Purnima/Amavasya Tithi occurrence.","link_date":d.isoformat()}
+              {"title":"Ishti","date":d.isoformat(),"time":f"{fmt(a)} → {fmt(b)}","meta":kind.title(),"detail":"Ishti civil date follows the exact Purnima/Amavasya Tithi conclusion.","link_date":d.isoformat()}
             ])
     rows.sort(key=lambda r:(r["date"],r["title"]))
     return rows
