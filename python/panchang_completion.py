@@ -4,7 +4,7 @@ from __future__ import annotations
 import json, math, sys
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import panchang
+import panchang, planetary
 
 ENGINE_VERSION="1.0.0"
 
@@ -75,12 +75,16 @@ def select_lunar_rules(year,lat,lon,tz,rules):
         d+=timedelta(days=1)
     return rows
 
-def declination(lon_deg,eps=23.4392911):
-    return math.degrees(math.asin(math.sin(math.radians(lon_deg))*math.sin(math.radians(eps))))
+def declination(lon_deg, lat_deg=0.0, eps=23.4392911):
+    """Convert true ecliptic longitude/latitude to geocentric declination."""
+    lo=math.radians(lon_deg); la=math.radians(lat_deg); ob=math.radians(eps)
+    return math.degrees(math.asin(math.sin(la)*math.cos(ob)+math.cos(la)*math.sin(ob)*math.sin(lo)))
 
 def kranti_active(moment):
-    sun,moon,_=panchang.tropical_longitudes(moment)
-    ds,dm=declination(sun),declination(moon)
+    sun_lon,sun_lat,_=planetary.tropical_coordinates("Sun",moment)
+    moon_lon,moon_lat,_=planetary.tropical_coordinates("Moon",moment)
+    ds,dm=declination(sun_lon,sun_lat),declination(moon_lon,moon_lat)
+    sun,moon=sun_lon,moon_lon
     pair=(int(sun//30),int(moon//30))
     opposite_axis={(0,4),(4,0),(1,9),(9,1),(2,8),(8,2),(3,7),(7,3),(5,11),(11,5),(6,10),(10,6)}
     diff=abs(abs(ds)-abs(dm))
@@ -101,7 +105,7 @@ def kranti_rows(year,tz):
               "title":"Kranti Samya / Mahapata","date":began.date().isoformat(),
               "time":f'{panchang.fmt(began,False)} – {panchang.fmt(stop,False)}',
               "meta":f'min |declination| difference {best[0]:.4f}°',
-              "detail":"Tropical Sun/Moon occupy a Kranti-Samya axis pair and absolute declinations converge within the encoded 0.25° Mahapata profile.",
+              "detail":"Approximation only: true-ecliptic Sun/Moon occupy a Kranti-Samya axis pair and absolute declinations converge within 0.25°. Exact Mahapata interval remains quality-gated pending a source-verified boundary formula.",
               "link_date":began.date().isoformat()
             })
             active=False; began=None; best=None
