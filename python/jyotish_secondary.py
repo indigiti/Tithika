@@ -38,10 +38,17 @@ def row(title,value,meta="",detail=""):
 
 def prashna(moment,lat,lon):
     moon,sun,asc,st=base_state(moment,lat,lon)
-    return [row("Prashna Lagna",asc["lagna"],f'{asc["degree_in_sign"]:.2f}°',"Question-time ascendant"),
+    placements=planetary.positions(moment,False,"mean")
+    rows=[
+      row("Prashna Lagna",asc["lagna"],f'{asc["degree_in_sign"]:.2f}°',"Question-time ascendant"),
       row("Moon",moon["rashi"],moon["nakshatra"],"Question-time Moon"),
       row("Tithi",st["tithi"],st["paksha"],"Question-time Panchang"),
-      row("Yoga",st["yoga"],"","Question-time Nitya Yoga")]
+      row("Yoga",st["yoga"],"","Question-time Nitya Yoga"),
+    ]
+    for p in placements:
+        house=((int(p["rashi_id"])-int(asc["lagna_id"]))%12)+1
+        rows.append(row(p["name"],f'{p["rashi"]} · House {house}',f'{p["degree_in_rashi"]:.2f}°',"Question-time whole-sign placement"))
+    return rows
 
 def gemstone(moment,lat,lon):
     moon,_,asc,_=base_state(moment,lat,lon); lord=RASHI_LORD.get(asc["lagna"],"")
@@ -88,9 +95,15 @@ def shraddha_tithi(moment,lat,lon,tz):
     return [row("Reference Tithi",st["tithi"],st["paksha"],"Captured from the supplied date/time"),row("Next matching Pitru-Paksha Tithi",found[0].isoformat() if found else "Not resolved","","Sunrise Tithi match in the Pitru-Paksha season profile.")]
 
 def prashnavali(moment,lat,lon):
+    # A deterministic question-chart context. Do not fabricate a prophetic
+    # favourable/mixed/cautious answer from an arbitrary modulo operation.
     _,_,asc,st=base_state(moment,lat,lon)
-    tone=("Favourable" if st["nakshatra_id"]%3==0 else "Mixed" if st["nakshatra_id"]%3==1 else "Cautious")
-    return [row("Question-time signal",tone,st["nakshatra"],"Deterministic reflection aid, not divination certainty."),row("Lagna",asc["lagna"],st["tithi"],"Use this context to frame the question and next practical action."),row("Reflection prompt","What evidence would change your decision?","","Tithika does not generate random prophetic answers.")]
+    return [
+      row("Question Lagna",asc["lagna"],f'{asc["degree_in_sign"]:.2f}°',"Use as the chart anchor for a traditional Prashna reading."),
+      row("Moon Nakshatra",st["nakshatra"],st["tithi"],"Question-time lunar context."),
+      row("Panchang Yoga",st["yoga"],st["paksha"],"Context only; no automatic yes/no prediction is generated."),
+      row("Method note","Chart context only","","A complete Prashnavali answer requires a named traditional text/system; Tithika does not invent one.")
+    ]
 
 def pancha_pakshi(moment):
     moon=planetary.planet_state("Moon",moment);idx=(panchang.NAKSHATRA_NAMES.index(moon["nakshatra"]) if moon["nakshatra"] in panchang.NAKSHATRA_NAMES else 0)%5
@@ -111,7 +124,7 @@ def main():
     elif slug=="jyotish/sahasra-chandrodaya": title="1000 Chandrodaya Calculator";items=sahasra(moment)
     elif slug=="jyotish/vedic-time": title="Vedic Time";items=vedic_time(moment,lat,lon,tz)
     elif slug=="jyotish/shraddha-tithi": title="Shraddha Tithi Calculator";items=shraddha_tithi(moment,lat,lon,tz)
-    elif slug=="jyotish/name-initials": title="Name Initials";items=baby(moment)
+    elif slug=="jyotish/name-initials": title="Name Initials";items=initials(str(p.get("name") or ""))
     elif slug=="jyotish/prashnavali": title="Prashnavali";items=prashnavali(moment,lat,lon)
     elif slug=="jyotish/rashi-by-name": title="Find Rashi by Name";items=initials(str(p.get("name") or p.get("city") or ""))
     else:raise ValueError("Unsupported secondary Jyotish slug")
