@@ -235,6 +235,22 @@ def shraddha(year,lat,lon,tz):
             if st["yoga"] in ("Vaidhriti","Vyatipata"):
                 add({"title":f'{st["yoga"]} Shraddha',"date":d.isoformat(),"time":fmt(sr),"meta":"Nitya Yoga Shraddha class","detail":f'{st["yoga"]} Yoga prevailing at local sunrise.',"link_date":d.isoformat()},("yoga",st["yoga"],d))
         d+=timedelta(days=1)
+    # Purvedyu / Ashtaka / Anvashtaka: Krishna Saptami, Ashtami and
+    # Navami across the five traditional lunar months.
+    trio_months={"Bhadrapada","Margashirsha","Pausha","Magha","Phalguna"}
+    trio_names={7:"Purvedyu Shraddha",8:"Ashtaka Shraddha",9:"Anvashtaka Shraddha"}
+    d=date(year,1,1)
+    while d.year==year:
+        sr=sunrise(d,lat,lon,tz)
+        if sr:
+            st=panchang.state_at(sr+timedelta(seconds=1));mi=panchang.lunar_month_info(sr,st)
+            m=norm_month(mi.get("purnimanta"));n=int(st["tithi_number"])
+            if st["paksha"]=="Krishna Paksha" and m in trio_months and n in trio_names:
+                add({"title":trio_names[n],"date":d.isoformat(),"time":fmt(sr),
+                     "meta":f"{m} · {st['tithi']}",
+                     "detail":"Shannavati Purvedyu/Ashtaka/Anvashtaka class selected by local-sunrise Tithi.",
+                     "link_date":d.isoformat()},("trio",m,n,d))
+
     # Manvadi, Yugadi and Kalpadi classes reuse the dedicated Panchang selectors.
     for label,rules in [("Manvadi Shraddha",panchang_completion.MANVADI),("Yugadi Shraddha",panchang_completion.YUGADI),("Kalpadi Shraddha",panchang_completion.KALPADI)]:
         for x in panchang_completion.select_lunar_rules(year,lat,lon,tz,rules):
