@@ -80,9 +80,22 @@ function tithika_pretty_url(string $slug): string {
 }
 
 function tithika_origin(): string {
+    $configured = trim((string)(getenv('TITHIKA_CANONICAL_ORIGIN') ?: ''));
+    if ($configured !== '') {
+        $parts = parse_url($configured);
+        if (is_array($parts) && in_array(($parts['scheme'] ?? ''), ['http','https'], true) && !empty($parts['host'])) {
+            $port = isset($parts['port']) ? ':' . (int)$parts['port'] : '';
+            return $parts['scheme'] . '://' . $parts['host'] . $port;
+        }
+    }
+
     $forwarded = strtolower(trim((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')));
     $scheme = ($forwarded === 'https' || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')) ? 'https' : 'http';
-    $host = (string)($_SERVER['HTTP_HOST'] ?? 'localhost');
+
+    // Prefer server configuration over the request Host header to avoid
+    // canonical/OG URL poisoning. HTTP_HOST is a last-resort local fallback.
+    $host = trim((string)($_SERVER['SERVER_NAME'] ?? ''));
+    if ($host === '') $host = trim((string)($_SERVER['HTTP_HOST'] ?? 'localhost'));
     $host = preg_replace('/[^A-Za-z0-9.\-:\[\]]/', '', $host) ?: 'localhost';
     return $scheme . '://' . $host;
 }
