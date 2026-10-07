@@ -1777,6 +1777,8 @@
       if(phaseTime)p.time=phaseTime;
       const phaseName=$('#tkPhaseName')?.value?.trim();
       if(phaseName)p.name=phaseName;
+      const phaseBird=$('#tkPhaseBird')?.value;
+      if(phaseBird)p.bird=phaseBird;
       const r=await fetch(`${base}api.php?action=phase-completion`,{
         method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
       });
@@ -1994,6 +1996,7 @@
   $('#tkBirthTime')?.addEventListener('change',()=>{if(jyotishModes[pageSlug])calculateJyotish()});
   $('#tkPhaseCalculate')?.addEventListener('click',()=>calculatePhaseCompletion());
   $('#tkPhaseTime')?.addEventListener('change',()=>calculatePhaseCompletion());
+  $('#tkPhaseBird')?.addEventListener('change',()=>calculatePhaseCompletion());
 
   const input=$('#tkDate');
   const queryDate=new URLSearchParams(window.location.search).get('date');
