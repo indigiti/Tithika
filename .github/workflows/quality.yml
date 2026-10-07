@@ -28,6 +28,14 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build Choghadiya production CSS
+        run: npx --yes tailwindcss@3.4.17 -i assets/choghadiya.src.css -o assets/choghadiya.css --minify
+
       - name: PHP syntax
         run: find . -type f -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
 
@@ -188,6 +196,14 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build Choghadiya production CSS
+        run: npx --yes tailwindcss@3.4.17 -i assets/choghadiya.src.css -o assets/choghadiya.css --minify
 
       - name: Build DigiOps release payload
         run: php tools/package-release.php
