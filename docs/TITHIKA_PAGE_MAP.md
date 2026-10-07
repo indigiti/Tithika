@@ -7,16 +7,16 @@ Current mapped logical pages: **292**.
 ## Product families
 
 ### 1. Panchang
-Daily/monthly Panchang, regional Panjika/Panchang variants, ISKCON and solar/Panchang utilities. Tarabalam, Chandrabalam, Panchak and Bhadra are engine-backed; Hindu Sunrise, Nakshatra, Ganda Moola, Abhijit Nakshatra, Vinchudo, Jwalamukhi Yoga, Sankalpa and Vedic Clock now reuse the verified Lahiri Panchang core. Hindi, Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional month views are backed by the shared regional calendar engine. Nepali Patro uses a dedicated offline Bikram Sambat adapter. Manvadi/Yugadi/Kalpadi and Kranti Samya remain deliberately gated for dedicated rule engines.
+Daily/monthly Panchang, regional Panjika/Panchang variants, ISKCON and solar/Panchang utilities. Tarabalam, Chandrabalam, Panchak and Bhadra are engine-backed; Hindu Sunrise, Nakshatra, Ganda Moola, Abhijit Nakshatra, Vinchudo, Jwalamukhi Yoga, Sankalpa and Vedic Clock now reuse the verified Lahiri Panchang core. Hindi, Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional month views are backed by the shared regional calendar engine. Nepali Patro uses a dedicated offline Bikram Sambat adapter. Manvadi/Yugadi/Kalpadi now use explicit Purnimanta/Paksha/Tithi sunrise selectors; Kranti Samya uses true Sun/Moon declination geometry with the Mahapata 30-arcminute boundary profile.
 
 ### 2. Calendars
 Hindu/Indian and regional yearly calendars plus major festival calendars such as Diwali, Durga Puja, Navratri, Onam, Chhath, Sankranti, Dashain and Tihar. Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional calendar views now share the verified regional calendar engine; Nepali and Jain now use dedicated adapters: Bikram Sambat civil conversion for Nepali and Kartikadi Amanta Vikram/Veer Samvat for Jain.
 
 ### 3. Muhurat
-Choghadiya, Hora, Vivah, Griha Pravesh, vehicle/property purchase, Lagna, Gowri, Jain Pachchakkhan, Rahu Kala, auspicious Yoga, Panchaka Rahita, Abhijit, Do Ghati, Shubha Dates and Pancha Pakshi. The shared substrate powers specialized Vivah/Griha/Property/Vehicle/Sanskar profiles. A second reuse engine now makes Shubha Hora, Panchaka Rahita, aggregate Auspicious Yogas, Sarvartha Siddhi, Amrit Siddhi, Guru/Ravi Pushya, Dwipushkar, Tripushkar and Ravi Yoga live with explicit rule tables. Gowri, Jain Pachchakkhan, Pancha Pakshi, Do Ghati and generic Shubha Dates remain deliberately gated.
+Choghadiya, Hora, Vivah, Griha Pravesh, vehicle/property purchase, Lagna, Gowri, Jain Pachchakkhan, Rahu Kala, auspicious Yoga, Panchaka Rahita, Abhijit, Do Ghati, Shubha Dates and Pancha Pakshi. The shared substrate powers specialized Vivah/Griha/Property/Vehicle/Sanskar profiles. A second reuse engine now makes Shubha Hora, Panchaka Rahita, aggregate Auspicious Yogas, Sarvartha Siddhi, Amrit Siddhi, Guru/Ravi Pushya, Dwipushkar, Tripushkar and Ravi Yoga live with explicit rule tables. Gowri, Jain Pachchakkhan and Do Ghati are rule-backed. Pancha Pakshi uses an explicit named mirror-table profile with local Yamas and weighted sub-Yamas. Generic Shubha Dates is explicitly a conservative Tithika filter, not a universal ritual rule.
 
 ### 4. Vrat & Upavas
-Ekadashi, Pradosh, Sankashti, Dwadashi, Purnima, Amavasya, Shivaratri, Skanda Sashti, Karthigai, Shraddha, Durgashtami, Kalashtami, Chaturmasa and special Vrat collections. The verified recurrence layer now makes Satyanarayana/Purnima, Masik Durgashtami, Skanda Sashti, Karthigai, Rohini Vrat, Sawan Somwar and Mangala Gauri live. Shravana weekday observances expose separate Purnimanta/Amanta profiles. The mapped ISKCON Ekadashi route remains gated until a fully GCal-compatible selector replaces the current simplified profile; Kalashtami, Chandra Darshan and other ritual/visibility-driven rules remain pending.
+Ekadashi, Pradosh, Sankashti, Dwadashi, Purnima, Amavasya, Shivaratri, Skanda Sashti, Karthigai, Shraddha, Durgashtami, Kalashtami, Chaturmasa and special Vrat collections. The verified recurrence layer now makes Satyanarayana/Purnima, Masik Durgashtami, Skanda Sashti, Karthigai, Rohini Vrat, Sawan Somwar and Mangala Gauri live. Shravana weekday observances expose separate Purnimanta/Amanta profiles. ISKCON Ekadashi reuses the integrated Vaishnava rule substrate; Kalashtami, Masik Janmashtami, Chandra Darshan, Ishti/Anvadhan, Shraddha, Purushottam Maas and Chaturmasa now have explicit profiles. Visibility-dependent Chandra Darshan is labeled as geometric eligibility rather than guaranteed sighting.
 
 ### 5. Festivals
 Popular collections, lunar-month festival lists, Tamil/Malayalam/Sankranti collections, Gurus/Saints, Navdurga, Dashavatara, Puja Vidhi, deities and pilgrimage content. The 13 verified major-festival calculations now run through one declarative festival rule registry with reusable local-time selectors.
@@ -40,7 +40,7 @@ Tutorials, Panchang concepts, Choghadiya, Muhurat, Nakshatra, Rahu Kala, FAQ and
 
 Current certified detail-route state:
 
-- **229** verified/live calculation routes
+- **229** live-registry routes (calculation, aggregation or structured-reference adapters)
 - **62** structured editorial routes
 - **1** canonical live redirect (`muhurat/choghadiya`)
 - **292** production-quality/indexable detail routes
@@ -50,7 +50,7 @@ The exact contract and promotion queue are documented in `docs/RELEASE_CERTIFICA
 
 ## SEO and release state
 
-The 292-route map is intentionally larger than the set exposed to search engines. A centralized live-route registry plus structured editorial coverage determines which detail pages receive `index,follow`; unfinished mapped shells receive `noindex,follow`. The XML sitemap contains only production-quality routes plus family landing pages.
+All 292 mapped detail routes currently satisfy the production/indexability contract. A centralized live-route registry, structured editorial coverage and the explicit `config/quality.php` taxonomy distinguish calculations, aggregations/hybrids and reference surfaces; indexability is not used as a synonym for independent calculation correctness.
 
 The shared shell now emits canonical/OpenGraph/Twitter metadata, JSON-LD and breadcrumbs; related links are topic-aware across families. The human site map labels routes as Live, Editorial or Mapped.
 
