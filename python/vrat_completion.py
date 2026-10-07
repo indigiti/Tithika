@@ -155,23 +155,45 @@ def masik_janmashtami(year,lat,lon,tz):
           "meta":"Krishna Ashtami · local Nishita selector","detail":basis,"link_date":d.isoformat()})
     return rows
 
+def sunrise_dates_in_window(start,end,lat,lon,tz):
+    rows=[]
+    d=start.date()-timedelta(days=1)
+    last=end.date()+timedelta(days=1)
+    while d<=last:
+        sr=sunrise(d,lat,lon,tz)
+        if sr is not None and start<=sr<end:
+            rows.append(d)
+        d+=timedelta(days=1)
+    return rows
+
 def ishti_anvadhan(year,lat,lon,tz):
     rows=[]
     for kind in ("purnima","amavasya"):
         rule=lunar_occurrences.KINDS[kind][0]
         for e in lunar_occurrences.events_for_rule(year,rule,lat,lon,tz,False):
             a=datetime.fromisoformat(e["start"]); b=datetime.fromisoformat(e["end"])
-            # Darsha/Purnamasa Ishti is assigned to the civil date on which the
-            # exact Amavasya/Purnima Tithi concludes; Anvadhan is the preceding
-            # civil day. This preserves observed calendar pairs even when the
-            # Tithi begins on the previous evening or ends before sunrise.
-            d=b.date()
-            if d.year!=year: continue
-            prev=d-timedelta(days=1)
-            rows.extend([
-              {"title":"Anvadhan","date":prev.isoformat(),"time":"Previous civil day","meta":f"Before {kind.title()} Ishti","detail":"Anvadhan paired with the following Ishti occurrence.","link_date":prev.isoformat()},
-              {"title":"Ishti","date":d.isoformat(),"time":f"{fmt(a)} → {fmt(b)}","meta":kind.title(),"detail":"Ishti civil date follows the exact Purnima/Amavasya Tithi conclusion.","link_date":d.isoformat()}
-            ])
+            sunrise_days=sunrise_dates_in_window(a,b,lat,lon,tz)
+            if sunrise_days:
+                anvadhan_day=sunrise_days[-1]
+            else:
+                # Kshaya/short Tithi fallback: use the civil day on which the
+                # Tithi ends, keeping Ishti on the following day.
+                anvadhan_day=b.date()
+            ishti_day=anvadhan_day+timedelta(days=1)
+            if anvadhan_day.year==year:
+                rows.append({
+                  "title":"Anvadhan","date":anvadhan_day.isoformat(),
+                  "time":f"{fmt(a)} → {fmt(b)}","meta":f"{kind.title()} Tithi",
+                  "detail":"Purnima/Amavasya Tithi prevailing at local sunrise; Anvadhan observance day.",
+                  "link_date":anvadhan_day.isoformat()
+                })
+            if ishti_day.year==year:
+                rows.append({
+                  "title":"Ishti","date":ishti_day.isoformat(),
+                  "time":"Following civil day","meta":kind.title(),
+                  "detail":"Ishti follows the Purnima/Amavasya Anvadhan sunrise day.",
+                  "link_date":ishti_day.isoformat()
+                })
     rows.sort(key=lambda r:(r["date"],r["title"]))
     return rows
 
