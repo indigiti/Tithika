@@ -12,6 +12,10 @@ assert any(r["title"]=="Naming syllable" for r in x.baby(m))
 ini=x.initials("Ravi");assert ini[0]["meta"]=="Ra" and ini[1]["title"]=="Possible Rashis"
 pv=x.prashnavali(m,lat,lon);joined=" ".join(str(v) for r in pv for v in r.values())
 assert "Favourable" not in joined and "Mixed" not in joined and "Cautious" not in joined
+assert x.pancha_birth_bird("Ashwini","Shukla Paksha")=="Vulture"
+assert x.pancha_birth_bird("Ashwini","Krishna Paksha")=="Peacock"
+assert x.pancha_birth_bird("Revati","Shukla Paksha")=="Peacock"
+assert x.pancha_birth_bird("Revati","Krishna Paksha")=="Vulture"
 bird=x.pancha_pakshi(m);assert bird[0]["meta"] in x.BIRDS
 s=x.sahasra(m);assert s[-1]["title"]=="1000th full Moon phase" and "T" in s[-1]["meta"]
 assert any(r["title"]=="Ishtakala" for r in x.vedic_time(m,lat,lon,tz))
