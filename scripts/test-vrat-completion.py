@@ -16,6 +16,8 @@ assert all("elongation" in r["detail"] and "altitude" in r["detail"] for r in da
 isht=x.ishti_anvadhan(2026,lat,lon,tz)
 assert any(r["title"]=="Anvadhan" and r["date"]=="2026-01-03" for r in isht),isht[:4]
 assert any(r["title"]=="Ishti" and r["date"]=="2026-01-04" for r in isht),isht[:4]
+assert any(r["title"]=="Anvadhan" and r["date"]=="2026-01-18" for r in isht),isht[:6]
+assert any(r["title"]=="Ishti" and r["date"]=="2026-01-19" for r in isht),isht[:6]
 chat=x.chaturmasa(2026,lat,lon,tz);assert len(chat)==1
 shr=x.shraddha(2026,lat,lon,tz)
 titles={r["title"].split(" · ")[0] for r in shr}
