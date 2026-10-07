@@ -55,8 +55,8 @@ tithika_render_header(tithika_t('settings.title'));
     <article class="tk-settings-card span-2">
       <header><span><?= htmlspecialchars(tithika_t('settings.language')) ?></span><h2><?= htmlspecialchars(tithika_t('settings.language_title')) ?></h2></header>
       <div class="tk-settings-options" data-setting="language">
-        <button type="button" data-value="en"><b><?= htmlspecialchars(tithika_t('settings.english')) ?></b><small>English interface</small></button>
-        <button type="button" data-value="hi"><b><?= htmlspecialchars(tithika_t('settings.hindi')) ?></b><small>हिन्दी इंटरफ़ेस</small></button>
+        <button type="button" data-value="en"><b><?= htmlspecialchars(tithika_t('settings.english')) ?></b><small><?= htmlspecialchars(tithika_t('settings.english_note')) ?></small></button>
+        <button type="button" data-value="hi"><b><?= htmlspecialchars(tithika_t('settings.hindi')) ?></b><small><?= htmlspecialchars(tithika_t('settings.hindi_note')) ?></small></button>
       </div>
       <p class="tk-settings-helper"><?= htmlspecialchars(tithika_t('settings.language_note')) ?></p>
     </article>
