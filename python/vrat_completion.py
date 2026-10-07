@@ -105,19 +105,37 @@ def chandra_darshan(year,lat,lon,tz):
     return rows
 
 def masik_janmashtami(year,lat,lon,tz):
+    """Select Krishna Ashtami by local solar Nishita, not civil 00:00."""
     rows=[]
     for start,end in exact_tithi_intervals(year,22,tz):
         best=None
-        for d in {start.date(),end.date(),start.date()+timedelta(days=1)}:
+        candidate_days={start.date()-timedelta(days=1),start.date(),end.date()}
+        for d in sorted(candidate_days):
             if d.year!=year: continue
-            nishita=datetime.combine(d,time(23,59,59),tzinfo=tz)+timedelta(seconds=1)
-            if start<=nishita<end: best=(d,nishita,"Krishna Ashtami prevailing at local Nishita/midnight");break
+            ss=sunset(d,lat,lon,tz)
+            nr=sunrise(d+timedelta(days=1),lat,lon,tz)
+            if not ss or not nr: continue
+            nishita=ss+(nr-ss)/2
+            if start<=nishita<end:
+                best=(d,nishita,"Krishna Ashtami prevails at local solar Nishita (midpoint of sunset-to-next-sunrise)")
+                break
         if best is None:
-            midpoint=start+(end-start)/2; best=(midpoint.date(),midpoint,"Krishna Ashtami midpoint fallback when no civil midnight lies inside Tithi")
-        d,anchor,basis=best
-        if d.year==year:
+            # If no Nishita lies inside the Tithi, use the night with the largest
+            # Ashtami overlap; this is deterministic and location-aware.
+            choices=[]
+            for d in sorted(candidate_days):
+                if d.year!=year: continue
+                ss=sunset(d,lat,lon,tz); nr=sunrise(d+timedelta(days=1),lat,lon,tz)
+                if not ss or not nr: continue
+                overlap=max(timedelta(0),min(end,nr)-max(start,ss))
+                choices.append((overlap,d,ss+(nr-ss)/2))
+            if choices:
+                overlap,d,nishita=max(choices,key=lambda x:x[0])
+                best=(d,nishita,f"Maximum local-night Ashtami overlap ({int(overlap.total_seconds()//60)} minutes)")
+        if best:
+            d,anchor,basis=best
             rows.append({"title":"Masik Krishna Janmashtami","date":d.isoformat(),"time":fmt(anchor),
-             "meta":"Krishna Ashtami · Nishita selector","detail":basis,"link_date":d.isoformat()})
+             "meta":"Krishna Ashtami · solar Nishita selector","detail":basis,"link_date":d.isoformat()})
     return rows
 
 def ishti_anvadhan(year,lat,lon,tz):
