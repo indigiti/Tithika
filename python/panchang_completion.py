@@ -81,70 +81,92 @@ def declination_from_ecliptic(lon_deg, lat_deg, eps=23.4392911):
         math.sin(la)*math.cos(ob)+math.cos(la)*math.sin(ob)*math.sin(lo)
     ))
 
-def kranti_state(moment):
+def angular_distance(a,b):
+    return abs((a-b+180.0)%360.0-180.0)
+
+def kranti_geometry(moment):
     slon,slat,_=planetary.tropical_coordinates("Sun",moment)
     mlon,mlat,_=planetary.tropical_coordinates("Moon",moment)
     ds=declination_from_ecliptic(slon,slat)
     dm=declination_from_ecliptic(mlon,mlat)
-    pair=(int(slon//30),int(mlon//30))
-    opposite_axis={(0,4),(4,0),(1,9),(9,1),(2,8),(8,2),(3,7),(7,3),(5,11),(11,5),(6,10),(10,6)}
-    return pair in opposite_axis, ds, dm, abs(ds)-abs(dm), slon, mlon
+    return slon,mlon,ds,dm
 
-def refine_zero(lo,hi):
-    a=kranti_state(lo); b=kranti_state(hi)
-    fa=a[3]; fb=b[3]
-    for _ in range(42):
-        mid=lo+(hi-lo)/2
-        fm=kranti_state(mid)[3]
-        if fa==0: return lo
-        if fb==0: return hi
-        if fa*fm<=0:
-            hi=mid; fb=fm
-        else:
-            lo=mid; fa=fm
-    return lo+(hi-lo)/2
+def kranti_function(moment,kind):
+    _,_,ds,dm=kranti_geometry(moment)
+    return (dm-ds) if kind=="Vyatipata" else (dm+ds)
 
-def refine_boundary(lo,hi,target=0.5):
-    flo=abs(kranti_state(lo)[3])-target
-    for _ in range(42):
+def valid_mahapata_root(moment,kind):
+    slon,mlon,ds,dm=kranti_geometry(moment)
+    total=(slon+mlon)%360.0
+    if kind=="Vyatipata":
+        # Equal declinations on the same side of the equator; the classical
+        # longitude sum is approximately 180 degrees before lunar-latitude correction.
+        return ds*dm>0 and angular_distance(total,180.0)<=20.0
+    # Equal and opposite declinations; longitude sum approximately one circle.
+    return ds*dm<0 and angular_distance(total,0.0)<=20.0
+
+def refine_root(lo,hi,kind):
+    flo=kranti_function(lo,kind)
+    for _ in range(44):
         mid=lo+(hi-lo)/2
-        fm=abs(kranti_state(mid)[3])-target
+        fm=kranti_function(mid,kind)
         if flo*fm<=0:
             hi=mid
         else:
             lo=mid;flo=fm
     return lo+(hi-lo)/2
 
+def refine_abs_boundary(lo,hi,kind,target=0.5):
+    flo=abs(kranti_function(lo,kind))-target
+    for _ in range(44):
+        mid=lo+(hi-lo)/2
+        fm=abs(kranti_function(mid,kind))-target
+        if flo*fm<=0:
+            hi=mid
+        else:
+            lo=mid;flo=fm
+    return lo+(hi-lo)/2
+
+def mahapata_window(root,kind):
+    step=timedelta(minutes=10)
+    # Search outward until the declination difference reaches 30 arcminutes.
+    left=root; right=root
+    for _ in range(144):
+        prev=left-step
+        if abs(kranti_function(prev,kind))>=0.5:
+            left=refine_abs_boundary(prev,left,kind);break
+        left=prev
+    for _ in range(144):
+        nxt=right+step
+        if abs(kranti_function(nxt,kind))>=0.5:
+            right=refine_abs_boundary(right,nxt,kind);break
+        right=nxt
+    return left,right
+
 def kranti_rows(year,tz):
-    # Classical Mahapata window: the broad Kranti-Samya axis must apply and
-    # the lunar declination passes from 30' before to 30' beyond the solar
-    # declination (|difference in declination magnitude| <= 0.5 degree).
-    start=datetime(year,1,1,tzinfo=tz);end=datetime(year+1,1,1,tzinfo=tz)
-    step=timedelta(minutes=10);rows=[];cur=start
-    prev=kranti_state(cur); prev_active=prev[0] and abs(prev[3])<=0.5
-    began=start if prev_active else None; best=None
-    while cur<end:
-        nxt=min(end,cur+step); now=kranti_state(nxt)
-        active=now[0] and abs(now[3])<=0.5
-        if active and not prev_active:
-            began=refine_boundary(cur,nxt)
-            best=(abs(kranti_state(began)[3]),began)
-        elif active:
-            score=abs(now[3])
-            if best is None or score<best[0]: best=(score,nxt)
-        elif prev_active and began is not None:
-            stop=refine_boundary(cur,nxt)
-            mid=began+(stop-began)/2; _,ds,dm,_,_,_=kranti_state(mid)
-            kind="Vyatipata" if ds*dm>=0 else "Vaidhriti"
-            rows.append({
-              "title":f"{kind} Kranti Samya / Mahapata","date":began.date().isoformat(),
-              "time":f"{panchang.fmt(began,False)} – {panchang.fmt(stop,False)}",
-              "meta":f"midpoint declinations Sun {ds:+.4f}° · Moon {dm:+.4f}°",
-              "detail":f"Mahapata interval: |declination magnitude difference| ≤ 0.5° · {began.isoformat()} → {stop.isoformat()}",
-              "link_date":began.date().isoformat()
-            })
-            began=None;best=None
-        cur=nxt;prev=now;prev_active=active
+    start=datetime(year,1,1,tzinfo=tz)-timedelta(days=1)
+    end=datetime(year+1,1,1,tzinfo=tz)+timedelta(days=1)
+    step=timedelta(hours=2);rows=[]
+    for kind in ("Vyatipata","Vaidhriti"):
+        cur=start;prev=kranti_function(cur,kind)
+        while cur<end:
+            nxt=min(end,cur+step);now=kranti_function(nxt,kind)
+            if prev==0 or prev*now<0:
+                root=refine_root(cur,nxt,kind)
+                if valid_mahapata_root(root,kind):
+                    began,stop=mahapata_window(root,kind)
+                    if began.year==year or stop.year==year:
+                        _,_,ds,dm=kranti_geometry(root)
+                        rows.append({
+                          "title":f"{kind} Kranti Samya / Mahapata",
+                          "date":began.astimezone(tz).date().isoformat(),
+                          "time":f"{panchang.fmt(began,False)} – {panchang.fmt(stop,False)}",
+                          "meta":f"midpoint declinations Sun {ds:+.5f}° · Moon {dm:+.5f}°",
+                          "detail":f"Mahapata midpoint {root.isoformat()} · |declination relation| ≤ 0.5° · {began.isoformat()} → {stop.isoformat()}",
+                          "link_date":began.astimezone(tz).date().isoformat()
+                        })
+            cur=nxt;prev=now
+    rows.sort(key=lambda r:datetime.fromisoformat(r["detail"].split(" · ")[0].replace("Mahapata midpoint ","")))
     return rows
 
 def published_snapshot(selected,lat,lon,tz):
