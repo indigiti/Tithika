@@ -25,8 +25,6 @@
     const m=Object.fromEntries(parts.map(x=>[x.type,x.value]));
     return `${m.year}-${m.month}-${m.day}`;
   }
-  $('#tiDate').value=todayISO();
-
   function esc(v=''){
     return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
@@ -195,7 +193,6 @@
     navigator.geolocation.getCurrentPosition(async p=>{
       state.lat=p.coords.latitude;state.lon=p.coords.longitude;
       await Promise.all([reverse(),resolveTimezone()]);
-      $('#tiDate').value=todayISO();
     },()=>{}, {timeout:7000,maximumAge:600000});
   });
 
@@ -213,7 +210,7 @@
         $$('.ti-place',box).forEach(btn=>btn.addEventListener('click',async()=>{
           const x=box._rows[Number(btn.dataset.i)];
           state.lat=Number(x.lat);state.lon=Number(x.lon);state.city=x.label;$('#tiCity').value=x.label;box.hidden=true;
-          await resolveTimezone();$('#tiDate').value=todayISO();
+          await resolveTimezone();
         }));
       }catch(err){box.hidden=true}
     },280);
