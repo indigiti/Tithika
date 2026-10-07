@@ -5,11 +5,11 @@ This document records the production-readiness contract enforced by CI. It is no
 ## Certified baseline
 
 - Product route contract: **292**
-- Verified calculation/live routes: **229**
+- Verified calculation/live routes: **218**
 - Structured editorial routes: **62**
 - Additional canonical live redirect: **1** (`muhurat/choghadiya`)
-- Total production-quality/indexable detail routes: **292**
-- Remaining mapped `noindex,follow` shells: **0**
+- Total production-quality/indexable detail routes: **281**
+- Semantic quality-gated `noindex,follow` routes: **11**
 
 The indexable set is generated from `config/live.php`, structured editorial coverage and explicit canonical live adapters. The XML sitemap uses the same quality state.
 
@@ -65,7 +65,7 @@ All eight are covered by `scripts/test-panchang-reuse.py`.
 
 ### Completed Panchang rule routes
 
-`panchang/manvadi-tithi`, `panchang/yugadi-tithi`, `panchang/kalpadi-tithi` and `panchang/kranti-samya` are now promoted through `python/panchang_completion.py`. Tithi observances use explicit Purnimanta month/Paksha/Tithi sunrise selectors; Kranti Samya is calculated from tropical Sun/Moon declination convergence on the encoded Mahapata axis pairs rather than treating a full Nitya Yoga span as equivalent.
+`panchang/manvadi-tithi`, `panchang/yugadi-tithi` and `panchang/kalpadi-tithi` are promoted through `python/panchang_completion.py` with explicit Purnimanta month/Paksha/Tithi sunrise selectors. `panchang/kranti-samya` now uses true-ecliptic Sun/Moon latitude in its declination geometry, but remains quality-gated until an exact Mahapata boundary formula is source-locked and benchmarked.
 
 ## Newly certified Muhurat reuse routes
 
@@ -86,7 +86,7 @@ All ten are covered by `scripts/test-muhurat-reuse.py`, including 2026 Pune date
 
 ### Completed Muhurat rule routes
 
-`muhurat/gowri`, `muhurat/jain-pachchakkhan`, `muhurat/pancha-pakshi`, `muhurat/do-ghati` and `muhurat/shubha-dates` are now promoted through `python/muhurat_completion.py` with explicit versioned solar/tradition profiles.
+`muhurat/gowri`, `muhurat/jain-pachchakkhan`, `muhurat/do-ghati` and `muhurat/shubha-dates` are promoted through `python/muhurat_completion.py`. Do-Ghati uses the corrected 30-name classical sequence. `muhurat/pancha-pakshi` is quality-gated: only the verified five day/five night Yama framework is emitted until a source-locked bird/activity and unequal-duration profile is implemented.
 
 ## Newly certified Vrat recurrence routes
 
@@ -104,7 +104,7 @@ All seven are covered by `scripts/test-vrat-recurrence.py` with 2026 Pune/Mahara
 
 ### Completed Vrat rule routes
 
-`vrat/iskcon-ekadashi` now reuses Tithika's integrated Arunodaya/Vriddhi/Mahadwadashi/Hari-Vasara substrate. Kalashtami, Chandra Darshan, Masik Janmashtami, Ishti/Anvadhan, Shraddha, Purushottam Maas and Chaturmasa are promoted through `python/vrat_completion.py` with explicit night, visibility, lunar-month or multi-month selectors.
+`vrat/iskcon-ekadashi` reuses Tithika's integrated Arunodaya/Vriddhi/Mahadwadashi/Hari-Vasara substrate. Kalashtami, Masik Janmashtami, Purushottam Maas and Chaturmasa remain promoted; Masik Janmashtami now uses local solar Nishita rather than civil midnight. Chandra Darshan, Ishti/Anvadhan and Shraddha remain quality-gated pending full visibility/observance-class benchmarks.
 
 ## Data provenance
 
@@ -125,15 +125,44 @@ A release is certifiable only when all of the following pass on the exact merged
 7. Planetary/Jyotish/Kundali/Varga/Yoga/Shadbala/matching/timing/Rashifal regressions.
 8. Eclipse, season and Sankranti regression fixtures.
 
-## Final six-phase completion
+## Full-repository semantic hardening
 
-The former 99-route shell queue is complete. All mapped product routes now have a calculation engine, aggregation adapter, or structured reference adapter and are included in the production-quality indexable contract.
+The six-phase implementation pass exposed an important distinction between **executable** and **semantically certified** routes. CI now enforces that distinction instead of treating any route that returns structured JSON as verified.
 
-1. **Panchang rule-completion** — Manvadi, Yugadi and Kalpadi sunrise selectors; Kranti Samya/Mahapata declination geometry; Published Panchang and Utilities adapters.
-2. **Muhurat rule-completion** — versioned Gowri day/night cycles, Jain Pachchakkhan solar-Prahar timings, 30 Do-Ghati Muhurtas, Pancha Pakshi activity cycles and conservative generic Shubha Dates.
-3. **Vrat rule-completion** — shared integrated ISKCON/Vaishnava Ekadashi substrate, night-sensitive Kalashtami and Masik Janmashtami, post-Amavasya Chandra Darshan, Ishti/Anvadhan, Shraddha aggregation, Adhika/Purushottam Maas, Chaturmasa and remaining Vrat/reference surfaces.
-4. **Festival/calendar aggregation** — Hindu, Tamil and Malayalam yearly aggregation, lunar-month festival collections, themed yearly calendars and structured festival/puja collections.
-5. **Secondary Jyotish calculators** — Prashna, Pancha Pakshi, gemstone/Rudraksha traditional references, Namakarana initials, Sahasra Chandrodaya, Vedic Time, Shraddha Tithi and deterministic Prashnavali context.
-6. **Astronomy reference** — declination parallels/contra-parallels, geocentric ecliptic crossings, six Indian Ritus, and sidereal/tropical zodiac reference tables.
+### Corrected during the hardening audit
 
-The final completion contract is listed in `config/completion.php`. CI requires all 99 former shell routes to be present in `config/live.php`, backed by their family engine files and regression fixtures. The route contract remains **292**, with **292 indexable routes and zero mapped noindex shells**.
+- Do-Ghati Muhurat now uses the canonical 30 Muhurta names.
+- Masik Krishna Janmashtami selects by local solar Nishita (sunset-to-next-sunrise midpoint), with a deterministic maximum-night-overlap fallback.
+- Planetary mutual parallels/contra-parallels are now exact declination root searches instead of a within-one-degree snapshot.
+- Indian Ritus now use tropical solar-longitude boundaries rather than Nirayana Sankranti.
+- Prashna Kundali now exposes a full question-time D1 foundation with Lagna plus all nine classical Grahas.
+- Fabricated Pancha-Pakshi modulo bird assignment and Prashnavali favourable/mixed/cautious scoring were removed.
+- Monthly personalized Rashifal now samples every civil day instead of five roughly weekly samples.
+- API body/search limits, canonical-origin hardening and a baseline Content Security Policy were added.
+
+### Semantic quality gates
+
+The following **11** mapped routes are intentionally `noindex,follow` and excluded from `config/live.php` until their exact tradition/rule semantics are implemented and benchmarked:
+
+- `panchang/kranti-samya`
+- `muhurat/pancha-pakshi`
+- `vrat/chandra-darshan`
+- `vrat/ishti-anvadhan`
+- `vrat/shraddha`
+- `jyotish/pancha-pakshi`
+- `jyotish/gemstone`
+- `jyotish/rudraksha`
+- `jyotish/sahasra-chandrodaya`
+- `jyotish/prashnavali`
+- `jyotish/rashi-by-name`
+
+Reasons are machine-readable in `config/gated.php`. CI fails if any gated route appears in the live registry or becomes indexable without an explicit fixture change.
+
+### Current strict contract
+
+- **292** mapped product routes
+- **218** verified/live calculation routes
+- **281** production-quality/indexable detail routes
+- **11** semantic quality-gated routes
+
+This stricter contract supersedes the earlier temporary 292/292 promotion claim.

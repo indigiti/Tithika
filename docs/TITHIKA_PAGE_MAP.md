@@ -7,16 +7,16 @@ Current mapped logical pages: **292**.
 ## Product families
 
 ### 1. Panchang
-Daily/monthly Panchang, regional Panjika/Panchang variants, ISKCON and solar/Panchang utilities. Tarabalam, Chandrabalam, Panchak and Bhadra are engine-backed; Hindu Sunrise, Nakshatra, Ganda Moola, Abhijit Nakshatra, Vinchudo, Jwalamukhi Yoga, Sankalpa and Vedic Clock now reuse the verified Lahiri Panchang core. Hindi, Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional month views are backed by the shared regional calendar engine. Nepali Patro uses a dedicated offline Bikram Sambat adapter. Manvadi/Yugadi/Kalpadi and Kranti Samya remain deliberately gated for dedicated rule engines.
+Daily/monthly Panchang, regional Panjika/Panchang variants, ISKCON and solar/Panchang utilities. Tarabalam, Chandrabalam, Panchak and Bhadra are engine-backed; Hindu Sunrise, Nakshatra, Ganda Moola, Abhijit Nakshatra, Vinchudo, Jwalamukhi Yoga, Sankalpa and Vedic Clock now reuse the verified Lahiri Panchang core. Hindi, Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional month views are backed by the shared regional calendar engine. Nepali Patro uses a dedicated offline Bikram Sambat adapter. Manvadi/Yugadi/Kalpadi are engine-backed; Kranti Samya remains quality-gated until its exact Mahapata interval formula is source-locked.
 
 ### 2. Calendars
 Hindu/Indian and regional yearly calendars plus major festival calendars such as Diwali, Durga Puja, Navratri, Onam, Chhath, Sankranti, Dashain and Tihar. Tamil, Telugu, Kannada, Malayalam, Gujarati, Marathi, Bengali, Odia, Assamese and ISKCON regional calendar views now share the verified regional calendar engine; Nepali and Jain now use dedicated adapters: Bikram Sambat civil conversion for Nepali and Kartikadi Amanta Vikram/Veer Samvat for Jain.
 
 ### 3. Muhurat
-Choghadiya, Hora, Vivah, Griha Pravesh, vehicle/property purchase, Lagna, Gowri, Jain Pachchakkhan, Rahu Kala, auspicious Yoga, Panchaka Rahita, Abhijit, Do Ghati, Shubha Dates and Pancha Pakshi. The shared substrate powers specialized Vivah/Griha/Property/Vehicle/Sanskar profiles. A second reuse engine now makes Shubha Hora, Panchaka Rahita, aggregate Auspicious Yogas, Sarvartha Siddhi, Amrit Siddhi, Guru/Ravi Pushya, Dwipushkar, Tripushkar and Ravi Yoga live with explicit rule tables. Gowri, Jain Pachchakkhan, Pancha Pakshi, Do Ghati and generic Shubha Dates remain deliberately gated.
+Choghadiya, Hora, Vivah, Griha Pravesh, vehicle/property purchase, Lagna, Gowri, Jain Pachchakkhan, Rahu Kala, auspicious Yoga, Panchaka Rahita, Abhijit, Do Ghati, Shubha Dates and Pancha Pakshi. The shared substrate powers specialized Vivah/Griha/Property/Vehicle/Sanskar profiles. A second reuse engine now makes Shubha Hora, Panchaka Rahita, aggregate Auspicious Yogas, Sarvartha Siddhi, Amrit Siddhi, Guru/Ravi Pushya, Dwipushkar, Tripushkar and Ravi Yoga live with explicit rule tables. Gowri, Jain Pachchakkhan, corrected Do-Ghati and generic Shubha Dates are engine-backed. Pancha Pakshi remains quality-gated beyond its verified five-Yama solar framework.
 
 ### 4. Vrat & Upavas
-Ekadashi, Pradosh, Sankashti, Dwadashi, Purnima, Amavasya, Shivaratri, Skanda Sashti, Karthigai, Shraddha, Durgashtami, Kalashtami, Chaturmasa and special Vrat collections. The verified recurrence layer now makes Satyanarayana/Purnima, Masik Durgashtami, Skanda Sashti, Karthigai, Rohini Vrat, Sawan Somwar and Mangala Gauri live. Shravana weekday observances expose separate Purnimanta/Amanta profiles. The mapped ISKCON Ekadashi route remains gated until a fully GCal-compatible selector replaces the current simplified profile; Kalashtami, Chandra Darshan and other ritual/visibility-driven rules remain pending.
+Ekadashi, Pradosh, Sankashti, Dwadashi, Purnima, Amavasya, Shivaratri, Skanda Sashti, Karthigai, Shraddha, Durgashtami, Kalashtami, Chaturmasa and special Vrat collections. The verified recurrence layer now makes Satyanarayana/Purnima, Masik Durgashtami, Skanda Sashti, Karthigai, Rohini Vrat, Sawan Somwar and Mangala Gauri live. Shravana weekday observances expose separate Purnimanta/Amanta profiles. ISKCON Ekadashi uses the integrated Arunodaya/Vriddhi/Mahadwadashi/Hari-Vasara substrate; Kalashtami and solar-Nishita Masik Janmashtami are engine-backed. Chandra Darshan, Ishti/Anvadhan and Shraddha remain quality-gated.
 
 ### 5. Festivals
 Popular collections, lunar-month festival lists, Tamil/Malayalam/Sankranti collections, Gurus/Saints, Navdurga, Dashavatara, Puja Vidhi, deities and pilgrimage content. The 13 verified major-festival calculations now run through one declarative festival rule registry with reusable local-time selectors.
@@ -40,11 +40,11 @@ Tutorials, Panchang concepts, Choghadiya, Muhurat, Nakshatra, Rahu Kala, FAQ and
 
 Current certified detail-route state:
 
-- **229** verified/live calculation routes
+- **218** verified/live calculation routes
 - **62** structured editorial routes
 - **1** canonical live redirect (`muhurat/choghadiya`)
-- **292** production-quality/indexable detail routes
-- **0** mapped `noindex,follow` shells
+- **281** production-quality/indexable detail routes
+- **11** semantic quality-gated `noindex,follow` routes
 
 The exact contract and promotion queue are documented in `docs/RELEASE_CERTIFICATION.md` and enforced by CI.
 

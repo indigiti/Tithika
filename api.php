@@ -34,7 +34,8 @@ function curlJson(string $url): array {
 
 function readPayload(): array {
     $raw = file_get_contents('php://input') ?: '{}';
-    $payload = json_decode($raw, true);
+    if (strlen($raw) > 65536) out(['ok'=>false,'error'=>'Request body too large'], 413);
+    $payload = json_decode($raw, true, 64);
     if (!is_array($payload)) out(['ok'=>false,'error'=>'Invalid JSON'], 400);
     $lat = (float)($payload['lat'] ?? 19.0760);
     $lon = (float)($payload['lon'] ?? 72.8777);
@@ -100,6 +101,7 @@ try {
     if ($action === 'search') {
         $q = trim((string)($_GET['q'] ?? ''));
         if (mb_strlen($q) < 2) out(['ok'=>true,'results'=>[]]);
+        if (mb_strlen($q) > 120) out(['ok'=>false,'error'=>'Search query too long'], 422);
         $url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&addressdetails=1&q=' . rawurlencode($q);
         $rows = curlJson($url); $results = [];
         foreach ($rows as $r) {
@@ -289,6 +291,8 @@ try {
             out(['ok'=>false,'error'=>'Unsupported completion route'], 422);
         }
         $payload['slug'] = $slug;
+        $gated = require __DIR__ . '/config/gated.php';
+        $gateReason = $gated[$slug] ?? null;
         $script = match (true) {
             $slug === 'panchang/gowri' => 'python/muhurat_completion.py',
             str_starts_with($slug, 'panchang/') => 'python/panchang_completion.py',
@@ -304,6 +308,9 @@ try {
         if ($script === null) out(['ok'=>false,'error'=>'Completion engine unavailable'], 422);
         $data = runPythonEngine($script, $payload);
         if (!($data['ok'] ?? false)) out($data, 422);
+        $data['quality_gate'] = $gateReason === null
+            ? ['verified'=>true]
+            : ['verified'=>false,'reason'=>$gateReason];
         out($data, 200, true);
     }
 

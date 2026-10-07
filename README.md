@@ -138,7 +138,7 @@ The shared Muhurat reuse engine now powers:
 - `/muhurat/tripushkar/`
 - `/muhurat/ravi-yoga/`
 
-Hora uses exact local day/night twelfths; Panchaka Rahita uses verified Lagna transitions plus the modulo-9 formula; recurring Yogas preserve separate weekday/Nakshatra/Tithi rule tables. Gowri, Jain Pachchakkhan, Pancha Pakshi, Do Ghati and generic Shubha Dates remain deliberately gated.
+Hora uses exact local day/night twelfths; Panchaka Rahita uses verified Lagna transitions plus the modulo-9 formula; recurring Yogas preserve separate weekday/Nakshatra/Tithi rule tables. Gowri, Jain Pachchakkhan, corrected Do-Ghati and generic Shubha Dates are engine-backed. Pancha Pakshi is explicitly quality-gated beyond its five-Yama solar framework.
 
 ### Reusable Vrat recurrences
 
@@ -152,7 +152,7 @@ A shared recurrence engine now promotes seven additional Vrat calendars without 
 - `/vrat/sawan-somwar/` — Purnimanta + Amanta Shravana Monday profiles
 - `/vrat/mangala-gauri/` — Purnimanta + Amanta Shravana Tuesday profiles
 
-The mapped ISKCON Ekadashi route remains deliberately unreleased: regression against published 2026 Pune dates showed that the current simplified ISKCON-compatible layer is not yet fully GCal-compatible. Kalashtami, Chandra Darshan and other ritual/visibility-driven recurrences remain gated for dedicated selectors.
+ISKCON Ekadashi reuses the integrated Vaishnava substrate with Arunodaya, Vriddhi, Mahadwadashi priority and Hari-Vasara-aware Parana. Kalashtami and Masik Janmashtami are engine-backed; Chandra Darshan, Ishti/Anvadhan and Shraddha remain explicitly quality-gated pending stronger semantic benchmarks.
 
 ### Regional calendar engine
 
@@ -180,7 +180,7 @@ A shared reuse engine now promotes eight additional Panchang surfaces without du
 - structured Sankalpa context
 - Vedic Clock with both 60-Ghati Ishtakala and 30+30 day/night models
 
-Manvadi, Yugadi and Kalpadi remain deliberately mapped-but-unreleased pending dedicated observance-day selectors. Kranti Samya remains pending a Mahapat declination-equality engine.
+Manvadi, Yugadi and Kalpadi have dedicated sunrise selectors. Kranti Samya now uses true-ecliptic declination geometry but remains quality-gated pending an exact Mahapata interval benchmark.
 
 ### Sankranti / solar ingress
 
@@ -248,7 +248,7 @@ The mapped Rashifal family is now backed by the natal interpretation and timing 
 - `/jyotish/rashifal/` four-horizon personal overview
 - `/jyotish/rashifal/daily/` daily birth-chart forecast context
 - `/jyotish/rashifal/weekly/` seven-day aggregated context
-- `/jyotish/rashifal/monthly/` five-sample monthly context
+- `/jyotish/rashifal/monthly/` daily-sampled monthly context
 - `/jyotish/rashifal/yearly/` twelve-month annual context
 - separate birth date/time and forecast target date
 - Vimshottari Mahadasha/Antardasha/Pratyantardasha activation

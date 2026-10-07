@@ -37,11 +37,28 @@ def row(title,value,meta="",detail=""):
     return {"title":title,"meta":value,"detail":(meta+" · " if meta and detail else meta)+detail}
 
 def prashna(moment,lat,lon):
+    """Question-time D1 chart foundation with all classical Grahas."""
     moon,sun,asc,st=base_state(moment,lat,lon)
-    return [row("Prashna Lagna",asc["lagna"],f'{asc["degree_in_sign"]:.2f}°',"Question-time ascendant"),
-      row("Moon",moon["rashi"],moon["nakshatra"],"Question-time Moon"),
+    items=[
+      row("Prashna Lagna",asc["lagna"],f'{asc["degree_in_sign"]:.2f}°',"Question-time ascendant"),
       row("Tithi",st["tithi"],st["paksha"],"Question-time Panchang"),
-      row("Yoga",st["yoga"],"","Question-time Nitya Yoga")]
+      row("Nakshatra",st["nakshatra"],f'Pada {st["nakshatra_pada"]}',"Question-time Moon"),
+      row("Yoga",st["yoga"],"","Question-time Nitya Yoga"),
+    ]
+    for graha in planetary.positions(moment,False,"mean"):
+        house=((int(graha["rashi_id"])-int(asc["lagna_id"]))%12)+1
+        status=[]
+        if graha.get("retrograde"): status.append("retrograde")
+        if graha.get("combust"): status.append("combust")
+        detail=f'{graha["nakshatra"]} Pada {graha["pada"]}'
+        if status: detail+=" · "+", ".join(status)
+        items.append(row(
+          graha["name"],
+          f'{graha["rashi"]} {graha["degree_in_rashi"]:.2f}°',
+          f'House {house}',
+          detail
+        ))
+    return items
 
 def gemstone(moment,lat,lon):
     moon,_,asc,_=base_state(moment,lat,lon); lord=RASHI_LORD.get(asc["lagna"],"")
@@ -88,14 +105,22 @@ def shraddha_tithi(moment,lat,lon,tz):
     return [row("Reference Tithi",st["tithi"],st["paksha"],"Captured from the supplied date/time"),row("Next matching Pitru-Paksha Tithi",found[0].isoformat() if found else "Not resolved","","Sunrise Tithi match in the Pitru-Paksha season profile.")]
 
 def prashnavali(moment,lat,lon):
+    """Do not fabricate an oracle from unrelated Panchang indices."""
     _,_,asc,st=base_state(moment,lat,lon)
-    tone=("Favourable" if st["nakshatra_id"]%3==0 else "Mixed" if st["nakshatra_id"]%3==1 else "Cautious")
-    return [row("Question-time signal",tone,st["nakshatra"],"Deterministic reflection aid, not divination certainty."),row("Lagna",asc["lagna"],st["tithi"],"Use this context to frame the question and next practical action."),row("Reflection prompt","What evidence would change your decision?","","Tithika does not generate random prophetic answers.")]
+    return [
+      row("Status","Quality-gated","","No deterministic Prashnavali answer is generated until a named textual tradition and its lookup rules are implemented."),
+      row("Question-time context",asc["lagna"],f'{st["tithi"]} · {st["nakshatra"]}',"Context is retained for audit only; it is not converted into a favourable/unfavourable oracle."),
+      row("Implementation requirement","Named source + exact table","","Future activation requires a source-locked question/index mapping and regression fixtures.")
+    ]
 
 def pancha_pakshi(moment):
-    moon=planetary.planet_state("Moon",moment);idx=(panchang.NAKSHATRA_NAMES.index(moon["nakshatra"]) if moon["nakshatra"] in panchang.NAKSHATRA_NAMES else 0)%5
-    birds=["Vulture","Owl","Crow","Cock","Peacock"]
-    return [row("Birth bird",birds[idx],moon["nakshatra"],"Five-bird grouping profile"),row("Current Panchang",panchang.state_at(moment)["tithi"],moment.strftime("%A"),"Open the Pancha Pakshi Muhurat page for the full activity timeline.")]
+    """Expose birth context without inventing a lineage-specific birth-bird mapping."""
+    moon=planetary.planet_state("Moon",moment);st=panchang.state_at(moment)
+    return [
+      row("Status","Quality-gated","","Pancha Pakshi birth-bird selection depends on a verified tradition/profile table; Nakshatra modulo five is not used."),
+      row("Janma Nakshatra",moon["nakshatra"],f'Pada {moon["pada"]}',"Birth-Moon context retained for the future verified profile."),
+      row("Current Panchang",st["tithi"],f'{st["paksha"]} · {moment.strftime("%A")}',"No bird/activity prediction is emitted while the rule table is gated.")
+    ]
 
 def main():
     p=json.loads(sys.stdin.read() or "{}");slug=str(p.get("slug") or "").strip("/")

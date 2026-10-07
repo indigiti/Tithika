@@ -18,17 +18,27 @@ $indexable = array_values(array_filter($flat, 'tithika_is_indexable_page'));
 $noindex = array_values(array_filter($flat, fn($p) => !tithika_is_indexable_page($p)));
 
 certify(count($flat) === 292, 'route contract must remain 292');
-certify(count($live) === 229, 'verified live route count must be 229');
-certify(count($indexable) === 292, 'production indexable route count must be 292');
-certify(count($noindex) === 0, 'mapped noindex route count must be zero');
+certify(count($live) === 218, 'verified live route count must be 218');
+certify(count($indexable) === 281, 'production indexable route count must be 281');
+certify(count($noindex) === 11, 'semantic quality-gated route count must be 11');
 
 $completion = require dirname(__DIR__) . '/config/completion.php';
+$gated = require dirname(__DIR__) . '/config/gated.php';
+$gatedSlugs = array_keys($gated);
 certify(count($completion) === 99, 'final completion route set must remain 99');
 certify(count(array_unique($completion)) === 99, 'final completion route set must be unique');
+certify(count($gated) === 11, 'semantic quality gate must contain 11 routes');
+certify(count(array_intersect($live, $gatedSlugs)) === 0, 'gated routes must never be in live registry');
 foreach ($completion as $slug) {
     certify(isset($flat[$slug]), "completion route missing from manifest: {$slug}");
-    certify(in_array($slug, $live, true), "completion route not promoted: {$slug}");
-    certify(tithika_is_indexable_page($flat[$slug]), "completion route is not indexable: {$slug}");
+    if (isset($gated[$slug])) {
+        certify(!in_array($slug, $live, true), "gated completion route is still live: {$slug}");
+        certify(!tithika_is_indexable_page($flat[$slug]), "gated completion route is indexable: {$slug}");
+        certify(trim((string)$gated[$slug]) !== '', "gated route reason missing: {$slug}");
+    } else {
+        certify(in_array($slug, $live, true), "verified completion route not promoted: {$slug}");
+        certify(tithika_is_indexable_page($flat[$slug]), "verified completion route is not indexable: {$slug}");
+    }
 }
 
 
@@ -51,6 +61,7 @@ foreach ([
     'python/vrat_recurrence.py',
     'scripts/test-vrat-recurrence.py',
     'config/completion.php',
+    'config/gated.php',
     'python/panchang_completion.py',
     'python/muhurat_completion.py',
     'python/vrat_completion.py',
@@ -84,5 +95,6 @@ echo json_encode([
     'indexable'=>count($indexable),
     'mapped_noindex'=>count($noindex),
     'noindex_by_family'=>$queue,
-    'newly_certified'=>$completion,
+    'verified_completion'=>array_values(array_diff($completion, $gatedSlugs)),
+    'quality_gated'=>$gated,
 ], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) . PHP_EOL;

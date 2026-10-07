@@ -36,6 +36,7 @@ RewriteRule ^(.+?)/?$ page.php?slug=$1 [L,QSA]
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set Permissions-Policy "geolocation=(self), camera=(), microphone=()"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
 </IfModule>
 
 <IfModule mod_deflate.c>

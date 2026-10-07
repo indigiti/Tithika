@@ -36,15 +36,32 @@ function tithika_live_slugs(): array {
     return $live;
 }
 
+function tithika_gated_routes(): array {
+    static $gated;
+    if ($gated === null) $gated = require __DIR__ . '/../config/gated.php';
+    return $gated;
+}
+
+function tithika_is_gated_page(string $slug): bool {
+    return array_key_exists($slug, tithika_gated_routes());
+}
+
+function tithika_gate_reason(string $slug): ?string {
+    return tithika_gated_routes()[$slug] ?? null;
+}
+
 function tithika_is_live_page(string $slug): bool {
+    if (tithika_is_gated_page($slug)) return false;
     static $lookup;
     if ($lookup === null) $lookup = array_fill_keys(tithika_live_slugs(), true);
     return isset($lookup[$slug]);
 }
 
 function tithika_is_indexable_page(array $page): bool {
+    $slug = (string)$page['slug'];
+    if (tithika_is_gated_page($slug)) return false;
     if (!empty($page['live'])) return true;
-    if (tithika_is_live_page((string)$page['slug'])) return true;
+    if (tithika_is_live_page($slug)) return true;
     return tithika_has_editorial_content($page);
 }
 
@@ -63,9 +80,22 @@ function tithika_pretty_url(string $slug): string {
 }
 
 function tithika_origin(): string {
+    $configured = trim((string)(getenv('TITHIKA_CANONICAL_ORIGIN') ?: ''));
+    if ($configured !== '') {
+        $parts = parse_url($configured);
+        if (is_array($parts) && in_array(($parts['scheme'] ?? ''), ['http','https'], true) && !empty($parts['host'])) {
+            $port = isset($parts['port']) ? ':' . (int)$parts['port'] : '';
+            return $parts['scheme'] . '://' . $parts['host'] . $port;
+        }
+    }
+
     $forwarded = strtolower(trim((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')));
     $scheme = ($forwarded === 'https' || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')) ? 'https' : 'http';
-    $host = (string)($_SERVER['HTTP_HOST'] ?? 'localhost');
+
+    // Prefer server configuration over the request Host header to avoid
+    // canonical/OG URL poisoning. HTTP_HOST is a last-resort local fallback.
+    $host = trim((string)($_SERVER['SERVER_NAME'] ?? ''));
+    if ($host === '') $host = trim((string)($_SERVER['HTTP_HOST'] ?? 'localhost'));
     $host = preg_replace('/[^A-Za-z0-9.\-:\[\]]/', '', $host) ?: 'localhost';
     return $scheme . '://' . $host;
 }

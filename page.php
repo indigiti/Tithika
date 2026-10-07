@@ -58,7 +58,8 @@ $group = $routes[$page['group']];
 $related = tithika_related($page);
 $completionSlugs = require __DIR__ . '/config/completion.php';
 $isCompletionPage = in_array($page['slug'], $completionSlugs, true);
-$isComputed = tithika_is_live_page($page['slug']) || tithika_has_editorial_content($page);
+$gateReason = tithika_gate_reason($page['slug']);
+$isComputed = $gateReason === null && (tithika_is_live_page($page['slug']) || tithika_has_editorial_content($page));
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -90,6 +91,12 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
   </div>
 </section>
 
+<?php if ($gateReason !== null): ?>
+<section class="tk-content" aria-label="Quality status">
+  <div class="tk-lunar-note"><strong>Quality-gated:</strong> <?= htmlspecialchars($gateReason) ?> The route remains available for audit and development, but is excluded from Tithika's verified/indexable contract until a semantic benchmark passes.</div>
+</section>
+<?php endif; ?>
+
 <div class="tk-toolbar-wrap">
   <div class="tk-toolbar">
     <button type="button" data-shift-date="-1" aria-label="Previous day">‹</button>
@@ -98,7 +105,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
     <button type="button" data-shift-date="1" aria-label="Next day">›</button>
     <span class="tk-spacer"></span>
     <a href="<?= htmlspecialchars(tithika_pretty_url($page['group'])) ?>">All <?= htmlspecialchars($group['title']) ?></a>
-    <span class="tk-engine-state<?= $isComputed ? ' is-live' : '' ?>"><?= in_array($page['slug'], ['panchang/daily','panchang/month'], true) ? 'Panchang engine live' : ($isComputed ? 'Calculation engine live' : 'Page shell mapped') ?></span>
+    <span class="tk-engine-state<?= $isComputed ? ' is-live' : '' ?>"><?= $gateReason !== null ? 'Quality gate active' : (in_array($page['slug'], ['panchang/daily','panchang/month'], true) ? 'Panchang engine live' : ($isComputed ? 'Calculation engine live' : 'Page shell mapped')) ?></span>
   </div>
 </div>
 
@@ -107,7 +114,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
     <div>
       <span>Tithika <?= htmlspecialchars(tithika_template_label($page['template'])) ?></span>
       <h2><?= htmlspecialchars($page['title']) ?></h2>
-      <p><?= htmlspecialchars(tithika_has_editorial_content($page) ? 'This route has structured editorial content and topic-aware links.' : ($isComputed ? 'This route is backed by a verified calculation or calendar engine.' : 'This route remains mapped but is intentionally not indexed until its specialized engine or editorial content is complete.')) ?></p>
+      <p><?= htmlspecialchars($gateReason !== null ? 'This route is under semantic hardening and is intentionally excluded from the verified/indexable contract.' : (tithika_has_editorial_content($page) ? 'This route has structured editorial content and topic-aware links.' : ($isComputed ? 'This route is backed by a verified calculation or calendar engine.' : 'This route remains mapped but is intentionally not indexed until its specialized engine or editorial content is complete.'))) ?></p>
     </div>
   </div>
 

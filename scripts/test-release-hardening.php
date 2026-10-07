@@ -14,7 +14,7 @@ function ok(bool $value, string $message): void {
 
 $flat = tithika_flat_routes();
 ok(tithika_page_count() === 292, 'route count must remain 292');
-ok(count(tithika_live_slugs()) === 229, 'verified live route registry drifted');
+ok(count(tithika_live_slugs()) === 218, 'verified live route registry drifted');
 ok(count(array_unique(tithika_live_slugs())) === count(tithika_live_slugs()), 'duplicate live route');
 foreach (tithika_live_slugs() as $slug) {
     ok(isset($flat[$slug]), "live slug missing from route map: {$slug}");
@@ -30,7 +30,7 @@ foreach ($flat as $page) {
 }
 ok($editorialCount >= 60, 'editorial coverage unexpectedly small');
 ok(tithika_indexable_count() === count(array_filter($flat, 'tithika_is_indexable_page')), 'indexable count mismatch');
-ok(tithika_indexable_count() === 292, 'all mapped routes must now be production-quality indexable');
+ok(tithika_indexable_count() === 281, 'verified/indexable route contract must remain 281');
 
 foreach ($flat as $page) {
     if (!tithika_is_indexable_page($page)) continue;
@@ -82,6 +82,7 @@ $htaccess = (string)file_get_contents(dirname(__DIR__) . '/.htaccess');
 ok(str_contains($htaccess, 'sitemap\.xml'), 'sitemap rewrite missing');
 ok(str_contains($htaccess, 'robots\.txt'), 'robots rewrite missing');
 ok(str_contains($htaccess, 'X-Content-Type-Options'), 'security headers missing');
+ok(str_contains($htaccess, 'Content-Security-Policy'), 'content security policy missing');
 
 ob_start();
 $page = $flat['learn/panchang'];
@@ -92,9 +93,17 @@ ok(str_contains($header, '<link rel="canonical"'), 'canonical not rendered');
 ok(str_contains($header, 'BreadcrumbList'), 'breadcrumb schema not rendered');
 
 ob_start();
-$shell = $flat['muhurat/gowri'];
-tithika_render_header($shell['title'], $shell);
-$thinHeader = ob_get_clean();
-ok(str_contains($thinHeader, '<meta name="robots" content="index,follow,max-image-preview:large">'), 'completed route must be indexable');
+$completed = $flat['muhurat/gowri'];
+tithika_render_header($completed['title'], $completed);
+$completedHeader = ob_get_clean();
+ok(str_contains($completedHeader, '<meta name="robots" content="index,follow,max-image-preview:large">'), 'verified completion route must be indexable');
+
+ob_start();
+$gated = $flat['panchang/kranti-samya'];
+tithika_render_header($gated['title'], $gated);
+$gatedHeader = ob_get_clean();
+ok(str_contains($gatedHeader, '<meta name="robots" content="noindex,follow">'), 'quality-gated route must be noindex');
+ok(!tithika_is_live_page('panchang/kranti-samya'), 'quality-gated route must not report live');
+ok(tithika_gate_reason('panchang/kranti-samya') !== null, 'quality gate reason missing');
 
 echo "SEO/content/accessibility/release hardening fixture passed\n";

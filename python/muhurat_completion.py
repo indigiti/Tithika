@@ -27,8 +27,8 @@ NIGHT_GOWRI={
 4:["Rogam","Laabam","Dhanam","Sugam","Soram","Uthi","Visham","Amirdha"],
 5:["Laabam","Dhanam","Sugam","Soram","Uthi","Visham","Amirdha","Rogam"],
 }
-MUHURTA_NAMES=["Rudra","Ahi","Mitra","Pitri","Vasu","Varaha","Vishvadeva","Vidhi","Satamukhi","Puruhuta","Vahini","Naktanakara","Varuna","Aryaman","Bhaga",
-"Girisha","Ajapada","Ahirbudhnya","Pushya","Ashwini","Yama","Agni","Vidhatri","Kanda","Aditi","Jiva","Vishnu","Dyumadgadyuti","Brahma","Samudram"]
+MUHURTA_NAMES=["Rudra","Uraga","Mitra","Pitara","Vasu","Ambu","Vishwedeva","Vidhi","Brahma","Indra","Indragni","Daitya","Varuna","Aryama","Bhaga",
+"Ishwara","Ajaikapada","Ahirbudhnya","Pusha","Ashwini","Yama","Agni","Brahma","Chandra","Aditi","Brihaspati","Vishnu","Surya","Tvashta","Samirana"]
 PAKSHI=["Vulture","Owl","Crow","Cock","Peacock"]
 ACT=["Ruling","Eating","Walking","Sleeping","Dying"]
 ACT_SCORE={"Ruling":"Best","Eating":"Good","Walking":"Average","Sleeping":"Bad","Dying":"Very Bad"}
@@ -91,21 +91,21 @@ def do_ghati(selected,lat,lon,tz):
     return [{"title":"30 Do-Ghati Muhurtas","note":"15 daylight + 15 night Muhurtas; each interval equals two local Ghatis.","items":rows}]
 
 def pakshi_sections(selected,lat,lon,tz):
+    """Expose only the verified five-Yama solar framework while detailed tables are gated."""
     sr,ss,nr=sun_events(selected,lat,lon,tz)
     st=panchang.state_at(sr+timedelta(seconds=1))
-    paksha_shift=0 if st["paksha"]=="Shukla Paksha" else 2
-    weekday_shift=(selected.weekday()+paksha_shift)%5
     sections=[]
-    for label,start,end,halfshift in [("Day",sr,ss,0),("Night",ss,nr,2)]:
-        major=(end-start)/5; items=[]
+    for label,start,end in [("Day",sr,ss),("Night",ss,nr)]:
+        major=(end-start)/5;items=[]
         for m in range(5):
-            sub=major/5
-            for s in range(5):
-                a=start+major*m+sub*s;b=a+sub
-                bird=PAKSHI[(s+weekday_shift+halfshift)%5]
-                activity=ACT[(m+s+weekday_shift+halfshift)%5]
-                items.append({"title":f"{bird} · {activity}","date":a.date().isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"{label} · {ACT_SCORE[activity]}","detail":f'{st["paksha"]} · versioned Tithika Pakshi-cycle profile',"link_date":a.date().isoformat()})
-        sections.append({"title":f"{label} Pancha Pakshi","note":"Five major periods × five subperiods; activity/bird cycle is explicit and versioned.","items":items})
+            a=start+major*m;b=start+major*(m+1)
+            items.append({
+              "title":f"{label} Yama {m+1}","date":a.date().isoformat(),
+              "time":f"{fmt(a)} – {fmt(b)}","meta":st["paksha"],
+              "detail":"Verified solar Yama boundary only. Bird/activity assignment and unequal sub-period durations remain quality-gated pending a source-locked Pancha Pakshi profile.",
+              "link_date":a.date().isoformat()
+            })
+        sections.append({"title":f"{label} Pancha Pakshi framework","note":"Five equal Yamas are shown; no bird/activity prediction is emitted while detailed tradition tables are gated.","items":items})
     return sections
 
 def shubha_dates(year,lat,lon,tz):
