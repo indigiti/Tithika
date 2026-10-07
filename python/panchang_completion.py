@@ -104,24 +104,47 @@ def refine_zero(lo,hi):
             lo=mid; fa=fm
     return lo+(hi-lo)/2
 
+def refine_boundary(lo,hi,target=0.5):
+    flo=abs(kranti_state(lo)[3])-target
+    for _ in range(42):
+        mid=lo+(hi-lo)/2
+        fm=abs(kranti_state(mid)[3])-target
+        if flo*fm<=0:
+            hi=mid
+        else:
+            lo=mid;flo=fm
+    return lo+(hi-lo)/2
+
 def kranti_rows(year,tz):
-    start=datetime(year,1,1,tzinfo=tz); end=datetime(year+1,1,1,tzinfo=tz)
-    step=timedelta(minutes=15); rows=[]; cur=start
-    prev=kranti_state(cur)
+    # Classical Mahapata window: the broad Kranti-Samya axis must apply and
+    # the lunar declination passes from 30' before to 30' beyond the solar
+    # declination (|difference in declination magnitude| <= 0.5 degree).
+    start=datetime(year,1,1,tzinfo=tz);end=datetime(year+1,1,1,tzinfo=tz)
+    step=timedelta(minutes=10);rows=[];cur=start
+    prev=kranti_state(cur); prev_active=prev[0] and abs(prev[3])<=0.5
+    began=start if prev_active else None; best=None
     while cur<end:
         nxt=min(end,cur+step); now=kranti_state(nxt)
-        same_profile=prev[0] and now[0]
-        if same_profile and prev[3]*now[3] <= 0:
-            at=refine_zero(cur,nxt); ok,ds,dm,diff,slon,mlon=kranti_state(at)
-            if ok and (not rows or abs((at-datetime.fromisoformat(rows[-1]["detail"])).total_seconds())>3600):
-                rows.append({
-                  "title":"Kranti Samya / Mahapata","date":at.date().isoformat(),
-                  "time":panchang.fmt(at,False),
-                  "meta":f'Sun {ds:+.5f}° · Moon {dm:+.5f}° declination',
-                  "detail":at.isoformat(),
-                  "link_date":at.date().isoformat()
-                })
-        cur=nxt; prev=now
+        active=now[0] and abs(now[3])<=0.5
+        if active and not prev_active:
+            began=refine_boundary(cur,nxt)
+            best=(abs(kranti_state(began)[3]),began)
+        elif active:
+            score=abs(now[3])
+            if best is None or score<best[0]: best=(score,nxt)
+        elif prev_active and began is not None:
+            stop=refine_boundary(cur,nxt)
+            mid=(began+stop)/2; _,ds,dm,_,_,_=kranti_state(mid)
+            kind="Vyatipata" if ds*dm>=0 else "Vaidhriti"
+            rows.append({
+              "title":f"{kind} Kranti Samya / Mahapata","date":began.date().isoformat(),
+              "time":f"{panchang.fmt(began,False)} – {panchang.fmt(stop,False)}",
+              "meta":f"midpoint declinations Sun {ds:+.4f}° · Moon {dm:+.4f}°",
+              "detail":f"Mahapata interval: |declination magnitude difference| ≤ 0.5° · {began.isoformat()} → {stop.isoformat()}",
+              "link_date":began.date().isoformat()
+            })
+            began=None;best=None
+        cur=nxt;prev=now;prev_active=active
     return rows
 
 def published_snapshot(selected,lat,lon,tz):
