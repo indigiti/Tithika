@@ -17,6 +17,9 @@ RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
+# Standalone product surfaces.
+RewriteRule ^intelligence/?$ intelligence.php [L,QSA]
+
 # Canonical live tool.
 RewriteRule ^muhurat/choghadiya/?$ choghadiya.php [L,QSA]
 

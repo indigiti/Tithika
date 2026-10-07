@@ -12,7 +12,8 @@ tithika_render_header('Modern Panchang, Muhurat & Jyotish');
       <h1>Vedic time, without the clutter.</h1>
       <p>Tithika combines daily Panchang, Choghadiya, Muhurat, festivals, regional calendars and Jyotish in one responsive system. Exact astronomy and rule-based observances remain separate so every result can show where it came from.</p>
       <div class="tk-home-actions">
-        <a class="primary" href="<?= htmlspecialchars(tithika_pretty_url('panchang/daily')) ?>">Open Daily Panchang →</a>
+        <a class="primary" href="<?= htmlspecialchars(tithika_url('intelligence/')) ?>">Open Tithika Intelligence →</a>
+        <a href="<?= htmlspecialchars(tithika_pretty_url('panchang/daily')) ?>">Daily Panchang</a>
         <a href="<?= htmlspecialchars(tithika_pretty_url('muhurat/choghadiya')) ?>">Choghadiya</a>
         <a href="<?= htmlspecialchars(tithika_pretty_url('jyotish/janma-kundali')) ?>">Janma Kundali</a>
         <a href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>">All tools</a>
@@ -61,6 +62,9 @@ tithika_render_header('Modern Panchang, Muhurat & Jyotish');
     <p>Calculation pages keep astronomical state, observance rules, interpretation and timing layers inspectable.</p>
   </div>
   <div class="tk-home-feature-grid">
+    <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_url('intelligence/')) ?>">
+      <b>Tithika Intelligence</b><p>Six explainable layers orchestrate Panchang, Muhurat and Jyotish engines with confidence, provenance, privacy-aware caching and cross-engine quality checks.</p><span>Open Intelligence →</span>
+    </a>
     <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('panchang/daily')) ?>">
       <b>Daily Panchang</b><p>Tithi, Nakshatra, Yoga, Karana, lunar month and local solar context from the verified Lahiri Panchang engine.</p><span>Open Panchang →</span>
     </a>
