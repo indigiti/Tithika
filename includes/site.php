@@ -316,6 +316,7 @@ window.TITHIKA_BASE = <?= json_encode($base, JSON_UNESCAPED_SLASHES) ?>;
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/tithika-site.js')) ?>" defer></script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/home-dashboard.js')) ?>" defer></script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/settings.js')) ?>" defer></script>
+<script src="<?= htmlspecialchars(tithika_asset_url('assets/kundali-workspace.js')) ?>" defer></script>
 </body>
 </html>
 <?php
