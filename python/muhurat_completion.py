@@ -46,9 +46,12 @@ MUHURTA_AUSPICIOUS={
 PAKSHI=["Vulture","Owl","Crow","Cock","Peacock"]
 ACT=["Ruling","Eating","Walking","Sleeping","Dying"]
 ACT_WEIGHT={"Ruling":1.0,"Eating":0.8,"Walking":0.6,"Sleeping":0.4,"Dying":0.2}
-# Classical sub-Yama shares sum to 144 units: Rule 48, Walk 36,
-# Eat 30, Sleep 18, Die 12. Scale these proportions to the local Yama length.
-SUB_YAMA_SHARE={"Ruling":48,"Eating":30,"Walking":36,"Sleeping":18,"Dying":12}
+# Pancha Pakshi sub-Yama shares are different by day/night. Both profiles
+# sum to 144 units and scale to the local one-fifth day/night Yama.
+DAY_MAIN_CYCLE=["Ruling","Walking","Eating","Dying","Sleeping"]
+NIGHT_MAIN_CYCLE=["Ruling","Eating","Sleeping","Walking","Dying"]
+DAY_SUB_YAMA_SHARE={"Ruling":18,"Walking":36,"Eating":48,"Dying":30,"Sleeping":12}
+NIGHT_SUB_YAMA_SHARE={"Ruling":18,"Eating":42,"Sleeping":18,"Walking":42,"Dying":24}
 
 # Explicit Pulippani mirror-table profile. This replaces the former synthetic
 # weekday/paksha shift algorithm. It is intentionally named because Pancha
@@ -73,19 +76,19 @@ BRIGHT={
 
 DARK={
 "A":{
-"day":{"Vulture":["Walking","Ruling","Eating","Dying","Sleeping"],"Owl":["Dying","Sleeping","Ruling","Walking","Eating"],"Crow":["Eating","Dying","Sleeping","Ruling","Walking"],"Cock":["Ruling","Eating","Walking","Sleeping","Dying"],"Peacock":["Sleeping","Walking","Dying","Eating","Ruling"]},
-"night":{"Vulture":["Sleeping","Walking","Dying","Eating","Ruling"],"Owl":["Eating","Dying","Walking","Ruling","Sleeping"],"Crow":["Walking","Ruling","Eating","Sleeping","Dying"],"Cock":["Dying","Sleeping","Ruling","Dying","Eating"],"Peacock":["Ruling","Eating","Sleeping","Walking","Walking"]}},
+"day":{"Vulture":["Walking","Ruling","Eating","Dying","Sleeping"],"Owl":["Dying","Sleeping","Ruling","Walking","Eating"],"Crow":["Eating","Dying","Sleeping","Ruling","Walking"],"Cock":["Ruling","Eating","Walking","Sleeping","Dying"],"Peacock":["Ruling","Eating","Sleeping","Walking","Dying"]},
+"night":{"Vulture":["Sleeping","Walking","Dying","Eating","Ruling"],"Owl":["Eating","Dying","Walking","Ruling","Sleeping"],"Crow":["Walking","Ruling","Eating","Sleeping","Dying"],"Cock":["Dying","Sleeping","Ruling","Dying","Eating"],"Peacock":["Sleeping","Walking","Dying","Ruling","Eating"]}},
 "B":{
-"day":{"Vulture":["Sleeping","Walking","Dying","Eating","Ruling"],"Owl":["Eating","Dying","Walking","Ruling","Sleeping"],"Crow":["Walking","Ruling","Eating","Sleeping","Dying"],"Cock":["Dying","Sleeping","Ruling","Walking","Eating"],"Peacock":["Ruling","Eating","Sleeping","Dying","Walking"]},
+"day":{"Vulture":["Sleeping","Walking","Dying","Eating","Ruling"],"Owl":["Eating","Dying","Walking","Ruling","Sleeping"],"Crow":["Walking","Ruling","Eating","Sleeping","Dying"],"Cock":["Dying","Sleeping","Ruling","Walking","Eating"],"Peacock":["Eating","Dying","Sleeping","Ruling","Walking"]},
 "night":{"Vulture":["Ruling","Eating","Sleeping","Walking","Dying"],"Owl":["Sleeping","Walking","Dying","Eating","Ruling"],"Crow":["Dying","Sleeping","Ruling","Dying","Eating"],"Cock":["Eating","Ruling","Walking","Sleeping","Walking"],"Peacock":["Walking","Dying","Eating","Ruling","Sleeping"]}},
 "C":{
-"day":{"Vulture":["Dying","Sleeping","Walking","Ruling","Eating"],"Owl":["Ruling","Eating","Dying","Sleeping","Walking"],"Crow":["Sleeping","Walking","Ruling","Eating","Dying"],"Cock":["Eating","Ruling","Sleeping","Dying","Walking"],"Peacock":["Walking","Dying","Eating","Walking","Ruling"]},
-"night":{"Vulture":["Eating","Ruling","Sleeping","Dying","Walking"],"Owl":["Walking","Dying","Eating","Ruling","Sleeping"],"Crow":["Dying","Eating","Walking","Sleeping","Ruling"],"Cock":["Ruling","Sleeping","Dying","Walking","Eating"],"Peacock":["Sleeping","Walking","Ruling","Eating","Dying"]}},
+"day":{"Vulture":["Dying","Sleeping","Walking","Ruling","Eating"],"Owl":["Ruling","Eating","Dying","Sleeping","Walking"],"Crow":["Sleeping","Walking","Ruling","Eating","Dying"],"Cock":["Eating","Ruling","Sleeping","Dying","Walking"],"Peacock":["Walking","Eating","Dying","Sleeping","Ruling"]},
+"night":{"Vulture":["Eating","Ruling","Sleeping","Dying","Walking"],"Owl":["Walking","Dying","Eating","Ruling","Sleeping"],"Crow":["Dying","Eating","Walking","Sleeping","Ruling"],"Cock":["Ruling","Sleeping","Dying","Walking","Eating"],"Peacock":["Walking","Dying","Ruling","Eating","Sleeping"]}},
 "D":{
-"day":{"Vulture":["Ruling","Eating","Sleeping","Walking","Dying"],"Owl":["Sleeping","Walking","Eating","Dying","Ruling"],"Crow":["Dying","Ruling","Walking","Eating","Sleeping"],"Cock":["Walking","Dying","Ruling","Sleeping","Eating"],"Peacock":["Eating","Sleeping","Dying","Ruling","Walking"]},
-"night":{"Vulture":["Dying","Walking","Ruling","Eating","Sleeping"],"Owl":["Ruling","Eating","Sleeping","Walking","Dying"],"Crow":["Sleeping","Dying","Eating","Ruling","Walking"],"Cock":["Eating","Ruling","Walking","Dying","Ruling"],"Peacock":["Walking","Sleeping","Dying","Sleeping","Eating"]}},
+"day":{"Vulture":["Ruling","Eating","Sleeping","Walking","Dying"],"Owl":["Sleeping","Walking","Eating","Dying","Ruling"],"Crow":["Dying","Ruling","Walking","Eating","Sleeping"],"Cock":["Walking","Dying","Ruling","Sleeping","Eating"],"Peacock":["Dying","Sleeping","Ruling","Walking","Eating"]},
+"night":{"Vulture":["Dying","Walking","Ruling","Eating","Sleeping"],"Owl":["Ruling","Eating","Sleeping","Walking","Dying"],"Crow":["Sleeping","Dying","Eating","Ruling","Walking"],"Cock":["Eating","Ruling","Walking","Dying","Ruling"],"Peacock":["Dying","Ruling","Eating","Sleeping","Walking"]}},
 "E":{
-"day":{"Vulture":["Eating","Dying","Ruling","Sleeping","Walking"],"Owl":["Walking","Ruling","Sleeping","Eating","Dying"],"Crow":["Ruling","Sleeping","Dying","Walking","Eating"],"Cock":["Sleeping","Eating","Walking","Dying","Ruling"],"Peacock":["Dying","Walking","Eating","Ruling","Sleeping"]},
+"day":{"Vulture":["Eating","Dying","Ruling","Sleeping","Walking"],"Owl":["Walking","Ruling","Sleeping","Eating","Dying"],"Crow":["Ruling","Sleeping","Dying","Walking","Eating"],"Cock":["Sleeping","Eating","Walking","Dying","Ruling"],"Peacock":["Ruling","Walking","Eating","Dying","Sleeping"]},
 "night":{"Vulture":["Walking","Sleeping","Dying","Ruling","Eating"],"Owl":["Dying","Eating","Ruling","Sleeping","Walking"],"Crow":["Eating","Walking","Sleeping","Dying","Ruling"],"Cock":["Ruling","Dying","Eating","Walking","Sleeping"],"Peacock":["Sleeping","Ruling","Walking","Eating","Dying"]}},
 }
 
@@ -164,18 +167,26 @@ def pakshi_sections(selected,lat,lon,tz,bird="Peacock"):
     sections=[]
     for label,start,end,key in [("Day",sr,ss,"day"),("Night",ss,nr,"night")]:
         major=(end-start)/5;items=[]
-        main_seq=table[key][bird]
+        source_seq=table[key][bird]
+        cycle=DAY_MAIN_CYCLE if key=="day" else NIGHT_MAIN_CYCLE
+        first=source_seq[0]
+        start_index=cycle.index(first)
+        main_seq=cycle[start_index:]+cycle[:start_index]
+        shares=DAY_SUB_YAMA_SHARE if key=="day" else NIGHT_SUB_YAMA_SHARE
         for m,main in enumerate(main_seq):
             y0=start+major*m;y1=start+major*(m+1)
-            ai=ACT.index(main)
-            subacts=[ACT[(ai+s)%5] for s in range(5)]
+            ai=cycle.index(main)
+            subacts=cycle[ai:]+cycle[:ai]
             cursor=y0
             for s,subact in enumerate(subacts):
-                duration=major*SUB_YAMA_SHARE[subact]/144.0
+                duration=major*shares[subact]/144.0
                 a=cursor;b=(y1 if s==4 else cursor+duration);cursor=b
                 score=ACT_WEIGHT[main]*ACT_WEIGHT[subact]
-                items.append({"title":f"{bird} · {main} / {subact}","date":a.date().isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"{label} Yama {m+1} · {_tier(score)} · {score:.2f}","detail":f"{paksha} · Pulippani mirror-table profile · weighted sub-Yama {SUB_YAMA_SHARE[subact]}/144","link_date":a.date().isoformat(),"start":a.isoformat(),"end":b.isoformat()})
-        sections.append({"title":f"{label} Pancha Pakshi · {bird}","note":"Five local solar Yamas with unequal sub-Yamas scaled by the classical activity shares: Ruling 48, Walking 36, Eating 30, Sleeping 18, Dying 12 (total 144).","items":items})
+                items.append({"title":f"{bird} · {main} / {subact}","date":a.date().isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"{label} Yama {m+1} · {_tier(score)} · {score:.2f}","detail":f"{paksha} · Pulippani mirror-table profile · weighted sub-Yama {shares[subact]}/144","link_date":a.date().isoformat(),"start":a.isoformat(),"end":b.isoformat()})
+        note=("Day sub-Yama shares: Ruling 18, Walking 36, Eating 48, Dying 30, Sleeping 12."
+              if key=="day" else
+              "Night sub-Yama shares: Ruling 18, Eating 42, Sleeping 18, Walking 42, Dying 24.")
+        sections.append({"title":f"{label} Pancha Pakshi · {bird}","note":"Five local solar Yamas with unequal sub-Yamas. "+note,"items":items})
     return sections
 
 def shubha_dates(year,lat,lon,tz):
