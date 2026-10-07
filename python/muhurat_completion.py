@@ -35,7 +35,7 @@ MUHURTA_AUSPICIOUS={
 }
 PAKSHI=["Vulture","Owl","Crow","Cock","Peacock"]
 ACT_SCORE={"Ruling":"Best","Eating":"Good","Walking":"Average","Sleeping":"Bad","Dying":"Very Bad"}
-ACT_WEIGHT={"Ruling":16,"Eating":10,"Walking":12,"Sleeping":6,"Dying":4}
+ACT_WEIGHT={"Ruling":6,"Eating":16,"Walking":12,"Sleeping":4,"Dying":10}
 SHUKLA_GROUP={6:"A",1:"A",0:"B",2:"B",5:"B",3:"C",4:"D"}
 KRISHNA_GROUP={6:"A",1:"A",0:"B",5:"B",2:"C",3:"D",4:"E"}
 
@@ -54,17 +54,17 @@ SHUKLA_NIGHT={
 # Dark-half main-activity tables. Day groups C/D/E are aligned to the published
 # Pancha Pakshi Mirror ordering (Cock, Vulture, Owl, Peacock, Crow).
 KRISHNA_DAY={
-"A":{"Cock":["Eating","Dying","Sleeping","Ruling","Walking"],"Vulture":["Walking","Eating","Dying","Sleeping","Ruling"],"Owl":["Dying","Sleeping","Ruling","Walking","Eating"],"Peacock":["Sleeping","Ruling","Walking","Eating","Dying"],"Crow":["Ruling","Walking","Eating","Dying","Sleeping"]},
-"B":{"Cock":["Ruling","Walking","Eating","Dying","Sleeping"],"Vulture":["Sleeping","Ruling","Walking","Eating","Dying"],"Owl":["Walking","Eating","Dying","Sleeping","Ruling"],"Peacock":["Eating","Dying","Sleeping","Ruling","Walking"],"Crow":["Dying","Sleeping","Ruling","Walking","Eating"]},
-"C":{"Cock":["Sleeping","Ruling","Dying","Dying","Ruling"],"Vulture":["Dying","Sleeping","Eating","Sleeping","Walking"],"Owl":["Ruling","Walking","Sleeping","Eating","Sleeping"],"Peacock":["Walking","Eating","Ruling","Walking","Dying"],"Crow":["Eating","Dying","Walking","Ruling","Eating"]},
-"D":{"Cock":["Walking","Eating","Dying","Sleeping","Ruling"],"Vulture":["Ruling","Walking","Eating","Dying","Sleeping"],"Owl":["Eating","Dying","Sleeping","Ruling","Walking"],"Peacock":["Dying","Sleeping","Ruling","Walking","Eating"],"Crow":["Sleeping","Ruling","Walking","Eating","Dying"]},
-"E":{"Cock":["Dying","Sleeping","Ruling","Walking","Eating"],"Vulture":["Eating","Dying","Sleeping","Ruling","Walking"],"Owl":["Sleeping","Ruling","Walking","Eating","Dying"],"Peacock":["Ruling","Walking","Eating","Dying","Sleeping"],"Crow":["Walking","Eating","Dying","Sleeping","Ruling"]},
+"A":{"Vulture":["Walking","Ruling","Eating","Dying","Sleeping"],"Owl":["Dying","Sleeping","Ruling","Walking","Eating"],"Crow":["Eating","Dying","Sleeping","Ruling","Walking"],"Cock":["Ruling","Eating","Walking","Sleeping","Dying"],"Peacock":["Sleeping","Walking","Dying","Eating","Ruling"]},
+"B":{"Vulture":["Sleeping","Walking","Dying","Eating","Ruling"],"Owl":["Eating","Dying","Walking","Ruling","Sleeping"],"Crow":["Walking","Ruling","Eating","Sleeping","Dying"],"Cock":["Dying","Sleeping","Ruling","Walking","Eating"],"Peacock":["Ruling","Eating","Sleeping","Dying","Walking"]},
+"C":{"Vulture":["Dying","Sleeping","Walking","Ruling","Eating"],"Owl":["Ruling","Eating","Dying","Sleeping","Walking"],"Crow":["Sleeping","Walking","Ruling","Eating","Dying"],"Cock":["Eating","Ruling","Sleeping","Dying","Walking"],"Peacock":["Walking","Dying","Eating","Walking","Ruling"]},
+"D":{"Vulture":["Ruling","Eating","Sleeping","Walking","Dying"],"Owl":["Sleeping","Walking","Eating","Dying","Ruling"],"Crow":["Dying","Ruling","Walking","Eating","Sleeping"],"Cock":["Walking","Dying","Ruling","Sleeping","Eating"],"Peacock":["Eating","Sleeping","Dying","Ruling","Walking"]},
+"E":{"Vulture":["Eating","Dying","Ruling","Sleeping","Walking"],"Owl":["Walking","Ruling","Sleeping","Eating","Dying"],"Crow":["Ruling","Sleeping","Dying","Walking","Eating"],"Cock":["Sleeping","Eating","Walking","Dying","Ruling"],"Peacock":["Dying","Walking","Eating","Ruling","Sleeping"]},
 }
 KRISHNA_NIGHT={
-"A":{"Vulture":["Sleeping","Walking","Dying","Eating","Ruling"],"Owl":["Eating","Dying","Walking","Ruling","Sleeping"],"Crow":["Walking","Ruling","Eating","Sleeping","Dying"],"Cock":["Dying","Sleeping","Ruling","Walking","Eating"],"Peacock":["Ruling","Eating","Sleeping","Dying","Walking"]},
-"B":{"Vulture":["Ruling","Eating","Sleeping","Walking","Dying"],"Owl":["Sleeping","Walking","Dying","Eating","Ruling"],"Crow":["Dying","Sleeping","Ruling","Walking","Eating"],"Cock":["Eating","Ruling","Walking","Sleeping","Dying"],"Peacock":["Walking","Dying","Eating","Ruling","Sleeping"]},
+"A":{"Vulture":["Sleeping","Walking","Dying","Eating","Ruling"],"Owl":["Eating","Dying","Walking","Ruling","Sleeping"],"Crow":["Walking","Ruling","Eating","Sleeping","Dying"],"Cock":["Dying","Sleeping","Ruling","Dying","Eating"],"Peacock":["Ruling","Eating","Sleeping","Walking","Walking"]},
+"B":{"Vulture":["Ruling","Eating","Sleeping","Walking","Dying"],"Owl":["Sleeping","Walking","Dying","Eating","Ruling"],"Crow":["Dying","Sleeping","Ruling","Dying","Eating"],"Cock":["Eating","Ruling","Walking","Sleeping","Walking"],"Peacock":["Walking","Dying","Eating","Ruling","Sleeping"]},
 "C":{"Vulture":["Eating","Ruling","Sleeping","Dying","Walking"],"Owl":["Walking","Dying","Eating","Ruling","Sleeping"],"Crow":["Dying","Eating","Walking","Sleeping","Ruling"],"Cock":["Ruling","Sleeping","Dying","Walking","Eating"],"Peacock":["Sleeping","Walking","Ruling","Eating","Dying"]},
-"D":{"Vulture":["Dying","Walking","Ruling","Eating","Sleeping"],"Owl":["Ruling","Eating","Sleeping","Walking","Dying"],"Crow":["Sleeping","Dying","Eating","Ruling","Walking"],"Cock":["Eating","Ruling","Walking","Dying","Sleeping"],"Peacock":["Walking","Sleeping","Dying","Eating","Ruling"]},
+"D":{"Vulture":["Dying","Walking","Ruling","Eating","Sleeping"],"Owl":["Ruling","Eating","Sleeping","Walking","Dying"],"Crow":["Sleeping","Dying","Eating","Ruling","Walking"],"Cock":["Eating","Ruling","Walking","Dying","Ruling"],"Peacock":["Walking","Sleeping","Dying","Sleeping","Eating"]},
 "E":{"Vulture":["Walking","Sleeping","Dying","Ruling","Eating"],"Owl":["Dying","Eating","Ruling","Sleeping","Walking"],"Crow":["Eating","Walking","Sleeping","Dying","Ruling"],"Cock":["Ruling","Dying","Eating","Walking","Sleeping"],"Peacock":["Sleeping","Ruling","Walking","Eating","Dying"]},
 }
 
@@ -144,8 +144,8 @@ def pakshi_sections(selected,lat,lon,tz,focus_bird="Peacock"):
         yama=(end-start)/5;items=[]
         for m in range(5):
             y0=start+yama*m;y1=start+yama*(m+1);cursor=y0
-            # Suksma durations are proportional to the classical activity weights
-            # (Ruling 16, Walking 12, Eating 10, Sleeping 6, Dying 4 = 48 parts).
+            # Suksma durations are proportional to the classical 48-part activity weights
+            # (Eating 16, Walking 12, Dying 10, Ruling 6, Sleeping 4).
             for bird in bird_order:
                 activity=matrix[bird][m]
                 span=yama*ACT_WEIGHT[activity]/48
