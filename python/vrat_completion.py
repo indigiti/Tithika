@@ -268,7 +268,7 @@ def shraddha(year,lat,lon,tz):
             rows.append({"title":"Amavasya Shraddha","date":mid.date().isoformat(),"time":f"{fmt(a)} → {fmt(b)}","meta":"Amavasya class","detail":"Exact Amavasya Tithi occurrence.","link_date":mid.date().isoformat()})
     # 12 Sankranti class.
     for e in sankranti.find_year(year,lat,lon,tz,False):
-        rows.append({"title":"Sankranti Shraddha","date":e["date"],"time":e["time_label"],"meta":e["title"],"detail":"Nirayana solar ingress.","link_date":e["date"]})
+        rows.append({"title":"Sankranti Shraddha","date":e["date"],"time":e["time_label"],"meta":e["name"],"detail":f'Nirayana solar ingress into {e["to_rashi"]}.',"link_date":e["date"]})
     # 15-day Pitru Paksha: same civil dates in Purnimanta Ashwina / Amanta Bhadrapada.
     d=date(year,1,1)
     while d.year==year:
