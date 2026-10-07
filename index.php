@@ -3,36 +3,36 @@ declare(strict_types=1);
 require __DIR__ . '/includes/site.php';
 
 $routes = tithika_routes();
-tithika_render_header('Modern Panchang, Muhurat & Jyotish');
+tithika_render_header(tithika_t('home.page_title'));
 ?>
 <section class="tk-daily-hero" id="tkDailyDashboard" aria-busy="true">
   <div class="tk-daily-backdrop" aria-hidden="true"></div>
   <div class="tk-daily-copy">
-    <span class="tk-home-kicker">Your daily Vedic dashboard</span>
-    <h1>Today, clearly.</h1>
-    <p id="tkDailyLead">Loading verified Panchang, Muhurat and upcoming observances for your selected location…</p>
+    <span class="tk-home-kicker"><?= htmlspecialchars(tithika_t('home.kicker')) ?></span>
+    <h1><?= htmlspecialchars(tithika_t('home.title')) ?></h1>
+    <p id="tkDailyLead"><?= htmlspecialchars(tithika_t('home.loading')) ?></p>
     <div class="tk-daily-actions">
-      <a class="primary" href="<?= htmlspecialchars(tithika_url('intelligence/')) ?>">Ask Tithika Intelligence →</a>
-      <a href="<?= htmlspecialchars(tithika_pretty_url('panchang/daily')) ?>">Full Panchang</a>
-      <a href="<?= htmlspecialchars(tithika_url('settings/')) ?>">Personalize</a>
+      <a class="primary" href="<?= htmlspecialchars(tithika_url('intelligence/')) ?>"><?= htmlspecialchars(tithika_t('home.ask')) ?></a>
+      <a href="<?= htmlspecialchars(tithika_pretty_url('panchang/daily')) ?>"><?= htmlspecialchars(tithika_t('home.full_panchang')) ?></a>
+      <a href="<?= htmlspecialchars(tithika_url('settings/')) ?>"><?= htmlspecialchars(tithika_t('home.personalize')) ?></a>
     </div>
   </div>
 
   <div class="tk-daily-summary">
     <header>
-      <div><small id="tkDailyDate">Selected date</small><strong id="tkDailyLocation">Resolving location…</strong></div>
-      <span class="tk-daily-live"><i></i> Verified engines</span>
+      <div><small id="tkDailyDate"><?= htmlspecialchars(tithika_t('home.selected_date')) ?></small><strong id="tkDailyLocation"><?= htmlspecialchars(tithika_t('home.resolving')) ?></strong></div>
+      <span class="tk-daily-live"><i></i> <?= htmlspecialchars(tithika_t('home.verified')) ?></span>
     </header>
     <div class="tk-daily-primary-grid">
-      <article><small>Tithi</small><b id="tkDailyTithi">—</b><span id="tkDailyPaksha">—</span></article>
-      <article><small>Nakshatra</small><b id="tkDailyNakshatra">—</b><span id="tkDailyMoon">Moon —</span></article>
-      <article><small>Yoga</small><b id="tkDailyYoga">—</b><span id="tkDailyKarana">Karana —</span></article>
-      <article><small>Lunar month</small><b id="tkDailyMonth">—</b><span id="tkDailyMonthMode">Amanta preference</span></article>
+      <article><small><?= htmlspecialchars(tithika_t('home.tithi')) ?></small><b id="tkDailyTithi">—</b><span id="tkDailyPaksha">—</span></article>
+      <article><small><?= htmlspecialchars(tithika_t('home.nakshatra')) ?></small><b id="tkDailyNakshatra">—</b><span id="tkDailyMoon"><?= htmlspecialchars(tithika_t('dynamic.moon')) ?> —</span></article>
+      <article><small><?= htmlspecialchars(tithika_t('home.yoga')) ?></small><b id="tkDailyYoga">—</b><span id="tkDailyKarana"><?= htmlspecialchars(tithika_t('dynamic.karana')) ?> —</span></article>
+      <article><small><?= htmlspecialchars(tithika_t('home.lunar_month')) ?></small><b id="tkDailyMonth">—</b><span id="tkDailyMonthMode"><?= htmlspecialchars(tithika_t('dynamic.amanta').' '.tithika_t('dynamic.preference')) ?></span></article>
     </div>
     <div class="tk-daily-solar">
-      <span><small>Sunrise</small><b id="tkDailySunrise">—</b></span>
-      <span><small>Sunset</small><b id="tkDailySunset">—</b></span>
-      <span><small>Moonrise</small><b id="tkDailyMoonrise">—</b></span>
+      <span><small><?= htmlspecialchars(tithika_t('home.sunrise')) ?></small><b id="tkDailySunrise">—</b></span>
+      <span><small><?= htmlspecialchars(tithika_t('home.sunset')) ?></small><b id="tkDailySunset">—</b></span>
+      <span><small><?= htmlspecialchars(tithika_t('home.moonrise')) ?></small><b id="tkDailyMoonrise">—</b></span>
     </div>
   </div>
 </section>
@@ -40,25 +40,25 @@ tithika_render_header('Modern Panchang, Muhurat & Jyotish');
 <section class="tk-daily-strip">
   <article class="tk-now-card">
     <div class="tk-now-icon">✦</div>
-    <div><small>Choghadiya</small><h2 id="tkDailyChogName">Calculating…</h2><p id="tkDailyChogTime">Local day/night sequence</p></div>
-    <a href="<?= htmlspecialchars(tithika_pretty_url('muhurat/choghadiya')) ?>">Open timeline →</a>
+    <div><small><?= htmlspecialchars(tithika_t('home.choghadiya')) ?></small><h2 id="tkDailyChogName"><?= htmlspecialchars(tithika_t('home.calculating')) ?></h2><p id="tkDailyChogTime"><?= htmlspecialchars(tithika_t('home.local_sequence')) ?></p></div>
+    <a href="<?= htmlspecialchars(tithika_pretty_url('muhurat/choghadiya')) ?>"><?= htmlspecialchars(tithika_t('home.open_timeline')) ?></a>
   </article>
   <article class="tk-now-card">
     <div class="tk-now-icon">☀</div>
-    <div><small>Abhijit Muhurat</small><h2 id="tkDailyAbhijit">—</h2><p>Deterministic local solar window</p></div>
-    <a href="<?= htmlspecialchars(tithika_pretty_url('muhurat/abhijit')) ?>">Details →</a>
+    <div><small><?= htmlspecialchars(tithika_t('home.abhijit')) ?></small><h2 id="tkDailyAbhijit">—</h2><p><?= htmlspecialchars(tithika_t('home.abhijit_note')) ?></p></div>
+    <a href="<?= htmlspecialchars(tithika_pretty_url('muhurat/abhijit')) ?>"><?= htmlspecialchars(tithika_t('home.details')) ?></a>
   </article>
   <article class="tk-now-card">
     <div class="tk-now-icon">◐</div>
-    <div><small>Rahu Kaal</small><h2 id="tkDailyRahu">—</h2><p>Daily blocked-period reference</p></div>
-    <a href="<?= htmlspecialchars(tithika_pretty_url('panchang/rahu-kala')) ?>">Details →</a>
+    <div><small><?= htmlspecialchars(tithika_t('home.rahu')) ?></small><h2 id="tkDailyRahu">—</h2><p><?= htmlspecialchars(tithika_t('home.rahu_note')) ?></p></div>
+    <a href="<?= htmlspecialchars(tithika_pretty_url('panchang/rahu-kala')) ?>"><?= htmlspecialchars(tithika_t('home.details')) ?></a>
   </article>
 </section>
 
 <section class="tk-home-section tk-upcoming-section">
   <div class="tk-home-section-head">
-    <div><span>Upcoming</span><h2>The next few days, already connected.</h2></div>
-    <p>Vrat, Sankranti and planetary events are aggregated from their verified engines for the selected location and preference profile.</p>
+    <div><span><?= htmlspecialchars(tithika_t('home.upcoming')) ?></span><h2><?= htmlspecialchars(tithika_t('home.next_days')) ?></h2></div>
+    <p><?= htmlspecialchars(tithika_t('home.upcoming_copy')) ?></p>
   </div>
   <div class="tk-upcoming-grid" id="tkUpcomingEvents" aria-live="polite">
     <div class="tk-upcoming-skeleton"></div><div class="tk-upcoming-skeleton"></div><div class="tk-upcoming-skeleton"></div>
@@ -66,14 +66,14 @@ tithika_render_header('Modern Panchang, Muhurat & Jyotish');
 </section>
 
 <section class="tk-home-ai">
-  <div><span>New · Multi-engine intelligence</span><h2>Don’t just read the Panchang.<br>Ask what it means.</h2><p>Use verified Panchang, Muhurat and Jyotish outputs with confidence and provenance attached to every synthesis.</p></div>
-  <a href="<?= htmlspecialchars(tithika_url('intelligence/')) ?>">Open Tithika Intelligence <b>↗</b></a>
+  <div><span><?= htmlspecialchars(tithika_t('home.ai_kicker')) ?></span><h2><?= htmlspecialchars(tithika_t('home.ai_title')) ?></h2><p><?= htmlspecialchars(tithika_t('home.ai_copy')) ?></p></div>
+  <a href="<?= htmlspecialchars(tithika_url('intelligence/')) ?>"><?= htmlspecialchars(tithika_t('home.open_ai')) ?> <b>↗</b></a>
 </section>
 
 <section class="tk-home-section">
   <div class="tk-home-section-head">
-    <div><span>Explore Tithika</span><h2>One platform, clear product families.</h2></div>
-    <p>Each family shares the same local context and calculation contracts, while specialized engines load only where they are needed.</p>
+    <div><span><?= htmlspecialchars(tithika_t('home.explore_kicker')) ?></span><h2><?= htmlspecialchars(tithika_t('home.explore_title')) ?></h2></div>
+    <p><?= htmlspecialchars(tithika_t('home.explore_copy')) ?></p>
   </div>
   <div class="tk-home-family-grid">
     <?php foreach ($routes as $key=>$group):
@@ -85,9 +85,9 @@ tithika_render_header('Modern Panchang, Muhurat & Jyotish');
     ?>
       <a class="tk-home-family" href="<?= htmlspecialchars(tithika_pretty_url($key)) ?>">
         <i aria-hidden="true"><?= htmlspecialchars($group['icon']) ?></i>
-        <h3><?= htmlspecialchars($group['title']) ?></h3>
-        <p><?= htmlspecialchars($group['description']) ?></p>
-        <small><?= $live ?> production-quality routes →</small>
+        <h3><?= htmlspecialchars(tithika_t('nav.' . $key, $group['title'])) ?></h3>
+        <p><?= htmlspecialchars(tithika_t('groupdesc.' . $key, $group['description'])) ?></p>
+        <small><?= htmlspecialchars(tithika_t('home.production_routes', null, ['count'=>$live])) ?></small>
       </a>
     <?php endforeach; ?>
   </div>
@@ -95,38 +95,38 @@ tithika_render_header('Modern Panchang, Muhurat & Jyotish');
 
 <section class="tk-home-section alt">
   <div class="tk-home-section-head">
-    <div><span>Calculation stack</span><h2>Built around evidence, not black boxes.</h2></div>
-    <p>Calculation pages keep astronomical state, observance rules, interpretation and timing layers inspectable.</p>
+    <div><span><?= htmlspecialchars(tithika_t('home.stack_kicker')) ?></span><h2><?= htmlspecialchars(tithika_t('home.stack_title')) ?></h2></div>
+    <p><?= htmlspecialchars(tithika_t('home.stack_copy')) ?></p>
   </div>
   <div class="tk-home-feature-grid">
     <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_url('intelligence/')) ?>">
-      <b>Tithika Intelligence</b><p>Six explainable layers orchestrate Panchang, Muhurat and Jyotish engines with confidence, provenance, privacy-aware caching and cross-engine quality checks.</p><span>Open Intelligence →</span>
+      <b><?= htmlspecialchars(tithika_t('home.feature_intelligence_title')) ?></b><p><?= htmlspecialchars(tithika_t('home.feature_intelligence_copy')) ?></p><span><?= htmlspecialchars(tithika_t('home.feature_intelligence_action')) ?></span>
     </a>
     <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('panchang/daily')) ?>">
-      <b>Daily Panchang</b><p>Tithi, Nakshatra, Yoga, Karana, lunar month and local solar context from the verified Lahiri Panchang engine.</p><span>Open Panchang →</span>
+      <b><?= htmlspecialchars(tithika_t('home.feature_panchang_title')) ?></b><p><?= htmlspecialchars(tithika_t('home.feature_panchang_copy')) ?></p><span><?= htmlspecialchars(tithika_t('home.feature_panchang_action')) ?></span>
     </a>
     <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('muhurat/vivah')) ?>">
-      <b>Specialized Muhurat</b><p>Activity-specific windows with Panchang evidence, common blocked-period subtraction and versioned profiles.</p><span>Find Muhurat →</span>
+      <b><?= htmlspecialchars(tithika_t('home.feature_muhurat_title')) ?></b><p><?= htmlspecialchars(tithika_t('home.feature_muhurat_copy')) ?></p><span><?= htmlspecialchars(tithika_t('home.feature_muhurat_action')) ?></span>
     </a>
     <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('jyotish/horoscope-analysis')) ?>">
-      <b>Unified Jyotish</b><p>Kundali, Vargas, Shadbala, Ashtakavarga, Yogas, Dasha, interpretation and timing in one connected stack.</p><span>Open analysis →</span>
+      <b><?= htmlspecialchars(tithika_t('home.feature_jyotish_title')) ?></b><p><?= htmlspecialchars(tithika_t('home.feature_jyotish_copy')) ?></p><span><?= htmlspecialchars(tithika_t('home.feature_jyotish_action')) ?></span>
     </a>
     <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('festivals/diwali')) ?>">
-      <b>Festival rules</b><p>Major observances resolve exact Tithi windows through reusable sunrise, Madhyahna, Pradosh and Nishita selectors.</p><span>Browse festivals →</span>
+      <b><?= htmlspecialchars(tithika_t('home.feature_festival_title')) ?></b><p><?= htmlspecialchars(tithika_t('home.feature_festival_copy')) ?></p><span><?= htmlspecialchars(tithika_t('home.feature_festival_action')) ?></span>
     </a>
   </div>
 </section>
 
 <section class="tk-home-section">
   <div class="tk-home-section-head">
-    <div><span>Reference & devotion</span><h2>Content stays separate from calculation logic.</h2></div>
-    <p>Learn, Devotion and Gallery routes now use a structured editorial layer, making them useful without embedding third-party text or media into the core engine.</p>
+    <div><span><?= htmlspecialchars(tithika_t('home.reference_kicker')) ?></span><h2><?= htmlspecialchars(tithika_t('home.reference_title')) ?></h2></div>
+    <p><?= htmlspecialchars(tithika_t('home.reference_copy')) ?></p>
   </div>
   <div class="tk-home-feature-grid">
-    <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('learn/panchang')) ?>"><b>Learn Panchang</b><p>Understand the five limbs, sunrise-state conventions and how Tithika separates astronomy from observance rules.</p><span>Read guide →</span></a>
-    <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('devotion/aarti')) ?>"><b>Devotion library</b><p>Structured devotional taxonomy with practice context and links back to relevant festival and timing tools.</p><span>Open library →</span></a>
-    <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('gallery/hindu-symbols')) ?>"><b>Visual index</b><p>Lightweight original gallery surfaces that do not slow calculation-heavy pages or depend on external artwork.</p><span>Open gallery →</span></a>
-    <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>"><b>Complete product map</b><p>Browse all <?= tithika_page_count() ?> mapped routes and see which parts of the platform are calculation, content, calendar or reference surfaces.</p><span>Open site map →</span></a>
+    <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('learn/panchang')) ?>"><b><?= htmlspecialchars(tithika_t('home.feature_learn_title')) ?></b><p><?= htmlspecialchars(tithika_t('home.feature_learn_copy')) ?></p><span><?= htmlspecialchars(tithika_t('home.feature_learn_action')) ?></span></a>
+    <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('devotion/aarti')) ?>"><b><?= htmlspecialchars(tithika_t('home.feature_devotion_title')) ?></b><p><?= htmlspecialchars(tithika_t('home.feature_devotion_copy')) ?></p><span><?= htmlspecialchars(tithika_t('home.feature_devotion_action')) ?></span></a>
+    <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('gallery/hindu-symbols')) ?>"><b><?= htmlspecialchars(tithika_t('home.feature_gallery_title')) ?></b><p><?= htmlspecialchars(tithika_t('home.feature_gallery_copy')) ?></p><span><?= htmlspecialchars(tithika_t('home.feature_gallery_action')) ?></span></a>
+    <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>"><b><?= htmlspecialchars(tithika_t('home.feature_map_title')) ?></b><p><?= htmlspecialchars(tithika_t('home.feature_map_copy', null, ['count'=>tithika_page_count()])) ?></p><span><?= htmlspecialchars(tithika_t('home.feature_map_action')) ?></span></a>
   </div>
 </section>
 <?php tithika_render_footer(); ?>

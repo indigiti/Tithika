@@ -5,6 +5,10 @@
   const base=window.TITHIKA_BASE||'/';
   const $=s=>document.querySelector(s);
   const settings=()=>window.TithikaSettings?.get?.()||{clock:'12',lunarMonth:'amanta',tradition:'smarta'};
+  const locale=window.TITHIKA_I18N?.locale||'en';
+  const messages=window.TITHIKA_I18N?.messages||{};
+  const tr=(key,fallback)=>messages[key]||fallback||key;
+  function trf(key,fallback,vars){let text=tr(key,fallback);for(const name of Object.keys(vars||{})){text=text.split('{'+name+'}').join(String(vars[name]));}return text;}
   let controller=null,lastKey='';
 
   const esc=(v='')=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -16,7 +20,8 @@
   function formatDay(value,tz){
     if(!value)return '';
     try{
-      return new Intl.DateTimeFormat('en-IN',{timeZone:tz||'Asia/Kolkata',weekday:'short',day:'numeric',month:'short'}).format(new Date(value+'T12:00:00'));
+      const pref=settings();
+      return new Intl.DateTimeFormat(locale==='hi'?'hi-IN':'en-IN',{numberingSystem:pref.numerals==='deva'?'deva':'latn',timeZone:tz||'Asia/Kolkata',weekday:'short',day:'numeric',month:'short'}).format(new Date(value+'T12:00:00'));
     }catch(e){return value}
   }
   function routeUrl(route){return base+String(route||'').replace(/^\/+|\/+$/g,'')+'/';}
@@ -25,15 +30,15 @@
     const pref=settings(),today=data.today||{},loc=data.location||{},chog=data.choghadiya||{};
     const month=pref.lunarMonth==='purnimanta'?today.purnimanta_month:today.amanta_month;
     set('#tkDailyDate',(today.weekday?today.weekday+' · ':'')+(today.date_label||data.date||''));
-    set('#tkDailyLocation',String(loc.city||'Selected location').split(',').slice(0,2).join(', '));
+    set('#tkDailyLocation',String(loc.city||tr('dynamic.current_location','Selected location')).split(',').slice(0,2).join(', '));
     set('#tkDailyTithi',today.tithi||'—');
     set('#tkDailyPaksha',today.paksha||'—');
     set('#tkDailyNakshatra',today.nakshatra||'—');
-    set('#tkDailyMoon','Moon '+(today.moon_rashi||'—'));
+    set('#tkDailyMoon',tr('dynamic.moon','Moon')+' '+(today.moon_rashi||'—'));
     set('#tkDailyYoga',today.yoga||'—');
-    set('#tkDailyKarana','Karana '+(today.karana||'—'));
+    set('#tkDailyKarana',tr('dynamic.karana','Karana')+' '+(today.karana||'—'));
     set('#tkDailyMonth',month||'—');
-    set('#tkDailyMonthMode',(pref.lunarMonth==='purnimanta'?'Purnimanta':'Amanta')+' preference');
+    set('#tkDailyMonthMode',tr(pref.lunarMonth==='purnimanta'?'dynamic.purnimanta':'dynamic.amanta',pref.lunarMonth==='purnimanta'?'Purnimanta':'Amanta')+' '+tr('dynamic.preference','preference'));
     set('#tkDailySunrise',today.sunrise||'—');
     set('#tkDailySunset',today.sunset||'—');
     set('#tkDailyMoonrise',today.moonrise||'—');
@@ -41,13 +46,17 @@
     set('#tkDailyRahu',timeRange(today.rahu_kaal));
 
     const active=chog.active||chog.next_auspicious;
-    set('#tkDailyChogName',active?.name||(chog.next_auspicious?'Next '+chog.next_auspicious.name:'No active period'));
-    set('#tkDailyChogTime',active?((active.label?active.label+' · ':'')+timeRange(active)):'Open the full timeline for all periods');
-    set('#tkDailyLead',
-      'For '+String(loc.city||'your selected location').split(',').slice(0,2).join(', ')+
-      ', '+(today.tithi||'the current Tithi')+' aligns with '+(today.nakshatra||'the current Nakshatra')+
-      '. The dashboard keeps timing, observances and planet events in one local context.'
-    );
+    set('#tkDailyChogName',active?.name||(chog.next_auspicious?tr('dynamic.next','Next')+' '+chog.next_auspicious.name:tr('dynamic.no_active','No active period')));
+    set('#tkDailyChogTime',active?((active.label?active.label+' · ':'')+timeRange(active)):tr('dynamic.open_timeline','Open the full timeline for all periods'));
+    set('#tkDailyLead',trf(
+      'dynamic.dashboard_lead',
+      'For {location}, {tithi} aligns with {nakshatra}. The dashboard keeps timing, observances and planet events in one local context.',
+      {
+        location:String(loc.city||tr('dynamic.current_location','Selected location')).split(',').slice(0,2).join(', '),
+        tithi:today.tithi||tr('home.tithi','Tithi'),
+        nakshatra:today.nakshatra||tr('home.nakshatra','Nakshatra')
+      }
+    ));
 
     const box=$('#tkUpcomingEvents'),rows=data.upcoming||[];
     if(box){
@@ -55,10 +64,10 @@
         <a class="tk-upcoming-card type-${esc(row.type||'event')}" href="${esc(routeUrl(row.route))}">
           <time>${esc(formatDay(row.date,loc.timezone))}</time>
           <span>${esc(row.type||'event')}</span>
-          <h3>${esc(row.title||'Upcoming event')}</h3>
-          <p>${esc(row.subtitle||'Verified Tithika event')}</p>
-          <b>View details →</b>
-        </a>`).join(''):'<div class="tk-upcoming-empty">No major tracked events fall inside this dashboard horizon. Open the full calendars for the complete year.</div>';
+          <h3>${esc(row.title||tr('dynamic.upcoming_event','Upcoming event'))}</h3>
+          <p>${esc(row.subtitle||tr('dynamic.verified_event','Verified Tithika event'))}</p>
+          <b>${esc(tr('dynamic.view_details','View details →'))}</b>
+        </a>`).join(''):`<div class="tk-upcoming-empty">${esc(tr('dynamic.no_events','No major tracked events fall inside this dashboard horizon. Open the full calendars for the complete year.'))}</div>`;
     }
     root.setAttribute('aria-busy','false');
   }
@@ -84,9 +93,9 @@
     }catch(error){
       if(error.name==='AbortError')return;
       root.setAttribute('aria-busy','false');
-      set('#tkDailyLead','Daily dashboard could not refresh. The individual Panchang and Muhurat tools remain available.');
+      set('#tkDailyLead',tr('dynamic.dashboard_error','Daily dashboard could not refresh. The individual Panchang and Muhurat tools remain available.'));
       const box=$('#tkUpcomingEvents');
-      if(box)box.innerHTML='<div class="tk-upcoming-empty">Unable to load the aggregated event feed right now.</div>';
+      if(box)box.innerHTML=`<div class="tk-upcoming-empty">${esc(tr('dynamic.unable_feed','Unable to load the aggregated event feed right now.'))}</div>`;
     }
   }
 

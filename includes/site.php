@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/content.php';
+require_once __DIR__ . '/i18n.php';
 
 function tithika_routes(): array {
     static $routes;
@@ -201,7 +202,7 @@ function tithika_schema(?array $page, string $title, string $description, string
         'url'=>tithika_absolute_url(tithika_url()),
         'name'=>'Tithika',
         'description'=>'Location-aware Panchang, Muhurat, Jyotish and Vedic calendar utilities.',
-        'inLanguage'=>'en',
+        'inLanguage'=>tithika_locale(),
     ];
 
     $type = 'WebPage';
@@ -215,7 +216,7 @@ function tithika_schema(?array $page, string $title, string $description, string
         'name'=>$title,
         'description'=>$description,
         'isPartOf'=>['@id'=>$website['@id']],
-        'inLanguage'=>'en',
+        'inLanguage'=>tithika_locale(),
     ];
 
     $graph = [$website, $webpage];
@@ -225,7 +226,7 @@ function tithika_schema(?array $page, string $title, string $description, string
             '@id'=>$canonical . '#breadcrumbs',
             'itemListElement'=>[
                 ['@type'=>'ListItem','position'=>1,'name'=>'Home','item'=>tithika_absolute_url(tithika_url())],
-                ['@type'=>'ListItem','position'=>2,'name'=>$page['group_title'],'item'=>tithika_absolute_url(tithika_pretty_url($page['group']))],
+                ['@type'=>'ListItem','position'=>2,'name'=>tithika_t('nav.' . $page['group'], $page['group_title']),'item'=>tithika_absolute_url(tithika_pretty_url($page['group']))],
                 ['@type'=>'ListItem','position'=>3,'name'=>$page['title'],'item'=>$canonical],
             ],
         ];
@@ -242,7 +243,7 @@ function tithika_render_header(string $title, ?array $page = null): void {
     $schema = tithika_schema($page, $title . ' — Tithika', $description, $canonical);
     ?>
 <!doctype html>
-<html lang="en">
+<html lang="<?= htmlspecialchars(tithika_locale()) ?>">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -266,30 +267,30 @@ function tithika_render_header(string $title, ?array $page = null): void {
   <script type="application/ld+json"><?= json_encode($schema, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP) ?></script>
 </head>
 <body>
-<a class="tk-skip-link" href="#main-content">Skip to content</a>
+<a class="tk-skip-link" href="#main-content"><?= htmlspecialchars(tithika_t('skip.content')) ?></a>
 <div class="tk-shell">
   <header class="tk-header">
     <a class="tk-brand" href="<?= htmlspecialchars($base) ?>" aria-label="Tithika home">
       <span class="tk-logo" aria-hidden="true">ति</span>
-      <span><strong>Tithika</strong><small>Vedic time, reimagined</small></span>
+      <span><strong>Tithika</strong><small><?= htmlspecialchars(tithika_t('brand.tagline')) ?></small></span>
     </a>
-    <nav class="tk-nav" aria-label="Primary">
+    <nav class="tk-nav" aria-label="<?= htmlspecialchars(tithika_t('nav.primary')) ?>">
       <?php foreach (array_slice($routes, 0, 6, true) as $key => $group): ?>
-        <a href="<?= htmlspecialchars(tithika_pretty_url($key)) ?>"<?= ($page && $page['group'] === $key) ? ' class="is-active" aria-current="page"' : '' ?>><?= htmlspecialchars($group['title']) ?></a>
+        <a href="<?= htmlspecialchars(tithika_pretty_url($key)) ?>"<?= ($page && $page['group'] === $key) ? ' class="is-active" aria-current="page"' : '' ?><?= htmlspecialchars(tithika_t('nav.' . $key, $group['title'])) ?></a>
       <?php endforeach; ?>
-      <a href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>">All tools</a>
-      <a href="<?= htmlspecialchars(tithika_url('settings/')) ?>">Settings</a>
+      <a href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>"><?= htmlspecialchars(tithika_t('nav.all_tools')) ?></a>
+      <a href="<?= htmlspecialchars(tithika_url('settings/')) ?>"><?= htmlspecialchars(tithika_t('nav.settings')) ?></a>
     </nav>
-    <a class="tk-mobile-tools" href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>">All tools</a>
-    <button class="tk-place-button" id="tkPlaceButton" type="button" aria-expanded="false" aria-controls="tkPlacePanel"><span aria-hidden="true">⌖</span><b id="tkPlaceText">Location</b></button>
+    <a class="tk-mobile-tools" href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>"><?= htmlspecialchars(tithika_t('nav.all_tools')) ?></a>
+    <button class="tk-place-button" id="tkPlaceButton" type="button" aria-expanded="false" aria-controls="tkPlacePanel"><span aria-hidden="true">⌖</span><b id="tkPlaceText"><?= htmlspecialchars(tithika_t('location.label')) ?></b></button>
   </header>
-  <div class="tk-place-panel" id="tkPlacePanel" hidden aria-label="Location chooser">
+  <div class="tk-place-panel" id="tkPlacePanel" hidden aria-label="<?= htmlspecialchars(tithika_t('location.chooser')) ?>">
     <div class="tk-place-search">
-      <input id="tkCitySearch" autocomplete="off" inputmode="search" aria-label="Search city or place" placeholder="Search city or place">
-      <button id="tkDetectLocation" type="button" title="Use current location" aria-label="Use current location">⌖</button>
+      <input id="tkCitySearch" autocomplete="off" inputmode="search" aria-label="<?= htmlspecialchars(tithika_t('location.search')) ?>" placeholder="<?= htmlspecialchars(tithika_t('location.search')) ?>">
+      <button id="tkDetectLocation" type="button" title="<?= htmlspecialchars(tithika_t('location.use_current')) ?>" aria-label="<?= htmlspecialchars(tithika_t('location.use_current')) ?>">⌖</button>
     </div>
     <div id="tkSearchResults" class="tk-search-results" aria-live="polite"></div>
-    <p>Your location is used only to calculate local solar timings.</p>
+    <p><?= htmlspecialchars(tithika_t('location.privacy')) ?></p>
   </div>
   <main id="main-content">
 <?php
@@ -300,18 +301,19 @@ function tithika_render_footer(): void {
     ?>
   </main>
   <footer class="tk-footer">
-    <div><strong>Tithika</strong><span>Traditional calendar conventions in a modern, evidence-first utility experience.</span></div>
+    <div><strong>Tithika</strong><span><?= htmlspecialchars(tithika_t('footer.tagline')) ?></span></div>
     <div>
-      <a href="<?= htmlspecialchars($base) ?>">Home</a>
-      <a href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>">Site map</a>
-      <a href="<?= htmlspecialchars(tithika_url('sitemap.xml')) ?>">XML sitemap</a>
-      <a href="<?= htmlspecialchars(tithika_pretty_url('learn/faq')) ?>">FAQ</a>
+      <a href="<?= htmlspecialchars($base) ?>"><?= htmlspecialchars(tithika_t('footer.home')) ?></a>
+      <a href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>"><?= htmlspecialchars(tithika_t('footer.sitemap')) ?></a>
+      <a href="<?= htmlspecialchars(tithika_url('sitemap.xml')) ?>"><?= htmlspecialchars(tithika_t('footer.xml')) ?></a>
+      <a href="<?= htmlspecialchars(tithika_pretty_url('learn/faq')) ?>"><?= htmlspecialchars(tithika_t('footer.faq')) ?></a>
     </div>
   </footer>
 </div>
 <div class="tk-toast" id="tkToast" role="status" aria-live="polite" hidden></div>
 <script>
 window.TITHIKA_BASE = <?= json_encode($base, JSON_UNESCAPED_SLASHES) ?>;
+window.TITHIKA_I18N = <?= json_encode(tithika_client_messages(), JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) ?>;
 </script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/tithika-site.js')) ?>" defer></script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/home-dashboard.js')) ?>" defer></script>

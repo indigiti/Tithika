@@ -74,6 +74,9 @@ jobs:
       - name: Dashboard and Settings surface fixture
         run: php scripts/test-gap-closing-surfaces.php
 
+      - name: Localization regression fixture
+        run: php scripts/test-localization.php
+
       - name: Kundali Workspace surface fixture
         run: php scripts/test-kundali-workspace-surface.php
 

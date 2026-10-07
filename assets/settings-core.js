@@ -8,6 +8,7 @@
     lunarMonth:'amanta',
     tradition:'smarta',
     language:'en',
+    numerals:'latin',
     defaultLocation:null
   };
   const allowed={
@@ -15,7 +16,8 @@
     clock:new Set(['12','24']),
     lunarMonth:new Set(['amanta','purnimanta']),
     tradition:new Set(['smarta','vaishnava','iskcon']),
-    language:new Set(['en'])
+    language:new Set(['en','hi']),
+    numerals:new Set(['latin','deva'])
   };
   function safe(raw){
     const out={...defaults};
@@ -44,6 +46,8 @@
   function apply(){
     document.documentElement.dataset.tkTheme=resolvedTheme();
     document.documentElement.style.colorScheme=resolvedTheme();
+    document.documentElement.lang=state.language||'en';
+    document.cookie='tithika_lang='+encodeURIComponent(state.language||'en')+'; Max-Age=31536000; Path=/; SameSite=Lax';
   }
   function set(patch){
     state=safe({...state,...patch});persist();apply();
@@ -60,10 +64,11 @@
   }
   function get(){return JSON.parse(JSON.stringify(state))}
   function hour24(){return state.clock==='24'}
-  function formatNumber(value){
-    return new Intl.NumberFormat(state.language==='en'?'en-IN':'en-IN').format(value);
-  }
-  window.TithikaSettings={get,set,saveLocation,clearLocation:()=>saveLocation(null),apply,hour24,formatNumber,key:KEY};
+  function locale(){return state.language==='hi'?'hi-IN':'en-IN'}
+  function numberingSystem(){return state.numerals==='deva'?'deva':'latn'}
+  function formatNumber(value){return new Intl.NumberFormat(locale(),{numberingSystem:numberingSystem()}).format(value)}
+  function formatDecimal(value,digits=2){return new Intl.NumberFormat(locale(),{numberingSystem:numberingSystem(),minimumFractionDigits:digits,maximumFractionDigits:digits}).format(Number(value))}
+  window.TithikaSettings={get,set,saveLocation,clearLocation:()=>saveLocation(null),apply,hour24,formatNumber,formatDecimal,locale,numberingSystem,key:KEY};
   apply();
   if(window.matchMedia){
     const media=window.matchMedia('(prefers-color-scheme: dark)');
