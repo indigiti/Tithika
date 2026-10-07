@@ -22,16 +22,43 @@ def declination(name,moment):
     dec=math.asin(math.sin(la)*math.cos(eps)+math.cos(la)*math.sin(eps)*math.sin(lo))
     return math.degrees(dec)
 
-def parallel_rows(moment):
-    vals={b:declination(b,moment) for b in BODIES};rows=[]
+def parallel_metric(a,b,moment,contra=False):
+    da,db=declination(a,moment),declination(b,moment)
+    return (da+db if contra else da-db),da,db
+
+def refine_parallel(a,b,left,right,contra=False):
+    fl=parallel_metric(a,b,left,contra)[0]
+    lo,hi=left,right
+    for _ in range(42):
+        mid=lo+(hi-lo)/2
+        fm=parallel_metric(a,b,mid,contra)[0]
+        if fl==0 or fl*fm<=0:
+            hi=mid
+        else:
+            lo=mid;fl=fm
+    return hi
+
+def parallel_rows(year,tz):
+    rows=[];start=datetime(year,1,1,tzinfo=tz);end=datetime(year+1,1,1,tzinfo=tz);step=timedelta(hours=6)
     for i,a in enumerate(BODIES):
         for b in BODIES[i+1:]:
-            da,db=vals[a],vals[b];same=da*db>=0;diff=abs(da-db if same else abs(da)-abs(db))
-            if diff<=1.0:
-                rows.append({"title":f"{a} {'Parallel' if same else 'Contra-parallel'} {b}","date":moment.date().isoformat(),
-                 "time":moment.strftime("%H:%M"),"meta":f"{da:+.3f}° / {db:+.3f}°","detail":f"Declination separation metric {diff:.3f}°; exact-aspect threshold shown as a reference, not a classical Jyotish dignity.","link_date":moment.date().isoformat()})
-    if not rows:
-        rows=[{"title":"No close declination pairs","meta":"1.0° scan threshold","detail":"Use another date/time to inspect parallel geometry."}]
+            for contra in (False,True):
+                cur=start-step;prev=parallel_metric(a,b,cur,contra)[0]
+                last_event=None
+                while cur<end:
+                    nxt=min(cur+step,end);val=parallel_metric(a,b,nxt,contra)[0]
+                    if prev==0 or prev*val<0:
+                        at=refine_parallel(a,b,cur,nxt,contra)
+                        if start<=at<end and (last_event is None or at-last_event>timedelta(hours=1)):
+                            _,da,db=parallel_metric(a,b,at,contra)
+                            rows.append({"title":f"{a} {'Contra-parallel' if contra else 'Parallel'} {b}",
+                              "date":at.date().isoformat(),"time":at.strftime("%H:%M:%S"),
+                              "meta":f"{da:+.5f}° / {db:+.5f}°",
+                              "detail":f"Exact geocentric declination {'sum' if contra else 'difference'} refined to zero; residual {abs(da+db if contra else da-db):.8f}°.",
+                              "link_date":at.date().isoformat()})
+                            last_event=at
+                    cur=nxt;prev=val
+    rows.sort(key=lambda r:(r["date"],r["time"],r["title"]))
     return rows
 
 def latitude(name,moment): return planetary.tropical_coordinates(name,moment)[1]
@@ -55,14 +82,37 @@ def crossing_rows(year,tz):
     rows.sort(key=lambda r:(r.get("date",""),r.get("time","")))
     return rows
 
+def tropical_ritu_sector(moment):
+    lon=planetary.tropical_coordinates("Sun",moment)[0]
+    return int(((lon+30.0)%360.0)//60.0)
+
+def refine_ritu(left,right,old_sector):
+    lo,hi=left,right
+    for _ in range(44):
+        mid=lo+(hi-lo)/2
+        if tropical_ritu_sector(mid)==old_sector: lo=mid
+        else: hi=mid
+    return hi
+
 def season_rows(year,lat,lon,tz):
-    events=sankranti.find_year(year,lat,lon,tz,False); bysign={int(e["rashi_id"]):e for e in events}
-    starts=[11,1,3,5,7,9]  # Meena, Vrishabha, Karka, Kanya, Vrishchika, Makara
-    rows=[]
-    for (name,span,english),sid in zip(RITUS,starts):
-        e=bysign.get(sid)
-        if not e:continue
-        rows.append({"title":name,"date":e["date"],"time":e["time_label"],"meta":f"{span} · {english}","detail":"Tithika six-Ritu reference anchored to Nirayana solar ingress.","link_date":e["date"]})
+    start=datetime(year,1,1,tzinfo=tz);end=datetime(year+1,1,1,tzinfo=tz);step=timedelta(hours=12)
+    names=[
+      ("Vasanta","Meena → Mesha","Spring"),("Grishma","Vrishabha → Mithuna","Summer"),
+      ("Varsha","Karka → Simha","Monsoon"),("Sharad","Kanya → Tula","Autumn"),
+      ("Hemanta","Vrishchika → Dhanu","Pre-winter"),("Shishira","Makara → Kumbha","Winter")]
+    rows=[];cur=start-step;old=tropical_ritu_sector(cur)
+    while cur<end:
+        nxt=min(cur+step,end);new=tropical_ritu_sector(nxt)
+        if new!=old:
+            at=refine_ritu(cur,nxt,old)
+            if start<=at<end:
+                name,span,english=names[new]
+                rows.append({"title":name,"date":at.date().isoformat(),"time":at.strftime("%H:%M:%S"),
+                  "meta":f"{span} · {english}",
+                  "detail":"Indian six-Ritu boundary from tropical solar longitude; each Ritu spans two tropical zodiac signs.",
+                  "link_date":at.date().isoformat()})
+            old=new
+        cur=nxt
     return rows
 
 def zodiac_rows(moment,sidereal):
@@ -82,7 +132,7 @@ def main():
     d=str(p.get("date") or datetime.now(tz).strftime("%Y-%m-%d"));tv=str(p.get("time") or "12:00:00")
     if len(tv)==5:tv+=":00"
     moment=datetime.strptime(d+" "+tv,"%Y-%m-%d %H:%M:%S").replace(tzinfo=tz);year=moment.year
-    if slug=="planets/parallel":title="Planets Mutual Parallel";items=parallel_rows(moment)
+    if slug=="planets/parallel":title="Planets Mutual Parallel";items=parallel_rows(year,tz)
     elif slug=="planets/ecliptic-crossings":title="Planets Ecliptic Crossings";items=crossing_rows(year,tz)
     elif slug=="astronomy/indian-seasons":title="Indian Seasons";items=season_rows(year,lat,lon,tz)
     elif slug=="planets/sidereal-zodiac":title="Sidereal Zodiac";items=zodiac_rows(moment,True)

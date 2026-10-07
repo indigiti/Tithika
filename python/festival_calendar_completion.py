@@ -121,18 +121,18 @@ def main():
     major=major_events(year,lat,lon,tz);sections=[];title=slug.split("/")[-1].replace("-"," ").title()
     if slug in ("calendars/hindu","calendars/indian","festivals/hindu"):
         title="Hindu Festival Calendar" if slug!="calendars/indian" else "Indian Festival Calendar"
-        sections=[{"title":f"Verified major festivals {year}","note":"Aggregated from Tithika's declarative festival-rule engine.","items":major},
+        sections=[{"title":f"Verified major festivals {year}","note":"Calculated aggregation from Tithika's declarative festival-rule engine; not an exhaustive all-tradition festival almanac.","items":major},
                   {"title":"Purnima calendar","note":"Exact Tithi occurrences","items":purnima_rows(year,lat,lon,tz)}]
     elif slug in ("festivals/tamil","calendars/tamil"):
-        title="Tamil Festival Calendar";sections=[{"title":"Tamil solar calendar","note":"Nirayana solar month aggregation.","items":regional_year(year,lat,lon,tz,"tamil")},{"title":"Major festivals","note":"Verified shared rules","items":major}]
+        title="Tamil Festival Calendar";sections=[{"title":"Tamil solar calendar","note":"Nirayana solar month aggregation.","items":regional_year(year,lat,lon,tz,"tamil")},{"title":"Major festivals","note":"Shared verified major-event rules; regional festival coverage is intentionally non-exhaustive.","items":major}]
     elif slug in ("festivals/malayalam","calendars/malayalam"):
         title="Malayalam Festival Calendar";sections=[{"title":"Malayalam solar calendar","note":"Nirayana solar month aggregation.","items":regional_year(year,lat,lon,tz,"malayalam")},{"title":"Major festivals","note":"Verified shared rules","items":major}]
     elif slug in MONTH_SLUGS:
-        title=MONTH_SLUGS[slug]+" Festivals";sections=[{"title":f"{MONTH_SLUGS[slug]} {year}","note":"Major verified events filtered by Purnimanta month at local sunrise.","items":month_rows(year,lat,lon,tz,MONTH_SLUGS[slug])}]
+        title=MONTH_SLUGS[slug]+" Festivals";sections=[{"title":f"{MONTH_SLUGS[slug]} {year}","note":"Major Tithika events filtered by Purnimanta month at local sunrise. This is a calculated aggregation, not an exhaustive regional almanac.","items":month_rows(year,lat,lon,tz,MONTH_SLUGS[slug])}]
     elif slug=="calendars/purnima":
         title="Purnima Calendar";sections=[{"title":str(year),"note":"Exact full-moon Tithi occurrences.","items":purnima_rows(year,lat,lon,tz)}]
     elif slug in CALENDAR_THEMES:
-        title=slug.split("/")[-1].replace("-"," ").title()+" Calendar";sections=[{"title":str(year),"note":"Festival-family aggregation; verified selectors are reused where available.","items":theme_rows(slug,year,major)}]
+        title=slug.split("/")[-1].replace("-"," ").title()+" Calendar";sections=[{"title":str(year),"note":"Structured festival-family reference; exact dates are shown only when backed by a verified Tithika selector.","items":theme_rows(slug,year,major)}]
     elif slug in ("festivals/top-10","festivals/top-20","festivals/top-25"):
         n=int(slug.split("-")[-1]);title=f"Top {n} Hindu Festivals"
         extra=["Makar Sankranti","Maha Shivaratri","Rama Navami","Hanuman Jayanti","Akshaya Tritiya","Guru Purnima","Raksha Bandhan","Krishna Janmashtami","Ganesh Chaturthi","Navratri","Dussehra","Karwa Chauth","Dhanteras","Diwali","Govardhan Puja","Bhai Dooj","Holi","Durga Puja","Chhath","Onam","Gudi Padwa","Ugadi","Vasant Panchami","Vat Savitri","Teej"]

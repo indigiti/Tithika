@@ -14,7 +14,7 @@ function curlJson(string $url): array {
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_FOLLOWLOCATION => false,
         CURLOPT_CONNECTTIMEOUT => 5,
         CURLOPT_TIMEOUT => 10,
         CURLOPT_HTTPHEADER => [
@@ -33,7 +33,8 @@ function curlJson(string $url): array {
 }
 
 function readPayload(): array {
-    $raw = file_get_contents('php://input') ?: '{}';
+    $raw = file_get_contents('php://input', false, null, 0, 65537) ?: '{}';
+    if (strlen($raw) > 65536) out(['ok'=>false,'error'=>'Request body too large'], 413);
     $payload = json_decode($raw, true);
     if (!is_array($payload)) out(['ok'=>false,'error'=>'Invalid JSON'], 400);
     $lat = (float)($payload['lat'] ?? 19.0760);
@@ -100,6 +101,7 @@ try {
     if ($action === 'search') {
         $q = trim((string)($_GET['q'] ?? ''));
         if (mb_strlen($q) < 2) out(['ok'=>true,'results'=>[]]);
+        if (mb_strlen($q) > 120) out(['ok'=>false,'error'=>'Search query too long'], 422);
         $url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&addressdetails=1&q=' . rawurlencode($q);
         $rows = curlJson($url); $results = [];
         foreach ($rows as $r) {

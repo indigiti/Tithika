@@ -1769,7 +1769,7 @@
   }
   async function calculatePhaseCompletion(){
     const loading=$('#tkPhaseLoading');
-    if(loading){loading.hidden=false;loading.textContent='Building verified result…'}
+    if(loading){loading.hidden=false;loading.textContent='Building route result…'}
     try{
       const p=payload();
       p.slug=pageSlug;

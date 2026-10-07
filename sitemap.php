@@ -6,6 +6,8 @@ header('Content-Type: application/xml; charset=utf-8');
 $lastmod = gmdate('Y-m-d', max(
     (int)@filemtime(__DIR__ . '/config/routes.php'),
     (int)@filemtime(__DIR__ . '/config/live.php'),
+    (int)@filemtime(__DIR__ . '/config/aggregate.php'),
+    (int)@filemtime(__DIR__ . '/config/reference.php'),
     (int)@filemtime(__DIR__ . '/includes/content.php')
 ));
 

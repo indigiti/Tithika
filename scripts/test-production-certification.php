@@ -14,11 +14,18 @@ function certify(bool $condition, string $message): void {
 
 $flat = tithika_flat_routes();
 $live = tithika_live_slugs();
+$aggregate = tithika_aggregate_slugs();
+$reference = tithika_reference_slugs();
 $indexable = array_values(array_filter($flat, 'tithika_is_indexable_page'));
 $noindex = array_values(array_filter($flat, fn($p) => !tithika_is_indexable_page($p)));
 
 certify(count($flat) === 292, 'route contract must remain 292');
-certify(count($live) === 229, 'verified live route count must be 229');
+certify(count($live) === 159, 'verified live route count must be 159');
+certify(count($aggregate) === 21, 'calculated aggregation route count must be 21');
+certify(count($reference) === 49, 'structured reference route count must be 49');
+certify(count(array_intersect($live, $aggregate)) === 0, 'live and aggregate registries must be disjoint');
+certify(count(array_intersect($live, $reference)) === 0, 'live and reference registries must be disjoint');
+certify(count(array_intersect($aggregate, $reference)) === 0, 'aggregate and reference registries must be disjoint');
 certify(count($indexable) === 292, 'production indexable route count must be 292');
 certify(count($noindex) === 0, 'mapped noindex route count must be zero');
 
@@ -27,7 +34,8 @@ certify(count($completion) === 99, 'final completion route set must remain 99');
 certify(count(array_unique($completion)) === 99, 'final completion route set must be unique');
 foreach ($completion as $slug) {
     certify(isset($flat[$slug]), "completion route missing from manifest: {$slug}");
-    certify(in_array($slug, $live, true), "completion route not promoted: {$slug}");
+    $tiers = (int)in_array($slug, $live, true) + (int)in_array($slug, $aggregate, true) + (int)in_array($slug, $reference, true);
+    certify($tiers === 1, "completion route must belong to exactly one quality tier: {$slug}");
     certify(tithika_is_indexable_page($flat[$slug]), "completion route is not indexable: {$slug}");
 }
 
@@ -51,6 +59,8 @@ foreach ([
     'python/vrat_recurrence.py',
     'scripts/test-vrat-recurrence.py',
     'config/completion.php',
+    'config/aggregate.php',
+    'config/reference.php',
     'python/panchang_completion.py',
     'python/muhurat_completion.py',
     'python/vrat_completion.py',
@@ -81,6 +91,8 @@ echo json_encode([
     'ok'=>true,
     'route_contract'=>count($flat),
     'verified_live'=>count($live),
+    'calculated_aggregate'=>count($aggregate),
+    'structured_reference'=>count($reference),
     'indexable'=>count($indexable),
     'mapped_noindex'=>count($noindex),
     'noindex_by_family'=>$queue,

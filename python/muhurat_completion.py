@@ -27,11 +27,48 @@ NIGHT_GOWRI={
 4:["Rogam","Laabam","Dhanam","Sugam","Soram","Uthi","Visham","Amirdha"],
 5:["Laabam","Dhanam","Sugam","Soram","Uthi","Visham","Amirdha","Rogam"],
 }
-MUHURTA_NAMES=["Rudra","Ahi","Mitra","Pitri","Vasu","Varaha","Vishvadeva","Vidhi","Satamukhi","Puruhuta","Vahini","Naktanakara","Varuna","Aryaman","Bhaga",
-"Girisha","Ajapada","Ahirbudhnya","Pushya","Ashwini","Yama","Agni","Vidhatri","Kanda","Aditi","Jiva","Vishnu","Dyumadgadyuti","Brahma","Samudram"]
+MUHURTA_NAMES=["Rudra","Uraga","Mitra","Pitara","Vasu","Ambu","Vishwedeva","Vidhi","Brahma","Indra","Indragni","Daitya","Varuna","Aryama","Bhaga",
+"Ishwara","Ajaikapada","Ahirbudhnya","Pusha","Ashwini","Yama","Agni","Brahma","Chandra","Aditi","Brihaspati","Vishnu","Surya","Tvashta","Samirana"]
+INAUSPICIOUS_MUHURTAS={"Rudra","Uraga","Pitara","Indragni","Daitya","Bhaga","Ishwara","Ajaikapada","Yama","Agni"}
 PAKSHI=["Vulture","Owl","Crow","Cock","Peacock"]
-ACT=["Ruling","Eating","Walking","Sleeping","Dying"]
 ACT_SCORE={"Ruling":"Best","Eating":"Good","Walking":"Average","Sleeping":"Bad","Dying":"Very Bad"}
+
+# Yama-level Pancha Pakshi mirror tables.  These deliberately stop at the
+# classical five day + five night Yamas; Sukshma subdivisions are not inferred.
+BRIGHT_GROUP={6:"A",1:"A",0:"B",2:"B",5:"B",3:"C",4:"D"}
+DARK_GROUP={6:"A",1:"A",0:"B",5:"B",2:"C",3:"D",4:"E"}
+PANCHA_TABLE={
+"Shukla Paksha":{
+"A":{"day":{
+"Vulture":["Eating","Walking","Ruling","Sleeping","Dying"],"Owl":["Ruling","Dying","Eating","Walking","Sleeping"],"Crow":["Walking","Sleeping","Dying","Ruling","Eating"],"Cock":["Dying","Ruling","Sleeping","Eating","Walking"],"Peacock":["Sleeping","Eating","Walking","Dying","Ruling"]},
+"night":{"Vulture":["Dying","Ruling","Sleeping","Eating","Walking"],"Owl":["Sleeping","Eating","Walking","Dying","Ruling"],"Crow":["Eating","Walking","Ruling","Sleeping","Dying"],"Cock":["Walking","Sleeping","Dying","Ruling","Eating"],"Peacock":["Ruling","Dying","Eating","Walking","Sleeping"]}},
+"B":{"day":{
+"Vulture":["Dying","Ruling","Sleeping","Eating","Walking"],"Owl":["Eating","Walking","Ruling","Sleeping","Dying"],"Crow":["Sleeping","Eating","Walking","Dying","Ruling"],"Cock":["Walking","Sleeping","Dying","Ruling","Eating"],"Peacock":["Ruling","Dying","Eating","Walking","Sleeping"]},
+"night":{"Vulture":["Walking","Sleeping","Dying","Ruling","Eating"],"Owl":["Dying","Ruling","Sleeping","Eating","Walking"],"Crow":["Ruling","Dying","Eating","Walking","Sleeping"],"Cock":["Eating","Walking","Ruling","Sleeping","Dying"],"Peacock":["Sleeping","Eating","Walking","Dying","Ruling"]}},
+"C":{"day":{
+"Vulture":["Sleeping","Eating","Walking","Dying","Ruling"],"Owl":["Walking","Sleeping","Dying","Ruling","Eating"],"Crow":["Eating","Walking","Ruling","Sleeping","Dying"],"Cock":["Ruling","Dying","Eating","Walking","Sleeping"],"Peacock":["Dying","Ruling","Sleeping","Eating","Walking"]},
+"night":{"Vulture":["Ruling","Dying","Eating","Walking","Sleeping"],"Owl":["Eating","Walking","Ruling","Sleeping","Dying"],"Crow":["Dying","Ruling","Sleeping","Eating","Walking"],"Cock":["Sleeping","Eating","Walking","Dying","Ruling"],"Peacock":["Walking","Sleeping","Dying","Ruling","Eating"]}},
+"D":{"day":{
+"Vulture":["Walking","Sleeping","Dying","Ruling","Eating"],"Owl":["Dying","Ruling","Sleeping","Eating","Walking"],"Crow":["Ruling","Dying","Eating","Walking","Sleeping"],"Cock":["Eating","Walking","Ruling","Sleeping","Dying"],"Peacock":["Sleeping","Eating","Walking","Dying","Ruling"]},
+"night":{"Vulture":["Eating","Walking","Ruling","Sleeping","Dying"],"Owl":["Walking","Sleeping","Dying","Ruling","Eating"],"Crow":["Sleeping","Eating","Walking","Dying","Ruling"],"Cock":["Dying","Ruling","Sleeping","Eating","Walking"],"Peacock":["Ruling","Dying","Eating","Walking","Sleeping"]}}
+},
+"Krishna Paksha":{
+"A":{"day":{
+"Vulture":["Walking","Ruling","Eating","Dying","Sleeping"],"Owl":["Dying","Sleeping","Ruling","Walking","Eating"],"Crow":["Eating","Dying","Sleeping","Ruling","Walking"],"Cock":["Ruling","Eating","Walking","Sleeping","Dying"],"Peacock":["Sleeping","Walking","Dying","Eating","Ruling"]},
+"night":{"Vulture":["Sleeping","Walking","Dying","Eating","Ruling"],"Owl":["Eating","Dying","Walking","Ruling","Sleeping"],"Crow":["Walking","Ruling","Eating","Sleeping","Dying"],"Cock":["Dying","Sleeping","Ruling","Walking","Eating"],"Peacock":["Ruling","Eating","Sleeping","Walking","Dying"]}},
+"B":{"day":{
+"Vulture":["Sleeping","Walking","Dying","Eating","Ruling"],"Owl":["Eating","Dying","Walking","Ruling","Sleeping"],"Crow":["Walking","Ruling","Eating","Sleeping","Dying"],"Cock":["Dying","Sleeping","Ruling","Walking","Eating"],"Peacock":["Ruling","Eating","Sleeping","Dying","Walking"]},
+"night":{"Vulture":["Ruling","Eating","Sleeping","Walking","Dying"],"Owl":["Sleeping","Walking","Dying","Eating","Ruling"],"Crow":["Dying","Sleeping","Ruling","Walking","Eating"],"Cock":["Eating","Ruling","Walking","Sleeping","Dying"],"Peacock":["Walking","Dying","Eating","Ruling","Sleeping"]}},
+"C":{"day":{
+"Vulture":["Dying","Sleeping","Walking","Ruling","Eating"],"Owl":["Ruling","Eating","Dying","Sleeping","Walking"],"Crow":["Sleeping","Walking","Ruling","Eating","Dying"],"Cock":["Eating","Ruling","Sleeping","Dying","Walking"],"Peacock":["Walking","Dying","Eating","Sleeping","Ruling"]},
+"night":{"Vulture":["Eating","Ruling","Sleeping","Dying","Walking"],"Owl":["Walking","Dying","Eating","Ruling","Sleeping"],"Crow":["Dying","Eating","Walking","Sleeping","Ruling"],"Cock":["Ruling","Sleeping","Dying","Walking","Eating"],"Peacock":["Sleeping","Walking","Ruling","Eating","Dying"]}},
+"D":{"day":{
+"Vulture":["Ruling","Eating","Sleeping","Walking","Dying"],"Owl":["Sleeping","Walking","Eating","Dying","Ruling"],"Crow":["Dying","Ruling","Walking","Eating","Sleeping"],"Cock":["Walking","Dying","Ruling","Sleeping","Eating"],"Peacock":["Eating","Sleeping","Dying","Ruling","Walking"]},
+"night":{"Vulture":["Dying","Walking","Ruling","Eating","Sleeping"],"Owl":["Ruling","Eating","Sleeping","Walking","Dying"],"Crow":["Sleeping","Dying","Eating","Ruling","Walking"],"Cock":["Eating","Ruling","Walking","Dying","Sleeping"],"Peacock":["Walking","Sleeping","Dying","Ruling","Eating"]}},
+"E":{"day":{
+"Vulture":["Eating","Dying","Ruling","Sleeping","Walking"],"Owl":["Walking","Ruling","Sleeping","Eating","Dying"],"Crow":["Ruling","Sleeping","Dying","Walking","Eating"],"Cock":["Sleeping","Eating","Walking","Dying","Ruling"],"Peacock":["Dying","Walking","Eating","Ruling","Sleeping"]},
+"night":{"Vulture":["Walking","Sleeping","Dying","Ruling","Eating"],"Owl":["Dying","Eating","Ruling","Sleeping","Walking"],"Crow":["Eating","Walking","Sleeping","Dying","Ruling"],"Cock":["Ruling","Dying","Eating","Walking","Sleeping"],"Peacock":["Sleeping","Ruling","Walking","Eating","Dying"]}}
+}}
 
 def rise(d,lat,lon,tz,body,dirn):
     return panchang.rise_set(d,lat,lon,tz,body,dirn)
@@ -84,28 +121,33 @@ def do_ghati(selected,lat,lon,tz):
     rows=[]; day=(ss-sr)/15; night=(nr-ss)/15
     for i in range(15):
         a=sr+day*i;b=sr+day*(i+1)
-        rows.append({"title":MUHURTA_NAMES[i],"date":selected.isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"Day Muhurta {i+1} · 2 Ghati","detail":"One fifteenth of local daylight","link_date":selected.isoformat()})
+        name=MUHURTA_NAMES[i]
+        rows.append({"title":name,"date":selected.isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"Day Muhurta {i+1} · 2 Ghati · {'Inauspicious' if name in INAUSPICIOUS_MUHURTAS else 'Auspicious'}","detail":"One fifteenth of local daylight","link_date":selected.isoformat()})
     for i in range(15):
         a=ss+night*i;b=ss+night*(i+1)
-        rows.append({"title":MUHURTA_NAMES[15+i],"date":selected.isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"Night Muhurta {i+16} · 2 Ghati","detail":"One fifteenth of local night","link_date":selected.isoformat()})
+        name=MUHURTA_NAMES[15+i]
+        rows.append({"title":name,"date":selected.isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"Night Muhurta {i+16} · 2 Ghati · {'Inauspicious' if name in INAUSPICIOUS_MUHURTAS else 'Auspicious'}","detail":"One fifteenth of local night","link_date":selected.isoformat()})
     return [{"title":"30 Do-Ghati Muhurtas","note":"15 daylight + 15 night Muhurtas; each interval equals two local Ghatis.","items":rows}]
 
 def pakshi_sections(selected,lat,lon,tz):
     sr,ss,nr=sun_events(selected,lat,lon,tz)
     st=panchang.state_at(sr+timedelta(seconds=1))
-    paksha_shift=0 if st["paksha"]=="Shukla Paksha" else 2
-    weekday_shift=(selected.weekday()+paksha_shift)%5
+    paksha=st["paksha"]
+    group=(BRIGHT_GROUP if paksha=="Shukla Paksha" else DARK_GROUP)[selected.weekday()]
     sections=[]
-    for label,start,end,halfshift in [("Day",sr,ss,0),("Night",ss,nr,2)]:
-        major=(end-start)/5; items=[]
-        for m in range(5):
-            sub=major/5
-            for s in range(5):
-                a=start+major*m+sub*s;b=a+sub
-                bird=PAKSHI[(s+weekday_shift+halfshift)%5]
-                activity=ACT[(m+s+weekday_shift+halfshift)%5]
-                items.append({"title":f"{bird} · {activity}","date":a.date().isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"{label} · {ACT_SCORE[activity]}","detail":f'{st["paksha"]} · versioned Tithika Pakshi-cycle profile',"link_date":a.date().isoformat()})
-        sections.append({"title":f"{label} Pancha Pakshi","note":"Five major periods × five subperiods; activity/bird cycle is explicit and versioned.","items":items})
+    for label,start,end,half in [("Day",sr,ss,"day"),("Night",ss,nr,"night")]:
+        yama=(end-start)/5
+        items=[]
+        table=PANCHA_TABLE[paksha][group][half]
+        for idx in range(5):
+            a=start+yama*idx;b=start+yama*(idx+1)
+            for bird in PAKSHI:
+                activity=table[bird][idx]
+                items.append({"title":f"{bird} · {activity}","date":a.date().isoformat(),"time":f"{fmt(a)} – {fmt(b)}",
+                  "meta":f"{label} Yama {idx+1} · {ACT_SCORE[activity]}",
+                  "detail":f"{paksha} · weekday group {group} · Yama-level mirror table; Sukshma sub-periods are intentionally not inferred.",
+                  "link_date":a.date().isoformat()})
+        sections.append({"title":f"{label} Pancha Pakshi","note":"Five solar Yamas with all five birds shown for each Yama. This is the classical Yama-level schedule; it does not fabricate Sukshma subdivisions.","items":items})
     return sections
 
 def shubha_dates(year,lat,lon,tz):
