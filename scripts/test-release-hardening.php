@@ -83,6 +83,11 @@ ok(is_array($manifest), 'manifest invalid JSON');
 ok(($manifest['display'] ?? '') === 'standalone', 'manifest display mode incorrect');
 ok(($manifest['short_name'] ?? '') === 'Tithika', 'manifest short name incorrect');
 
+$api = (string)file_get_contents(dirname(__DIR__) . '/api.php');
+ok(str_contains($api, "65536"), 'API request body size limit missing');
+ok(str_contains($api, "Search query too long"), 'city search length guard missing');
+ok(str_contains($api, "CURLOPT_FOLLOWLOCATION => false"), 'external HTTP redirect following must stay disabled');
+
 $htaccess = (string)file_get_contents(dirname(__DIR__) . '/.htaccess');
 ok(str_contains($htaccess, 'sitemap\.xml'), 'sitemap rewrite missing');
 ok(str_contains($htaccess, 'robots\.txt'), 'robots rewrite missing');
