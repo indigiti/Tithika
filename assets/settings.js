@@ -3,7 +3,7 @@
   const settings=window.TithikaSettings;
   if(!settings)return;
   const $=s=>document.querySelector(s);
-  const $=s=>[...document.querySelectorAll(s)];
+  const $$=s=>[...document.querySelectorAll(s)];
   const messages=window.TITHIKA_I18N?.messages||{};
   const tr=(key,fallback)=>messages[key]||fallback||key;
 
