@@ -36,15 +36,32 @@ function tithika_live_slugs(): array {
     return $live;
 }
 
+function tithika_gated_routes(): array {
+    static $gated;
+    if ($gated === null) $gated = require __DIR__ . '/../config/gated.php';
+    return $gated;
+}
+
+function tithika_is_gated_page(string $slug): bool {
+    return array_key_exists($slug, tithika_gated_routes());
+}
+
+function tithika_gate_reason(string $slug): ?string {
+    return tithika_gated_routes()[$slug] ?? null;
+}
+
 function tithika_is_live_page(string $slug): bool {
+    if (tithika_is_gated_page($slug)) return false;
     static $lookup;
     if ($lookup === null) $lookup = array_fill_keys(tithika_live_slugs(), true);
     return isset($lookup[$slug]);
 }
 
 function tithika_is_indexable_page(array $page): bool {
+    $slug = (string)$page['slug'];
+    if (tithika_is_gated_page($slug)) return false;
     if (!empty($page['live'])) return true;
-    if (tithika_is_live_page((string)$page['slug'])) return true;
+    if (tithika_is_live_page($slug)) return true;
     return tithika_has_editorial_content($page);
 }
 
