@@ -138,24 +138,18 @@ def pakshi_sections(selected,lat,lon,tz,focus_bird="Peacock"):
     st=panchang.state_at(sr+timedelta(seconds=1));paksha=st["paksha"]
     if focus_bird not in PAKSHI: focus_bird="Peacock"
     sections=[]
-    bird_order=PAKSHI[PAKSHI.index(focus_bird):]+PAKSHI[:PAKSHI.index(focus_bird)]
     for label,start,end in [("Day",sr,ss),("Night",ss,nr)]:
         matrix,group=pakshi_matrix(selected.weekday(),paksha,label)
         yama=(end-start)/5;items=[]
         for m in range(5):
-            y0=start+yama*m;y1=start+yama*(m+1);cursor=y0
-            # Suksma durations are proportional to the classical 48-part activity weights
-            # (Eating 16, Walking 12, Dying 10, Ruling 6, Sleeping 4).
-            for bird in bird_order:
-                activity=matrix[bird][m]
-                span=yama*ACT_WEIGHT[activity]/48
-                a=cursor;b=min(y1,cursor+span);cursor=b
-                items.append({"title":f"{bird} · {activity}","date":a.date().isoformat(),"time":f"{fmt(a)} – {fmt(b)}",
-                  "meta":f"{label} Yama {m+1} · {ACT_SCORE[activity]} · group {group}",
-                  "detail":f'{paksha} · classical Pancha Pakshi mirror · focus bird {focus_bird}',"link_date":a.date().isoformat()})
-            # absorb rounding error in the last row
-            if items: items[-1]["time"]=items[-1]["time"].split(" – ")[0]+" – "+fmt(y1)
-        sections.append({"title":f"{label} Pancha Pakshi · {focus_bird}","note":"Five solar Yamas with classical mirror-table activities and unequal Suksma durations.","items":items})
+            a=start+yama*m;b=start+yama*(m+1)
+            activity=matrix[focus_bird][m]
+            items.append({"title":f"{focus_bird} · {activity}","date":a.date().isoformat(),
+              "time":f"{fmt(a)} – {fmt(b)}","meta":f"{label} Yama {m+1} · {ACT_SCORE[activity]} · group {group}",
+              "detail":f'{paksha} · sourced Pancha Pakshi mirror-table major activity',"link_date":a.date().isoformat()})
+        sections.append({"title":f"{label} Pancha Pakshi · {focus_bird}",
+          "note":"Five exact solar Yamas using the sourced mirror-table major activities. Sūkṣma sub-periods are intentionally not inferred from an unsourced micro-order.",
+          "items":items})
     return sections
 
 def shubha_dates(year,lat,lon,tz):
