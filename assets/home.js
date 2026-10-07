@@ -1,157 +1,41 @@
-const $ = s => document.querySelector(s);
-
-const state = {
-  lat: 19.076,
-  lon: 72.8777,
-  city: 'Mumbai, Maharashtra, India',
-  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata',
-  data: null,
-  searchTimer: null
-};
-
-function localDateISO(){
-  const parts = new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
-  const v = Object.fromEntries(parts.map(p=>[p.type,p.value]));
-  return `${v.year}-${v.month}-${v.day}`;
+(()=>{"use strict";
+const $=s=>document.querySelector(s),base=window.TITHIKA_BASE||'/';
+let ctx=null,timer=null,data=null;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDate=d=>{try{return new Intl.DateTimeFormat('en-IN',{dateStyle:'medium',timeZone:ctx?.timezone||'Asia/Kolkata'}).format(new Date(d+'T12:00:00'))}catch{return d}};
+function set(id,v){const el=$(id);if(el)el.textContent=v??'—'}
+async function load(){
+ if(!ctx)return;
+ try{
+  const r=await fetch(`${base}api.php?action=home-dashboard`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(ctx)});
+  const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Dashboard unavailable');data=j;render(j);$('#tkHomeError').hidden=true;
+ }catch(e){$('#tkHomeError').hidden=false}
 }
-
-function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function toast(message){
-  const el=$('#toast'); if(!el)return;
-  el.textContent=message; el.classList.remove('hidden');
-  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.add('hidden'),3200);
-}
-
-async function reverseLocation(lat,lon){
-  try{
-    const r=await fetch(`api.php?action=reverse&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
-    const j=await r.json();
-    if(j.ok&&j.label) state.city=j.label;
-  }catch(e){}
-}
-
-async function calculate(){
-  try{
-    const r=await fetch('api.php?action=calculate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        lat:state.lat,lon:state.lon,city:state.city,
-        date:localDateISO(),timezone:state.timezone,hour24:false
-      })
-    });
-    const j=await r.json();
-    if(!j.ok) throw new Error(j.error||'Unable to load today’s timings');
-    state.data=j; render(j);
-  }catch(e){toast(e.message||'Unable to load timings')}
-}
-
 function render(d){
-  const shortCity=(d.location.city||'Current location').split(',').slice(0,2).join(',');
-  $('#locationText').textContent=shortCity;
-  $('#heroLocation').textContent=shortCity;
-  $('#todayLabel').textContent=`${d.weekday}, ${d.date_label}`;
-  $('#heroDate').textContent=d.date_label;
-  $('#sunrise').textContent=d.sunrise_label;
-  $('#sunset').textContent=d.sunset_label;
-  if($('#sunrise2')) $('#sunrise2').textContent=d.sunrise_label;
-  if($('#sunset2')) $('#sunset2').textContent=d.sunset_label;
-  $('#rahu').textContent=`${d.rahu_kaal.start_label} – ${d.rahu_kaal.end_label}`;
-  $('#nextGood').textContent=d.next_auspicious ? `${d.next_auspicious.name} · ${d.next_auspicious.start_label}` : 'View tomorrow';
-  $('#nextGoodSub').textContent=d.next_auspicious ? `${d.next_auspicious.start_label} – ${d.next_auspicious.end_label}` : 'No later favourable window';
-
-  if(d.active){
-    $('#currentName').textContent=d.active.name;
-    $('#currentLabel').textContent=d.active.label;
-    $('#currentRange').textContent=`${d.active.start_label} – ${d.active.end_label}`;
-    $('#currentSide').textContent=d.active.side==='day'?'Day Choghadiya':'Night Choghadiya';
-  }else{
-    $('#currentName').textContent='Today’s schedule';
-    $('#currentLabel').textContent='Ready';
-    $('#currentRange').textContent=`${d.sunrise_label} – ${d.sunset_label}`;
-    $('#currentSide').textContent='Solar day';
-  }
-
-  const rows=d.day||[];
-  $('#timeline').innerHTML=rows.map((r,i)=>{
-    const active=d.active && !d.active.carry_from_previous_date && d.active.side==='day' && d.active.index===r.index;
-    const tone=['best','good','gain'].includes(r.quality)?'good':r.quality==='neutral'?'neutral':'avoid';
-    return `<div class="time-seg ${tone} ${active?'is-active':''}" style="--i:${i}">
-      <span class="seg-name">${esc(r.name)}</span>
-      <span class="seg-time">${esc(r.start_label)}</span>
-    </div>`;
-  }).join('');
-
-  updateClock();
+ const t=d.today||{},c=d.choghadiya||{},a=d.advisor||{},u=d.upcoming||{};
+ set('#tkHomePlace',(d.location?.city||'Current location').split(',').slice(0,2).join(', '));
+ set('#tkHomeDate',`${t.weekday||''} · ${fmtDate(d.date)}`);
+ set('#tkHomeCache',d.cache==='hit'?'15 min smart cache':'Fresh engine pass');
+ set('#tkHomeTithi',t.tithi);set('#tkHomePaksha',t.paksha);set('#tkHomeNakshatra',t.nakshatra);
+ set('#tkHomeYoga',t.yoga);set('#tkHomeKarana',`Karana ${t.karana||'—'}`);
+ set('#tkHomeMoon',t.moon_rashi);set('#tkHomeMonth',`Lunar month ${t.lunar_month||'—'}`);
+ set('#tkHomeSunrise',t.sunrise);set('#tkHomeSunset',`Sunset ${t.sunset||'—'}`);
+ const rk=t.rahu_kaal||{};set('#tkHomeRahu',rk.start_label&&rk.end_label?`${rk.start_label} – ${rk.end_label}`:'—');
+ const cur=c.active||c.next_auspicious||{};
+ set('#tkHomeCurrentName',cur.name||'Solar day');
+ set('#tkHomeCurrentLabel',cur.label||'Traditional timing context');
+ set('#tkHomeCurrentRange',cur.start_label&&cur.end_label?`${cur.start_label} – ${cur.end_label}`:'—');
+ set('#tkHomeCurrentSide',cur.side?cur.side+' period':'Today');
+ if(cur.start&&cur.end){const now=new Date(),s=new Date(cur.start),e=new Date(cur.end),pct=Math.max(0,Math.min(100,(now-s)/(e-s)*100));$('#tkHomeCurrentProgress').style.width=pct+'%'}
+ set('#tkHomeAdvisorSummary',a.summary||'Verified timing recommendations for the next seven days.');
+ const rec=a.recommendations||[];
+ $('#tkHomeRecommendations').innerHTML=rec.length?rec.map((r,i)=>`<article class="tk-home-rec"><div><i>${String(i+1).padStart(2,'0')}</i><span><b>${esc(r.name||'Timing window')}</b><small>${esc(fmtDate(r.date))} · ${esc(r.start_label||'')}–${esc(r.end_label||'')}</small></span></div><em>${esc(r.score??'—')}</em></article>`).join(''):'<p class="tk-home-empty">No ranked window found in this range.</p>';
+ const cal=u.calendar||[];
+ $('#tkHomeCalendar').innerHTML=cal.length?cal.map(r=>`<a class="tk-home-event" href="${base}festivals/hindu/"><time>${esc(fmtDate(r.date))}</time><span><b>${esc(r.title)}</b><small>${r.days_away===0?'Today':r.days_away===1?'Tomorrow':r.days_away+' days away'}${r.meta?' · '+esc(r.meta):''}</small></span><i>→</i></a>`).join(''):'<p class="tk-home-empty">No upcoming calculated observance found.</p>';
+ const planets=u.planets||[];
+ $('#tkHomePlanets').innerHTML=planets.length?planets.map(r=>`<a class="tk-home-event" href="${base}planets/transit/"><time>${esc(fmtDate(r.date))}</time><span><b>${esc(r.title)}</b><small>${esc(r.direction||'')} · ${r.days_away===0?'Today':r.days_away+' days away'}</small></span><i>→</i></a>`).join(''):'<p class="tk-home-empty">No major transit in the next 60 days.</p>';
+ $('#tkHomeProvenance').innerHTML=(d.provenance||[]).map(s=>`<span><b>${esc(s.engine)}</b> v${esc(s.version)}</span>`).join('');
 }
-
-function updateClock(){
-  if(!state.data)return;
-  const d=state.data, now=new Date();
-  $('#clock').textContent=new Intl.DateTimeFormat([],{
-    hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true,timeZone:d.location.timezone
-  }).format(now);
-  if(d.active){
-    const start=new Date(d.active.start),end=new Date(d.active.end);
-    const pct=Math.max(0,Math.min(100,((now-start)/(end-start))*100));
-    $('#heroProgress').style.width=`${pct}%`;
-    let sec=Math.max(0,Math.floor((end-now)/1000));
-    const h=String(Math.floor(sec/3600)).padStart(2,'0');
-    const m=String(Math.floor(sec%3600/60)).padStart(2,'0');
-    $('#changesIn').textContent=`${h}h ${m}m`;
-  }
-}
-setInterval(updateClock,1000);
-
-async function useLocation(silent=false){
-  if(!navigator.geolocation){calculate();return}
-  $('#locationText').textContent='Locating…';
-  navigator.geolocation.getCurrentPosition(async p=>{
-    state.lat=p.coords.latitude;state.lon=p.coords.longitude;state.city='Current location';
-    await reverseLocation(state.lat,state.lon);
-    calculate();
-  },()=>{
-    if(!silent)toast('Location unavailable. Using Mumbai; you can search another city.');
-    calculate();
-  },{enableHighAccuracy:false,timeout:7000,maximumAge:600000});
-}
-
-$('#locationBtn')?.addEventListener('click',()=>$('#locationPanel').classList.toggle('hidden'));
-$('#mobileLocationBtn')?.addEventListener('click',()=>$('#locationPanel').classList.toggle('hidden'));
-$('#detectBtn')?.addEventListener('click',()=>useLocation(false));
-
-$('#citySearch')?.addEventListener('input',e=>{
-  clearTimeout(state.searchTimer);
-  const q=e.target.value.trim();
-  if(q.length<2){$('#searchResults').classList.add('hidden');return}
-  state.searchTimer=setTimeout(()=>searchCity(q),250);
-});
-
-async function searchCity(q){
-  try{
-    const r=await fetch(`api.php?action=search&q=${encodeURIComponent(q)}`);
-    const j=await r.json(), box=$('#searchResults');
-    if(!j.ok||!j.results?.length){
-      box.innerHTML='<div class="p-3 text-xs font-semibold text-slate-400">No places found</div>';
-      box.classList.remove('hidden'); return;
-    }
-    box.innerHTML=j.results.map((x,i)=>`<button class="place-result" data-i="${i}">
-      <strong>${esc(x.label)}</strong><span>${esc(x.display_name)}</span>
-    </button>`).join('');
-    box._rows=j.results; box.classList.remove('hidden');
-    box.querySelectorAll('.place-result').forEach(btn=>btn.onclick=()=>{
-      const x=box._rows[Number(btn.dataset.i)];
-      state.lat=x.lat;state.lon=x.lon;state.city=x.label;
-      $('#locationPanel').classList.add('hidden');
-      calculate();
-    });
-  }catch(e){toast('City search is temporarily unavailable')}
-}
-
-document.addEventListener('click',e=>{
-  if(!e.target.closest('#locationPanel')&&!e.target.closest('#locationBtn')&&!e.target.closest('#mobileLocationBtn')){
-    $('#locationPanel')?.classList.add('hidden');
-  }
-});
-
-useLocation(true);
+window.addEventListener('tithika:context',e=>{ctx=e.detail;clearTimeout(timer);timer=setTimeout(load,120)});
+setInterval(()=>{if(data)render(data)},60000);
+})();
