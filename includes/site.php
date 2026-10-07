@@ -42,9 +42,36 @@ function tithika_is_live_page(string $slug): bool {
     return isset($lookup[$slug]);
 }
 
+function tithika_reference_slugs(): array {
+    static $rows;
+    if ($rows === null) $rows = require __DIR__ . '/../config/reference.php';
+    return $rows;
+}
+
+function tithika_aggregate_slugs(): array {
+    static $rows;
+    if ($rows === null) $rows = require __DIR__ . '/../config/aggregate.php';
+    return $rows;
+}
+
+function tithika_is_reference_page(string $slug): bool {
+    static $lookup;
+    if ($lookup === null) $lookup = array_fill_keys(tithika_reference_slugs(), true);
+    return isset($lookup[$slug]);
+}
+
+function tithika_is_aggregate_page(string $slug): bool {
+    static $lookup;
+    if ($lookup === null) $lookup = array_fill_keys(tithika_aggregate_slugs(), true);
+    return isset($lookup[$slug]);
+}
+
 function tithika_is_indexable_page(array $page): bool {
     if (!empty($page['live'])) return true;
-    if (tithika_is_live_page((string)$page['slug'])) return true;
+    $slug = (string)$page['slug'];
+    if (tithika_is_live_page($slug)) return true;
+    if (tithika_is_aggregate_page($slug)) return true;
+    if (tithika_is_reference_page($slug)) return true;
     return tithika_has_editorial_content($page);
 }
 
