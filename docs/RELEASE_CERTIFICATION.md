@@ -112,6 +112,12 @@ Nepali Bikram Sambat civil month data is vendored from the MIT-licensed `sushill
 
 No runtime third-party calendar package or database is required.
 
+## Semantic hardening audit
+
+The full-repository semantic audit is recorded in `docs/SEMANTIC_AUDIT_2026-10-07.md`. Production certification now distinguishes astronomical calculations, versioned traditional rule profiles and structured reference adapters. A non-empty/count-only test is not sufficient evidence for a calculated route.
+
+Key hardening gates include exact/known-date fixtures for the six final completion families and render coverage across every indexable route so placeholder shell copy cannot be promoted accidentally.
+
 ## Release gates
 
 A release is certifiable only when all of the following pass on the exact merged `main` commit:
@@ -119,11 +125,12 @@ A release is certifiable only when all of the following pass on the exact merged
 1. PHP and JavaScript syntax.
 2. 292-route manifest validation.
 3. SEO/content/accessibility/performance release audit.
-4. Production certification counts and provenance.
-5. Panchang, Vrat, festival and Muhurat regression fixtures.
-6. Regional calendar regressions including Nepali and Jain adapters.
-7. Planetary/Jyotish/Kundali/Varga/Yoga/Shadbala/matching/timing/Rashifal regressions.
-8. Eclipse, season and Sankranti regression fixtures.
+4. Full indexable-route render coverage with no placeholder/shell renderer.
+5. Production certification counts and provenance.
+6. Semantic Panchang, Muhurat, Vrat, festival/calendar, secondary Jyotish and astronomy-completion fixtures.
+7. Regional calendar regressions including Nepali and Jain adapters.
+8. Planetary/Jyotish/Kundali/Varga/Yoga/Shadbala/matching/timing/Rashifal regressions.
+9. Eclipse, season and Sankranti regression fixtures.
 
 ## Final six-phase completion
 
