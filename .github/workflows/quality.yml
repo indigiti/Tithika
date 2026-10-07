@@ -44,6 +44,7 @@ jobs:
           node --check assets/app.js
           node --check assets/home.js
           node --check assets/tithika-site.js
+          node --check assets/intelligence.js
 
       - name: Validate route map
         run: php scripts/validate-routes.php
@@ -56,6 +57,12 @@ jobs:
 
       - name: Indexable route render coverage
         run: php scripts/test-route-render-coverage.php
+
+      - name: Intelligence surface regression fixture
+        run: php scripts/test-intelligence-surface.php
+
+      - name: Intelligence multi-engine regression fixture
+        run: python scripts/test-intelligence.py
 
       # Semantic completion gates run early so rule regressions fail fast.
       - name: Panchang completion regression fixture
