@@ -134,7 +134,7 @@ def kranti_rows(year,tz):
             if best is None or score<best[0]: best=(score,nxt)
         elif prev_active and began is not None:
             stop=refine_boundary(cur,nxt)
-            mid=(began+stop)/2; _,ds,dm,_,_,_=kranti_state(mid)
+            mid=began+(stop-began)/2; _,ds,dm,_,_,_=kranti_state(mid)
             kind="Vyatipata" if ds*dm>=0 else "Vaidhriti"
             rows.append({
               "title":f"{kind} Kranti Samya / Mahapata","date":began.date().isoformat(),
