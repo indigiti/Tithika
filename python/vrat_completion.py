@@ -139,16 +139,10 @@ def ishti_anvadhan(year,lat,lon,tz):
         rule=lunar_occurrences.KINDS[kind][0]
         for e in lunar_occurrences.events_for_rule(year,rule,lat,lon,tz,False):
             a=datetime.fromisoformat(e["start"]);b=datetime.fromisoformat(e["end"])
-            candidates=[x for x in e.get("sunrise_candidates",[]) if int(x["date"][:4])==year]
-            if candidates:
-                d=date.fromisoformat(candidates[0]["date"]);basis="Tithi prevailing at local sunrise"
-            else:
-                # Very short Tithi with no sunrise: preserve the exact occurrence
-                # and select the civil date containing the larger share.
-                midnight=datetime.combine(a.date()+timedelta(days=1),time(0),tzinfo=tz)
-                left=(min(b,midnight)-a).total_seconds()
-                right=(b-max(a,midnight)).total_seconds()
-                d=a.date() if left>=right else b.date();basis="no-sunrise Tithi; maximum civil-date occurrence overlap"
+            # Widely used Ishti/Anvadhan calendars pair Anvadhan with the
+            # Purnima/Amavasya occurrence and Ishti with the local civil date
+            # on which that Tithi ends.
+            d=b.date();basis="local civil date containing the exact Purnima/Amavasya Tithi end"
             if d.year!=year: continue
             prev=d-timedelta(days=1)
             rows.extend([
