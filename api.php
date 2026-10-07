@@ -475,6 +475,22 @@ try {
         out($data, 200, true);
     }
 
+    $intelligenceModes = [
+        'ai-health' => 'health',
+        'ai-advisor' => 'advisor',
+        'ai-jyotish' => 'jyotish',
+        'ai-ask' => 'ask',
+        'ai-profile' => 'profile',
+        'ai-quality' => 'quality',
+    ];
+    if (isset($intelligenceModes[$action])) {
+        $payload = readPayload();
+        $payload['mode'] = $intelligenceModes[$action];
+        $data = runPythonEngine('python/intelligence_gateway.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, $action === 'ai-health');
+    }
+
     out(['ok'=>false,'error'=>'Unknown action'], 404);
 } catch (Throwable $e) {
     out(['ok'=>false,'error'=>$e->getMessage()], 500);
