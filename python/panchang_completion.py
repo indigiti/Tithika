@@ -75,20 +75,23 @@ def select_lunar_rules(year,lat,lon,tz,rules):
         d+=timedelta(days=1)
     return rows
 
-def declination(lon_deg,lat_deg=0.0,eps=23.4392911):
-    """Equatorial declination from tropical ecliptic longitude/latitude."""
-    lo=math.radians(lon_deg);la=math.radians(lat_deg);ob=math.radians(eps)
-    return math.degrees(math.asin(
-        math.sin(la)*math.cos(ob)+math.cos(la)*math.sin(ob)*math.sin(lo)
-    ))
+def declination(lon_deg,lat_deg=0.0,moment=None,dist=1.0):
+    """True-equator-of-date declination from tropical ecliptic coordinates."""
+    if moment is None:
+        ob=math.radians(23.4392911);lo=math.radians(lon_deg);la=math.radians(lat_deg)
+        return math.degrees(math.asin(math.sin(la)*math.cos(ob)+math.cos(la)*math.sin(ob)*math.sin(lo)))
+    t=panchang.astronomy_time(moment);lo=math.radians(lon_deg);la=math.radians(lat_deg);cb=math.cos(la)
+    vec=panchang.astronomy.Vector(dist*cb*math.cos(lo),dist*cb*math.sin(lo),dist*math.sin(la),t)
+    eq=panchang.astronomy.RotateVector(panchang.astronomy.Rotation_ECT_EQD(t),vec)
+    return math.degrees(math.atan2(eq.z,math.hypot(eq.x,eq.y)))
 
 KRANTI_AXIS_PAIRS={(0,4),(4,0),(1,9),(9,1),(2,8),(8,2),(3,7),(7,3),(5,11),(11,5),(6,10),(10,6)}
 MAHAPATA_ORB_DEG=0.5
 
 def kranti_state(moment):
-    sun_lon,sun_lat,_=planetary.tropical_coordinates("Sun",moment)
-    moon_lon,moon_lat,_=planetary.tropical_coordinates("Moon",moment)
-    ds=declination(sun_lon,sun_lat);dm=declination(moon_lon,moon_lat)
+    sun_lon,sun_lat,sun_dist=planetary.tropical_coordinates("Sun",moment)
+    moon_lon,moon_lat,moon_dist=planetary.tropical_coordinates("Moon",moment)
+    ds=declination(sun_lon,sun_lat,moment,sun_dist);dm=declination(moon_lon,moon_lat,moment,moon_dist)
     pair=(int(sun_lon//30),int(moon_lon//30))
     same_side=ds*dm>=0
     signed_gap=(dm-ds) if same_side else (dm+ds)
