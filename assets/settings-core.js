@@ -64,12 +64,11 @@
   }
   function get(){return JSON.parse(JSON.stringify(state))}
   function hour24(){return state.clock==='24'}
-  function formatNumber(value){
-    const locale=state.language==='hi'?'hi-IN':'en-IN';
-    const numberingSystem=state.numerals==='deva'?'deva':'latn';
-    return new Intl.NumberFormat(locale,{numberingSystem}).format(value);
-  }
-  window.TithikaSettings={get,set,saveLocation,clearLocation:()=>saveLocation(null),apply,hour24,formatNumber,key:KEY};
+  function locale(){return state.language==='hi'?'hi-IN':'en-IN'}
+  function numberingSystem(){return state.numerals==='deva'?'deva':'latn'}
+  function formatNumber(value){return new Intl.NumberFormat(locale(),{numberingSystem:numberingSystem()}).format(value)}
+  function formatDecimal(value,digits=2){return new Intl.NumberFormat(locale(),{numberingSystem:numberingSystem(),minimumFractionDigits:digits,maximumFractionDigits:digits}).format(Number(value))}
+  window.TithikaSettings={get,set,saveLocation,clearLocation:()=>saveLocation(null),apply,hour24,formatNumber,formatDecimal,locale,numberingSystem,key:KEY};
   apply();
   if(window.matchMedia){
     const media=window.matchMedia('(prefers-color-scheme: dark)');
