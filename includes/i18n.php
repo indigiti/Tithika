@@ -72,7 +72,7 @@ function tithika_dictionary(): array {
         'settings.future_copy'=>'The locale contract supports additional dictionaries without duplicating calculation pages. Hindi is the first production locale.',
         'dynamic.today'=>'Today','dynamic.tomorrow'=>'Tomorrow','dynamic.days_away'=>'days away',
         'dynamic.current_location'=>'Selected location','dynamic.no_events'=>'No major tracked events fall inside this dashboard horizon. Open the full calendars for the complete year.',
-        'dynamic.dashboard_error'=>'Daily dashboard could not refresh. The individual Panchang and Muhurat tools remain available.',
+        'dynamic.dashboard_error'=>'Daily dashboard could not refresh. The individual Panchang and Muhurat tools remain available.','dynamic.dashboard_lead'=>'For {location}, {tithi} aligns with {nakshatra}. The dashboard keeps timing, observances and planet events in one local context.','dynamic.amanta'=>'Amanta','dynamic.purnimanta'=>'Purnimanta','dynamic.location_saved'=>'Default location saved on this device.',
         'dynamic.moon'=>'Moon','dynamic.karana'=>'Karana','dynamic.preference'=>'preference','dynamic.next'=>'Next','dynamic.no_active'=>'No active period','dynamic.open_timeline'=>'Open the full timeline for all periods','dynamic.view_details'=>'View details →','dynamic.upcoming_event'=>'Upcoming event','dynamic.verified_event'=>'Verified Tithika event','dynamic.unable_feed'=>'Unable to load the aggregated event feed right now.',
       ],
       'hi'=>[
@@ -121,7 +121,7 @@ function tithika_dictionary(): array {
         'settings.future_copy'=>'लोकेल प्रणाली अतिरिक्त भाषाएँ जोड़ सकती है, बिना गणना पृष्ठों की नकल किए। हिन्दी पहला उत्पादन लोकेल है।',
         'dynamic.today'=>'आज','dynamic.tomorrow'=>'कल','dynamic.days_away'=>'दिन बाद',
         'dynamic.current_location'=>'चुना स्थान','dynamic.no_events'=>'इस अवधि में कोई प्रमुख ट्रैक की गई घटना नहीं मिली। पूरे वर्ष के लिए कैलेंडर खोलें।',
-        'dynamic.dashboard_error'=>'दैनिक डैशबोर्ड रीफ़्रेश नहीं हो सका। अलग-अलग पंचांग और मुहूर्त साधन उपलब्ध हैं।',
+        'dynamic.dashboard_error'=>'दैनिक डैशबोर्ड रीफ़्रेश नहीं हो सका। अलग-अलग पंचांग और मुहूर्त साधन उपलब्ध हैं।','dynamic.dashboard_lead'=>'{location} के लिए {tithi} का संबंध {nakshatra} से है। यह डैशबोर्ड समय, व्रत-पर्व और ग्रह घटनाओं को एक ही स्थानीय संदर्भ में दिखाता है।','dynamic.amanta'=>'अमांत','dynamic.purnimanta'=>'पूर्णिमांत','dynamic.location_saved'=>'डिफ़ॉल्ट स्थान इस डिवाइस पर सहेजा गया।',
         'dynamic.moon'=>'चंद्र','dynamic.karana'=>'करण','dynamic.preference'=>'प्राथमिकता','dynamic.next'=>'अगला','dynamic.no_active'=>'कोई सक्रिय अवधि नहीं','dynamic.open_timeline'=>'सभी अवधियों की समयरेखा खोलें','dynamic.view_details'=>'विवरण देखें →','dynamic.upcoming_event'=>'आगामी घटना','dynamic.verified_event'=>'सत्यापित तिथिका घटना','dynamic.unable_feed'=>'समेकित घटना सूची अभी लोड नहीं हो सकी।',
       ],
     ];
