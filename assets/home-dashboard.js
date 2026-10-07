@@ -48,11 +48,15 @@
     const active=chog.active||chog.next_auspicious;
     set('#tkDailyChogName',active?.name||(chog.next_auspicious?tr('dynamic.next','Next')+' '+chog.next_auspicious.name:tr('dynamic.no_active','No active period')));
     set('#tkDailyChogTime',active?((active.label?active.label+' · ':'')+timeRange(active)):tr('dynamic.open_timeline','Open the full timeline for all periods'));
-    set('#tkDailyLead',
-      'For '+String(loc.city||'your selected location').split(',').slice(0,2).join(', ')+
-      ', '+(today.tithi||'the current Tithi')+' aligns with '+(today.nakshatra||'the current Nakshatra')+
-      '. The dashboard keeps timing, observances and planet events in one local context.'
-    );
+    set('#tkDailyLead',trf(
+      'dynamic.dashboard_lead',
+      'For {location}, {tithi} aligns with {nakshatra}. The dashboard keeps timing, observances and planet events in one local context.',
+      {
+        location:String(loc.city||tr('dynamic.current_location','Selected location')).split(',').slice(0,2).join(', '),
+        tithi:today.tithi||tr('home.tithi','Tithi'),
+        nakshatra:today.nakshatra||tr('home.nakshatra','Nakshatra')
+      }
+    ));
 
     const box=$('#tkUpcomingEvents'),rows=data.upcoming||[];
     if(box){
