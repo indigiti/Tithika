@@ -85,7 +85,6 @@ def declination(lon_deg,lat_deg=0.0,moment=None,dist=1.0):
     eq=panchang.astronomy.RotateVector(panchang.astronomy.Rotation_ECT_EQD(t),vec)
     return math.degrees(math.atan2(eq.z,math.hypot(eq.x,eq.y)))
 
-KRANTI_AXIS_PAIRS={(0,4),(4,0),(1,9),(9,1),(2,8),(8,2),(3,7),(7,3),(5,11),(11,5),(6,10),(10,6)}
 MAHAPATA_ORB_DEG=0.5
 
 def kranti_state(moment):
@@ -96,7 +95,10 @@ def kranti_state(moment):
     same_side=ds*dm>=0
     signed_gap=(dm-ds) if same_side else (dm+ds)
     yoga="Vyatipata Yoga" if same_side else "Vaidhriti Yoga"
-    active=pair in KRANTI_AXIS_PAIRS and abs(signed_gap)<=MAHAPATA_ORB_DEG
+    # Exact Mahapata is defined by equality of Sun/Moon declination, not by
+    # using the broad Gyata-Chakra sign-pair mnemonic as a second hard gate.
+    # The inauspicious interval spans ±30 arc minutes around exact equality.
+    active=abs(signed_gap)<=MAHAPATA_ORB_DEG
     return {
       "active":active,"sun_declination":ds,"moon_declination":dm,
       "signed_gap":signed_gap,"gap":abs(signed_gap),"pair":pair,"yoga":yoga,
@@ -114,8 +116,8 @@ def _refine_active_boundary(left,right,want_active):
     return hi
 
 def kranti_rows(year,tz):
-    # Modern Mahapata profile: true Sun/Moon declinations, broad Gyata-Chakra
-    # axis pair, and the traditional +/-30 arc-minute declination band.
+    # Modern Mahapata profile: true Sun/Moon declinations and the
+    # traditional +/-30 arc-minute band around exact equality.
     start=datetime(year,1,1,tzinfo=tz);end=datetime(year+1,1,1,tzinfo=tz)
     step=timedelta(minutes=15);rows=[];prev_t=start;prev=kranti_state(prev_t)
     active=prev["active"];began=start if active else None;best=(prev["gap"],start,prev) if active else None
@@ -136,8 +138,9 @@ def kranti_rows(year,tz):
                   "time":f'{panchang.fmt(began,False)} – {panchang.fmt(stop,False)}',
                   "meta":f'min declination residual {best[0]:.5f}°',
                   "detail":(
-                    f'True tropical declinations within ±30 arc minutes on a Kranti-Samya axis pair. '
-                    f'Sun {bs["sun_declination"]:+.5f}°, Moon {bs["moon_declination"]:+.5f}° at closest approach.'
+                    f'True tropical declinations within ±30 arc minutes of equality. '
+                    f'Sun {bs["sun_declination"]:+.5f}°, Moon {bs["moon_declination"]:+.5f}° at closest approach. '
+                    f'Vyatipata = same declination hemisphere; Vaidhriti = opposite hemispheres.'
                   ),
                   "link_date":began.date().isoformat(),"start":began.isoformat(),"end":stop.isoformat(),
                   "profile":"true-declination-30-arcmin"
