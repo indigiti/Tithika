@@ -51,4 +51,5 @@ return [
     'jyotish/rashi-by-name',
     'planets/sidereal-zodiac',
     'planets/tropical-zodiac',
+    'muhurat/shubha-dates',
 ];
