@@ -4,7 +4,7 @@ from __future__ import annotations
 import json, math, sys
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import panchang
+import panchang, planetary
 
 ENGINE_VERSION="1.0.0"
 
@@ -75,37 +75,72 @@ def select_lunar_rules(year,lat,lon,tz,rules):
         d+=timedelta(days=1)
     return rows
 
-def declination(lon_deg,eps=23.4392911):
-    return math.degrees(math.asin(math.sin(math.radians(lon_deg))*math.sin(math.radians(eps))))
+def declination_from_ecliptic(lon_deg, lat_deg, eps=23.4392911):
+    """Convert true ecliptic longitude/latitude to equatorial declination."""
+    lo=math.radians(lon_deg); la=math.radians(lat_deg); ob=math.radians(eps)
+    return math.degrees(math.asin(
+        math.sin(la)*math.cos(ob) + math.cos(la)*math.sin(ob)*math.sin(lo)
+    ))
 
-def kranti_active(moment):
-    sun,moon,_=panchang.tropical_longitudes(moment)
-    ds,dm=declination(sun),declination(moon)
-    pair=(int(sun//30),int(moon//30))
-    opposite_axis={(0,4),(4,0),(1,9),(9,1),(2,8),(8,2),(3,7),(7,3),(5,11),(11,5),(6,10),(10,6)}
-    diff=abs(abs(ds)-abs(dm))
-    return pair in opposite_axis and diff<=0.25, ds, dm, diff
+KRANTI_AXIS_PAIRS={(0,4),(4,0),(1,9),(9,1),(2,8),(8,2),(3,7),(7,3),(5,11),(11,5),(6,10),(10,6)}
+
+def kranti_state(moment):
+    slon,slat,_=planetary.tropical_coordinates("Sun",moment)
+    mlon,mlat,_=planetary.tropical_coordinates("Moon",moment)
+    ds=declination_from_ecliptic(slon,slat)
+    dm=declination_from_ecliptic(mlon,mlat)
+    pair=(int(slon//30),int(mlon//30))
+    return {
+      "pair":pair,"eligible":pair in KRANTI_AXIS_PAIRS,
+      "sun_declination":ds,"moon_declination":dm,
+      "signed_difference":abs(ds)-abs(dm),
+      "absolute_difference":abs(abs(ds)-abs(dm)),
+      "sun_longitude":slon,"moon_longitude":mlon,
+      "moon_latitude":mlat,
+    }
+
+def refine_kranti_root(a,b):
+    fa=kranti_state(a)["signed_difference"]
+    fb=kranti_state(b)["signed_difference"]
+    for _ in range(45):
+        mid=a+(b-a)/2
+        fm=kranti_state(mid)["signed_difference"]
+        if abs(fm)<1e-9:
+            return mid
+        if fa==0 or fa*fm<=0:
+            b=mid;fb=fm
+        else:
+            a=mid;fa=fm
+    return a+(b-a)/2
 
 def kranti_rows(year,tz):
     start=datetime(year,1,1,tzinfo=tz); end=datetime(year+1,1,1,tzinfo=tz)
-    step=timedelta(minutes=20); rows=[]; cur=start; active=False; began=None; best=None
-    while cur<=end:
-        yes,ds,dm,diff=kranti_active(cur)
-        if yes and not active:
-            began=cur; best=(diff,cur,ds,dm); active=True
-        elif yes and active and diff<(best[0] if best else 99):
-            best=(diff,cur,ds,dm)
-        elif active and not yes:
-            stop=cur
-            rows.append({
-              "title":"Kranti Samya / Mahapata","date":began.date().isoformat(),
-              "time":f'{panchang.fmt(began,False)} – {panchang.fmt(stop,False)}',
-              "meta":f'min |declination| difference {best[0]:.4f}°',
-              "detail":"Tropical Sun/Moon occupy a Kranti-Samya axis pair and absolute declinations converge within the encoded 0.25° Mahapata profile.",
-              "link_date":began.date().isoformat()
-            })
-            active=False; began=None; best=None
-        cur+=step
+    step=timedelta(minutes=30); rows=[]; cur=start
+    prev=kranti_state(cur)
+    while cur<end:
+        nxt=min(end,cur+step); now=kranti_state(nxt)
+        # A Mahapata instant is accepted only when the classical axis pairing is
+        # active around an actual zero of |solar declination|-|lunar declination|.
+        if prev["eligible"] and now["eligible"]:
+            f0=prev["signed_difference"]; f1=now["signed_difference"]
+            if f0==0 or f0*f1<0:
+                root=cur if f0==0 else refine_kranti_root(cur,nxt)
+                s=kranti_state(root)
+                if s["eligible"] and (not rows or abs((root-datetime.fromisoformat(rows[-1]["instant"])).total_seconds())>3600):
+                    rows.append({
+                      "title":"Kranti Samya / Mahapata","date":root.date().isoformat(),
+                      "time":panchang.fmt(root,False),"instant":root.isoformat(),
+                      "meta":f'|declination| difference {s["absolute_difference"]:.6f}°',
+                      "detail":(
+                        f'Tropical axis pair {s["pair"][0]+1}/{s["pair"][1]+1}; '
+                        f'Sun declination {s["sun_declination"]:+.6f}°, '
+                        f'Moon declination {s["moon_declination"]:+.6f}°, '
+                        f'Moon ecliptic latitude {s["moon_latitude"]:+.6f}°. '
+                        "Instant refined by bisection to equality of absolute declinations."
+                      ),
+                      "link_date":root.date().isoformat()
+                    })
+        cur=nxt;prev=now
     return rows
 
 def published_snapshot(selected,lat,lon,tz):
