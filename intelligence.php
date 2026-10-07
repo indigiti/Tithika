@@ -74,7 +74,7 @@ $canonical = tithika_absolute_url(tithika_url('intelligence/'));
     <div class="ti-context">
       <label><span>Location</span><input id="tiCity" type="search" autocomplete="off" value="Pune, Maharashtra, India"><div id="tiPlaces" class="ti-places" hidden></div></label>
       <button class="ti-locate" id="tiLocate" type="button" aria-label="Use current location">⌖</button>
-      <label><span>Date</span><input id="tiDate" type="date"></label>
+      <label><span>Date / birth date</span><input id="tiDate" type="date"></label>
       <label><span>Birth time</span><input id="tiTime" type="time" value="12:00"></label>
       <label><span>Purpose</span>
         <select id="tiPurpose">
