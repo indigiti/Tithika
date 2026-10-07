@@ -20,13 +20,12 @@ RITUS=[
 ]
 
 def declination(name,moment):
-    """True-equator-of-date declination from true ecliptic-of-date lon/lat."""
-    lon,lat,_=planetary.tropical_coordinates(name,moment)
-    t=panchang.astronomy_time(moment)
-    eps=math.radians(panchang.astronomy.e_tilt(t).tobl)
-    lo=math.radians(lon);la=math.radians(lat)
-    dec=math.asin(math.sin(la)*math.cos(eps)+math.cos(la)*math.sin(eps)*math.sin(lo))
-    return math.degrees(dec)
+    """True-equator-of-date declination from true ecliptic-of-date coordinates."""
+    lon,lat,dist=planetary.tropical_coordinates(name,moment)
+    t=panchang.astronomy_time(moment);lo=math.radians(lon);la=math.radians(lat);cb=math.cos(la)
+    vec=panchang.astronomy.Vector(dist*cb*math.cos(lo),dist*cb*math.sin(lo),dist*math.sin(la),t)
+    eq=panchang.astronomy.RotateVector(panchang.astronomy.Rotation_ECT_EQD(t),vec)
+    return math.degrees(math.atan2(eq.z,math.hypot(eq.x,eq.y)))
 
 def _bisect_root(func,left,right,iterations=38):
     fl=func(left);fr=func(right)
