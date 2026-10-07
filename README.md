@@ -353,7 +353,7 @@ python/vendor/astronomy.py    vendored Astronomy Engine (MIT)
 
 docs/DRIKPANCHANG_AUDIT.md    benchmark/product audit
 docs/TITHIKA_PAGE_MAP.md      implementation map
-docs/RELEASE_CERTIFICATION.md production certification + shell queue
+docs/RELEASE_CERTIFICATION.md production + semantic certification contract
 scripts/validate-routes.php   CI route validator
 ```
 
@@ -375,7 +375,7 @@ Pretty URLs are handled through Apache rewrite rules, for example:
 Tithika deliberately separates page creation from calculation-engine readiness:
 
 - **Live** — backed by a verified calculation/content engine.
-- **Mapped** — production URL and UI shell exist; specialized engine/content adapter is still pending.
+- **Mapped** — route exists in the product map. The current certified baseline has no mapped-only unfinished shells; every mapped route is backed by a verified calculation, rule, reference, or editorial adapter.
 - **Verified** — calculation rules have fixtures and cross-source tests.
 - **Released** — engine, UI, SEO, mobile and accessibility audit passed.
 
@@ -424,7 +424,7 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 23. SEO/schema/internal-linking and quality-filtered sitemap. ✓
 24. Devotion/Learn/Gallery structured content layer. ✓
 25. Performance/mobile/accessibility/release hardening. ✓
-26. Production certification contract + remaining-shell queue. ✓
+26. Production + semantic certification contract, with zero remaining mapped shells. ✓
 27. Deterministic Panchang reuse batch (8 routes). ✓
 28. Deterministic Muhurat reuse batch (10 routes). ✓
 29. Deterministic Vrat recurrence batch (7 routes). ✓

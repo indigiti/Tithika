@@ -50,7 +50,7 @@ The exact contract and promotion queue are documented in `docs/RELEASE_CERTIFICA
 
 ## SEO and release state
 
-The 292-route map is intentionally larger than the set exposed to search engines. A centralized live-route registry plus structured editorial coverage determines which detail pages receive `index,follow`; unfinished mapped shells receive `noindex,follow`. The XML sitemap contains only production-quality routes plus family landing pages.
+The 292-route map is fully exposed through the centralized verified-route registry and structured editorial/reference coverage. All mapped detail routes currently meet the production-quality `index,follow` contract; the XML sitemap is generated from the same quality state.
 
 The shared shell now emits canonical/OpenGraph/Twitter metadata, JSON-LD and breadcrumbs; related links are topic-aware across families. The human site map labels routes as Live, Editorial or Mapped.
 
@@ -83,7 +83,7 @@ All routes are resolved by the shared `page.php` renderer through Apache rewrite
 ## Implementation status convention
 
 - **Live**: backed by a verified calculation/content engine.
-- **Mapped**: production URL and UI shell exist; engine/content adapter still needs implementation.
+- **Mapped**: route exists in the product map. As of the current certified baseline there are no mapped-only unfinished shells; every mapped route is backed by a calculation engine, rule profile, reference adapter, or editorial adapter.
 - **Verified**: calculation rules have fixtures and cross-source tests.
 - **Released**: engine + UI + SEO + mobile + accessibility audit passed.
 
