@@ -138,9 +138,10 @@ def sample_moments(mode: str, start: datetime, end: datetime) -> list[datetime]:
         return [start + timedelta(days=i, hours=12) for i in range(7)]
 
     if mode == "monthly":
+        # Daily noon sampling avoids aliasing fast Mercury/Venus/Mars changes
+        # and removes the former five-point weekly approximation.
         span = (end - start).days
-        indexes = sorted(set([0, min(7, span - 1), min(14, span - 1), min(21, span - 1), span - 1]))
-        return [start + timedelta(days=i, hours=12) for i in indexes]
+        return [start + timedelta(days=i, hours=12) for i in range(span)]
 
     if mode == "yearly":
         rows = []
@@ -498,7 +499,7 @@ def build(payload: dict) -> dict:
             "sampling": {
                 "daily": "one local-noon sample",
                 "weekly": "seven local-noon daily samples",
-                "monthly": "five approximately weekly samples",
+                "monthly": "one local-noon sample for every civil day in the month",
                 "yearly": "one midpoint sample for each month",
             },
             "meaning": (
