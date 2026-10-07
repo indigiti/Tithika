@@ -46,6 +46,9 @@ MUHURTA_AUSPICIOUS={
 PAKSHI=["Vulture","Owl","Crow","Cock","Peacock"]
 ACT=["Ruling","Eating","Walking","Sleeping","Dying"]
 ACT_WEIGHT={"Ruling":1.0,"Eating":0.8,"Walking":0.6,"Sleeping":0.4,"Dying":0.2}
+# Classical sub-Yama shares sum to 144 units: Rule 48, Walk 36,
+# Eat 30, Sleep 18, Die 12. Scale these proportions to the local Yama length.
+SUB_YAMA_SHARE={"Ruling":48,"Eating":30,"Walking":36,"Sleeping":18,"Dying":12}
 
 # Explicit Pulippani mirror-table profile. This replaces the former synthetic
 # weekday/paksha shift algorithm. It is intentionally named because Pancha
@@ -163,13 +166,16 @@ def pakshi_sections(selected,lat,lon,tz,bird="Peacock"):
         major=(end-start)/5;items=[]
         main_seq=table[key][bird]
         for m,main in enumerate(main_seq):
-            y0=start+major*m;y1=start+major*(m+1);sub=major/5
+            y0=start+major*m;y1=start+major*(m+1)
             ai=ACT.index(main)
-            for s in range(5):
-                subact=ACT[(ai+s)%5];a=y0+sub*s;b=y0+sub*(s+1)
+            subacts=[ACT[(ai+s)%5] for s in range(5)]
+            cursor=y0
+            for s,subact in enumerate(subacts):
+                duration=major*SUB_YAMA_SHARE[subact]/144.0
+                a=cursor;b=(y1 if s==4 else cursor+duration);cursor=b
                 score=ACT_WEIGHT[main]*ACT_WEIGHT[subact]
-                items.append({"title":f"{bird} · {main} / {subact}","date":a.date().isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"{label} Yama {m+1} · {_tier(score)} · {score:.2f}","detail":f"{paksha} · Pulippani mirror-table profile · equal sub-yama variant","link_date":a.date().isoformat()})
-        sections.append({"title":f"{label} Pancha Pakshi · {bird}","note":"Five local solar Yamas × five equal sub-Yamas. Main activities come from the explicit Pulippani weekday/Paksha mirror tables; weighted-duration lineages are not silently mixed into this profile.","items":items})
+                items.append({"title":f"{bird} · {main} / {subact}","date":a.date().isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"{label} Yama {m+1} · {_tier(score)} · {score:.2f}","detail":f"{paksha} · Pulippani mirror-table profile · weighted sub-Yama {SUB_YAMA_SHARE[subact]}/144","link_date":a.date().isoformat(),"start":a.isoformat(),"end":b.isoformat()})
+        sections.append({"title":f"{label} Pancha Pakshi · {bird}","note":"Five local solar Yamas with unequal sub-Yamas scaled by the classical activity shares: Ruling 48, Walking 36, Eating 30, Sleeping 18, Dying 12 (total 144).","items":items})
     return sections
 
 def shubha_dates(year,lat,lon,tz):
