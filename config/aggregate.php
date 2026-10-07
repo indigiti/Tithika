@@ -23,4 +23,5 @@ return [
     'festivals/pausha',
     'festivals/magha',
     'festivals/phalguna',
+    'vrat/shraddha',
 ];
