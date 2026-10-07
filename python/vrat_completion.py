@@ -4,10 +4,10 @@ from __future__ import annotations
 import json, sys
 from datetime import date, datetime, timedelta, time
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import panchang, lunar_occurrences
+import panchang, lunar_occurrences, festival_rules, sankranti
 import panchang_completion
 
-ENGINE_VERSION="1.0.0"
+ENGINE_VERSION="1.1.0"
 
 FIXED_RULES={
  "vrat/vinayaka-chaturthi":("Vinayaka Chaturthi",None,"Shukla Paksha",4),
@@ -67,57 +67,70 @@ def exact_tithi_intervals(year,target_id,tz):
 def kalashtami(year,lat,lon,tz):
     rows=[]
     for start,end in exact_tithi_intervals(year,22,tz): # Krishna Ashtami
-        candidates={start.date(),end.date()}
-        selected=None; evidence=""
-        for d in sorted(candidates):
+        choices=[]
+        for d in {start.date()-timedelta(days=1),start.date(),end.date()}:
             if d.year!=year: continue
-            ss=sunset(d,lat,lon,tz); sr=sunrise(d,lat,lon,tz)
-            if not ss or not sr: continue
+            ss=sunset(d,lat,lon,tz); nr=sunrise(d+timedelta(days=1),lat,lon,tz)
+            sr=sunrise(d,lat,lon,tz)
+            if not ss or not nr or not sr: continue
+            if nr<=ss: nr+=timedelta(days=1)
+            ov0=max(start,ss); ov1=min(end,nr)
+            overlap=max(0.0,(ov1-ov0).total_seconds())
             ghati=(ss-sr)/30
-            if start <= ss < end and end >= ss+ghati:
-                selected=d; evidence="Ashtami prevails at least one local Ghati after sunset";break
-        if selected is None:
-            d=start.date()
-            ss=sunset(d,lat,lon,tz)
-            selected=d if ss and start<=ss<end else (end.date()-timedelta(days=1))
-            evidence="Fallback to civil evening with maximum Ashtami night overlap"
-        if selected.year==year:
-            rows.append({"title":"Kalashtami","date":selected.isoformat(),
-             "time":f'{fmt(start)} → {fmt(end)}',"meta":"Krishna Ashtami · night selector",
-             "detail":evidence,"link_date":selected.isoformat()})
+            strong=start<=ss<end and end>=ss+ghati
+            if overlap>0: choices.append((strong,overlap,d,ss,ov0,ov1))
+        if not choices: continue
+        choices.sort(key=lambda x:(x[0],x[1]),reverse=True)
+        strong,overlap,selected,ss,ov0,ov1=choices[0]
+        basis=("Ashtami prevails from sunset for at least one local day-Ghati"
+               if strong else "maximum Krishna Ashtami overlap with the local night")
+        rows.append({"title":"Kalashtami","date":selected.isoformat(),
+          "time":f'{fmt(start)} → {fmt(end)}',"meta":"Krishna Ashtami · night selector",
+          "detail":basis+f" · night overlap {overlap/60:.1f} minutes",
+          "link_date":selected.isoformat(),"night_overlap_start":ov0.isoformat(),"night_overlap_end":ov1.isoformat()})
     return rows
 
 def chandra_darshan(year,lat,lon,tz):
     rows=[]
     rule=lunar_occurrences.KINDS["amavasya"][0]
     for event in lunar_occurrences.events_for_rule(year,rule,lat,lon,tz,False):
-        newmoon_end=datetime.fromisoformat(event["end"])
-        for offset in range(0,3):
-            d=newmoon_end.date()+timedelta(days=offset)
+        conjunction=datetime.fromisoformat(event["end"])
+        for offset in range(0,4):
+            d=conjunction.date()+timedelta(days=offset)
             if d.year!=year: continue
-            ss=sunset(d,lat,lon,tz); ms=moonset(d,lat,lon,tz)
-            if ss and ms and ms>ss and ms-ss<=timedelta(hours=4) and newmoon_end<ms:
-                start=max(ss,newmoon_end)
-                rows.append({"title":"Chandra Darshan","date":d.isoformat(),"time":f"{fmt(start)} – {fmt(ms)}",
-                  "meta":"First post-Amavasya sunset visibility window",
-                  "detail":"Moonset occurs after local sunset; window begins after both sunset and Amavasya end.","link_date":d.isoformat()})
+            ss=sunset(d,lat,lon,tz);ms=moonset(d,lat,lon,tz)
+            if not ss or not ms or ss<=conjunction or ms<=ss: continue
+            sun_lon,moon_lon,_=panchang.tropical_longitudes(ss)
+            elong=(moon_lon-sun_lon)%360.0
+            lag=(ms-ss).total_seconds()/60.0
+            age=(ss-conjunction).total_seconds()/3600.0
+            # Geometric eligibility only: Danjon-scale elongation plus a useful
+            # sunset-to-moonset lag. Weather/extinction are intentionally excluded.
+            if 7.0<=elong<=30.0 and lag>=20.0:
+                rows.append({"title":"Chandra Darshan","date":d.isoformat(),"time":f"{fmt(ss)} – {fmt(ms)}",
+                  "meta":"First geometrically eligible post-Amavasya crescent window",
+                  "detail":f"Elongation {elong:.2f}° · Moonset lag {lag:.0f} min · lunar age {age:.1f} h. This is an astronomical candidate, not a weather-dependent visibility guarantee.",
+                  "link_date":d.isoformat(),"elongation_deg":round(elong,4),"moonset_lag_minutes":round(lag,2),"lunar_age_hours":round(age,2)})
                 break
     return rows
 
 def masik_janmashtami(year,lat,lon,tz):
     rows=[]
     for start,end in exact_tithi_intervals(year,22,tz):
-        best=None
-        for d in {start.date(),end.date(),start.date()+timedelta(days=1)}:
+        choices=[]
+        for d in {start.date()-timedelta(days=1),start.date(),end.date()}:
             if d.year!=year: continue
-            nishita=datetime.combine(d,time(23,59,59),tzinfo=tz)+timedelta(seconds=1)
-            if start<=nishita<end: best=(d,nishita,"Krishna Ashtami prevailing at local Nishita/midnight");break
-        if best is None:
-            midpoint=start+(end-start)/2; best=(midpoint.date(),midpoint,"Krishna Ashtami midpoint fallback when no civil midnight lies inside Tithi")
-        d,anchor,basis=best
-        if d.year==year:
-            rows.append({"title":"Masik Krishna Janmashtami","date":d.isoformat(),"time":fmt(anchor),
-             "meta":"Krishna Ashtami · Nishita selector","detail":basis,"link_date":d.isoformat()})
+            period=festival_rules.nishita_period(d,lat,lon,tz)
+            if not period: continue
+            n0,n1=period;ov0=max(start,n0);ov1=min(end,n1)
+            overlap=max(0.0,(ov1-ov0).total_seconds())
+            if overlap>0: choices.append((overlap,d,n0,n1,ov0,ov1))
+        if not choices: continue
+        overlap,d,n0,n1,ov0,ov1=max(choices,key=lambda x:x[0])
+        rows.append({"title":"Masik Krishna Janmashtami","date":d.isoformat(),
+          "time":f"{fmt(ov0)} – {fmt(ov1)}","meta":"Krishna Ashtami · local Nishita selector",
+          "detail":f"Ashtami overlaps local solar Nishita for {overlap/60:.1f} minutes.",
+          "link_date":d.isoformat(),"nishita_start":n0.isoformat(),"nishita_end":n1.isoformat()})
     return rows
 
 def ishti_anvadhan(year,lat,lon,tz):
@@ -125,12 +138,22 @@ def ishti_anvadhan(year,lat,lon,tz):
     for kind in ("purnima","amavasya"):
         rule=lunar_occurrences.KINDS[kind][0]
         for e in lunar_occurrences.events_for_rule(year,rule,lat,lon,tz,False):
-            a=datetime.fromisoformat(e["start"]); b=datetime.fromisoformat(e["end"]); mid=a+(b-a)/2; d=mid.date()
+            a=datetime.fromisoformat(e["start"]);b=datetime.fromisoformat(e["end"])
+            candidates=[x for x in e.get("sunrise_candidates",[]) if int(x["date"][:4])==year]
+            if candidates:
+                d=date.fromisoformat(candidates[0]["date"]);basis="Tithi prevailing at local sunrise"
+            else:
+                # Very short Tithi with no sunrise: preserve the exact occurrence
+                # and select the civil date containing the larger share.
+                midnight=datetime.combine(a.date()+timedelta(days=1),time(0),tzinfo=tz)
+                left=(min(b,midnight)-a).total_seconds()
+                right=(b-max(a,midnight)).total_seconds()
+                d=a.date() if left>=right else b.date();basis="no-sunrise Tithi; maximum civil-date occurrence overlap"
             if d.year!=year: continue
             prev=d-timedelta(days=1)
             rows.extend([
-              {"title":"Anvadhan","date":prev.isoformat(),"time":"Previous civil day","meta":f"Before {kind.title()} Ishti","detail":"Anvadhan paired with the following Ishti occurrence.","link_date":prev.isoformat()},
-              {"title":"Ishti","date":d.isoformat(),"time":f"{fmt(a)} → {fmt(b)}","meta":kind.title(),"detail":"Exact Purnima/Amavasya Tithi occurrence.","link_date":d.isoformat()}
+              {"title":"Anvadhan","date":prev.isoformat(),"time":"Previous civil day","meta":f"Before {kind.title()} Ishti","detail":"Anvadhan on the civil day preceding the selected Ishti.","link_date":prev.isoformat()},
+              {"title":"Ishti","date":d.isoformat(),"time":f"{fmt(a)} → {fmt(b)}","meta":kind.title(),"detail":basis,"link_date":d.isoformat()}
             ])
     rows.sort(key=lambda r:(r["date"],r["title"]))
     return rows
@@ -186,25 +209,44 @@ def chaturmasa(year,lat,lon,tz):
       "detail":"Versioned Smarta four-month observance span; sect-specific endpoints can be layered separately.","link_date":a.isoformat()}]
 
 def shraddha(year,lat,lon,tz):
-    rows=[]
-    # Amavasya
+    rows=[];seen=set()
+    def add(row,key):
+        if key in seen:return
+        seen.add(key);rows.append(row)
+    # 12 Amavasya Shraddha dates: select the sunrise carrying Amavasya where present.
     for e in lunar_occurrences.events_for_rule(year,lunar_occurrences.KINDS["amavasya"][0],lat,lon,tz,False):
-        mid=datetime.fromisoformat(e["start"])+(datetime.fromisoformat(e["end"])-datetime.fromisoformat(e["start"]))/2
-        if mid.year==year: rows.append({"title":"Amavasya Shraddha","date":mid.date().isoformat(),"time":fmt(mid),"meta":"12-Amavasya class","detail":"Amavasya occurrence","link_date":mid.date().isoformat()})
-    # Pitru Paksha: Krishna Paksha in Bhadrapada/Ashwina sunrise profile
+        a=datetime.fromisoformat(e["start"]);b=datetime.fromisoformat(e["end"])
+        cand=[x for x in e.get("sunrise_candidates",[]) if int(x["date"][:4])==year]
+        d=date.fromisoformat(cand[0]["date"]) if cand else (a+(b-a)/2).date()
+        if d.year==year:add({"title":"Amavasya Shraddha","date":d.isoformat(),"time":f"{fmt(a)} → {fmt(b)}","meta":"Amavasya class","detail":"Amavasya occurrence; sunrise-selected where available.","link_date":d.isoformat()},("amavasya",d))
+    # 12 Sankranti Shraddha occasions.
+    for e in sankranti.find_year(year,lat,lon,tz,False):
+        d=date.fromisoformat(e["date"])
+        add({"title":"Sankranti Shraddha","date":e["date"],"time":e["time_label"],"meta":e["name"],"detail":"Nirayana solar ingress Shraddha class.","link_date":e["date"]},("sankranti",d,e["rashi_id"]))
+    # Pitru Paksha is the Ashwina Krishna fortnight in the Purnimanta profile.
     d=date(year,1,1)
     while d.year==year:
         sr=sunrise(d,lat,lon,tz)
         if sr:
             st=panchang.state_at(sr+timedelta(seconds=1));mi=panchang.lunar_month_info(sr,st);m=norm_month(mi.get("purnimanta"))
-            if st["paksha"]=="Krishna Paksha" and m in ("Bhadrapada","Ashwina"):
-                rows.append({"title":"Pitru Paksha Shraddha","date":d.isoformat(),"time":fmt(sr),"meta":f'{m} · {st["tithi"]}',"detail":"Krishna Paksha sunrise Tithi in the Pitru-Paksha season profile.","link_date":d.isoformat()})
+            if st["paksha"]=="Krishna Paksha" and m=="Ashwina":
+                add({"title":f'{st["tithi"]} Shraddha',"date":d.isoformat(),"time":fmt(sr),"meta":"Pitru Paksha · Ashwina Krishna","detail":"Tithi prevailing at local sunrise in the Purnimanta Pitru-Paksha fortnight.","link_date":d.isoformat()},("pitru",d))
         d+=timedelta(days=1)
-    # Manvadi / Yugadi Shraddha classes reuse the dedicated selectors.
-    for label,rules in [("Manvadi Shraddha",panchang_completion.MANVADI),("Yugadi Shraddha",panchang_completion.YUGADI)]:
+    # Vaidhriti and Vyatipata sunrise-Yoga Shraddha classes.
+    d=date(year,1,1)
+    while d.year==year:
+        sr=sunrise(d,lat,lon,tz)
+        if sr:
+            st=panchang.state_at(sr+timedelta(seconds=1))
+            if st["yoga"] in ("Vaidhriti","Vyatipata"):
+                add({"title":f'{st["yoga"]} Shraddha',"date":d.isoformat(),"time":fmt(sr),"meta":"Nitya Yoga Shraddha class","detail":f'{st["yoga"]} Yoga prevailing at local sunrise.',"link_date":d.isoformat()},("yoga",st["yoga"],d))
+        d+=timedelta(days=1)
+    # Manvadi, Yugadi and Kalpadi classes reuse the dedicated Panchang selectors.
+    for label,rules in [("Manvadi Shraddha",panchang_completion.MANVADI),("Yugadi Shraddha",panchang_completion.YUGADI),("Kalpadi Shraddha",panchang_completion.KALPADI)]:
         for x in panchang_completion.select_lunar_rules(year,lat,lon,tz,rules):
-            rows.append({**x,"title":label+" · "+x["title"],"detail":"Traditional Shraddha class · "+x["detail"]})
-    rows.sort(key=lambda r:r["date"])
+            d=date.fromisoformat(x["date"])
+            add({**x,"title":label+" · "+x["title"],"detail":"Traditional Shraddha class · "+x["detail"]},(label,x["title"],d))
+    rows.sort(key=lambda r:(r["date"],r["title"]))
     return rows
 
 def collections(slug):
