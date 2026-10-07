@@ -1,0 +1,144 @@
+<?php
+declare(strict_types=1);
+
+const TITHIKA_SUPPORTED_LOCALES = ['en','hi'];
+
+function tithika_locale(): string {
+    static $locale = null;
+    if ($locale !== null) return $locale;
+    $requested = strtolower(trim((string)($_GET['lang'] ?? '')));
+    $cookie = strtolower(trim((string)($_COOKIE['tithika_lang'] ?? '')));
+    $candidate = in_array($requested, TITHIKA_SUPPORTED_LOCALES, true) ? $requested : $cookie;
+    $locale = in_array($candidate, TITHIKA_SUPPORTED_LOCALES, true) ? $candidate : 'en';
+    if ($requested !== '' && in_array($requested, TITHIKA_SUPPORTED_LOCALES, true) && !headers_sent()) {
+        setcookie('tithika_lang', $requested, [
+            'expires'=>time()+31536000,
+            'path'=>'/',
+            'secure'=>(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+            'httponly'=>false,
+            'samesite'=>'Lax',
+        ]);
+    }
+    return $locale;
+}
+
+function tithika_dictionary(): array {
+    static $dict = null;
+    if ($dict !== null) return $dict;
+    $dict = [
+      'en'=>[
+        'brand.tagline'=>'Vedic time, reimagined',
+        'nav.all_tools'=>'All tools','nav.settings'=>'Settings','nav.primary'=>'Primary',
+        'nav.panchang'=>'Panchang','nav.calendars'=>'Calendars','nav.muhurat'=>'Muhurat',
+        'nav.vrat'=>'Vrat & Upavas','nav.festivals'=>'Festivals','nav.jyotish'=>'Jyotish',
+        'skip.content'=>'Skip to content','location.label'=>'Location',
+        'location.chooser'=>'Location chooser','location.search'=>'Search city or place',
+        'location.use_current'=>'Use current location','location.privacy'=>'Your location is used only to calculate local solar timings.',
+        'footer.tagline'=>'Traditional calendar conventions in a modern, evidence-first utility experience.',
+        'footer.home'=>'Home','footer.sitemap'=>'Site map','footer.xml'=>'XML sitemap','footer.faq'=>'FAQ',
+        'home.kicker'=>'Your daily Vedic dashboard','home.title'=>'Today, clearly.',
+        'home.loading'=>'Loading verified Panchang, Muhurat and upcoming observances for your selected location…',
+        'home.ask'=>'Ask Tithika Intelligence →','home.full_panchang'=>'Full Panchang','home.personalize'=>'Personalize',
+        'home.selected_date'=>'Selected date','home.resolving'=>'Resolving location…','home.verified'=>'Verified engines',
+        'home.tithi'=>'Tithi','home.nakshatra'=>'Nakshatra','home.yoga'=>'Yoga','home.lunar_month'=>'Lunar month',
+        'home.sunrise'=>'Sunrise','home.sunset'=>'Sunset','home.moonrise'=>'Moonrise',
+        'home.choghadiya'=>'Choghadiya','home.open_timeline'=>'Open timeline →',
+        'home.abhijit'=>'Abhijit Muhurat','home.abhijit_note'=>'Deterministic local solar window','home.details'=>'Details →',
+        'home.rahu'=>'Rahu Kaal','home.rahu_note'=>'Daily blocked-period reference',
+        'home.upcoming'=>'Upcoming','home.next_days'=>'The next few days, already connected.',
+        'home.upcoming_copy'=>'Vrat, Sankranti and planetary events are aggregated from their verified engines for the selected location and preference profile.',
+        'home.ai_kicker'=>'New · Multi-engine intelligence','home.ai_title'=>'Don’t just read the Panchang. Ask what it means.',
+        'home.ai_copy'=>'Use verified Panchang, Muhurat and Jyotish outputs with confidence and provenance attached to every synthesis.',
+        'home.open_ai'=>'Open Tithika Intelligence',
+        'settings.title'=>'Settings & Profile','settings.kicker'=>'Local-first preferences','settings.hero'=>'Make Tithika yours.',
+        'settings.intro'=>'Choose your visual theme, time format, lunar-month convention, preferred tradition, language and default location. Settings stay in this browser; no account or database is required.',
+        'settings.privacy'=>'Privacy model','settings.local'=>'Stored locally.',
+        'settings.privacy_copy'=>'Birth data is not stored here. Only explicit product preferences and an optional saved location are retained in browser storage.',
+        'settings.appearance'=>'Appearance','settings.theme'=>'Theme','settings.system'=>'System','settings.system_note'=>'Follow device appearance',
+        'settings.light'=>'Light','settings.light_note'=>'Bright editorial interface','settings.dark'=>'Dark','settings.dark_note'=>'Low-light premium interface',
+        'settings.time'=>'Time display','settings.clock'=>'Clock','settings.12'=>'12-hour','settings.24'=>'24-hour',
+        'settings.lunar'=>'Lunar calendar','settings.month'=>'Month convention','settings.amanta'=>'Amanta','settings.amanta_note'=>'Month ends at Amavasya',
+        'settings.purnimanta'=>'Purnimanta','settings.purnimanta_note'=>'Month ends at Purnima',
+        'settings.observance'=>'Observance preference','settings.tradition'=>'Tradition','settings.smarta'=>'Smarta',
+        'settings.smarta_note'=>'General household convention','settings.vaishnava'=>'Vaishnava','settings.vaishnava_note'=>'Vaishnava observance profile',
+        'settings.iskcon'=>'ISKCON','settings.iskcon_note'=>'ISKCON-compatible Ekadashi profile',
+        'settings.language'=>'Language','settings.language_title'=>'Interface language','settings.english'=>'English','settings.hindi'=>'हिन्दी',
+        'settings.language_note'=>'Shared navigation, dashboard and settings translate without duplicating product routes.',
+        'settings.context'=>'Default context','settings.saved_location'=>'Saved location','settings.no_location'=>'No saved location',
+        'settings.location_fallback'=>'Tithika will continue using geolocation or the standard fallback.',
+        'settings.save_location'=>'Save current selected location','settings.clear'=>'Clear',
+        'settings.future'=>'Designed for future localization.',
+        'settings.future_copy'=>'The locale contract supports additional dictionaries without duplicating calculation pages. Hindi is the first production locale.',
+        'dynamic.today'=>'Today','dynamic.tomorrow'=>'Tomorrow','dynamic.days_away'=>'days away',
+        'dynamic.current_location'=>'Selected location','dynamic.no_events'=>'No major tracked events fall inside this dashboard horizon. Open the full calendars for the complete year.',
+        'dynamic.dashboard_error'=>'Daily dashboard could not refresh. The individual Panchang and Muhurat tools remain available.',
+      ],
+      'hi'=>[
+        'brand.tagline'=>'वैदिक समय, नए रूप में',
+        'nav.all_tools'=>'सभी साधन','nav.settings'=>'सेटिंग्स','nav.primary'=>'मुख्य',
+        'nav.panchang'=>'पंचांग','nav.calendars'=>'कैलेंडर','nav.muhurat'=>'मुहूर्त',
+        'nav.vrat'=>'व्रत और उपवास','nav.festivals'=>'त्योहार','nav.jyotish'=>'ज्योतिष',
+        'skip.content'=>'मुख्य सामग्री पर जाएँ','location.label'=>'स्थान',
+        'location.chooser'=>'स्थान चुनें','location.search'=>'शहर या स्थान खोजें',
+        'location.use_current'=>'वर्तमान स्थान उपयोग करें','location.privacy'=>'आपके स्थान का उपयोग केवल स्थानीय सौर समय की गणना के लिए किया जाता है।',
+        'footer.tagline'=>'आधुनिक, प्रमाण-आधारित अनुभव में पारंपरिक कैलेंडर परंपराएँ।',
+        'footer.home'=>'मुखपृष्ठ','footer.sitemap'=>'साइट मानचित्र','footer.xml'=>'XML साइटमैप','footer.faq'=>'सामान्य प्रश्न',
+        'home.kicker'=>'आपका दैनिक वैदिक डैशबोर्ड','home.title'=>'आज, स्पष्ट रूप से।',
+        'home.loading'=>'आपके चुने हुए स्थान के लिए सत्यापित पंचांग, मुहूर्त और आगामी पर्व लोड हो रहे हैं…',
+        'home.ask'=>'तिथिका इंटेलिजेंस से पूछें →','home.full_panchang'=>'पूरा पंचांग','home.personalize'=>'व्यक्तिगत बनाएँ',
+        'home.selected_date'=>'चुनी हुई तिथि','home.resolving'=>'स्थान निर्धारित हो रहा है…','home.verified'=>'सत्यापित इंजन',
+        'home.tithi'=>'तिथि','home.nakshatra'=>'नक्षत्र','home.yoga'=>'योग','home.lunar_month'=>'चंद्र मास',
+        'home.sunrise'=>'सूर्योदय','home.sunset'=>'सूर्यास्त','home.moonrise'=>'चंद्रोदय',
+        'home.choghadiya'=>'चौघड़िया','home.open_timeline'=>'समयरेखा खोलें →',
+        'home.abhijit'=>'अभिजित मुहूर्त','home.abhijit_note'=>'स्थानीय सौर समय पर आधारित निश्चित अवधि','home.details'=>'विवरण →',
+        'home.rahu'=>'राहु काल','home.rahu_note'=>'दैनिक वर्जित अवधि संदर्भ',
+        'home.upcoming'=>'आगामी','home.next_days'=>'अगले कुछ दिन, एक ही स्थान पर।',
+        'home.upcoming_copy'=>'व्रत, संक्रांति और ग्रह घटनाएँ चुने गए स्थान और परंपरा के अनुसार सत्यापित इंजनों से एकत्र की जाती हैं।',
+        'home.ai_kicker'=>'नया · मल्टी-इंजन इंटेलिजेंस','home.ai_title'=>'सिर्फ पंचांग न पढ़ें। उसका अर्थ पूछें।',
+        'home.ai_copy'=>'सत्यापित पंचांग, मुहूर्त और ज्योतिष परिणामों को विश्वास स्तर और स्रोत के साथ समझें।',
+        'home.open_ai'=>'तिथिका इंटेलिजेंस खोलें',
+        'settings.title'=>'सेटिंग्स और प्रोफ़ाइल','settings.kicker'=>'स्थानीय प्राथमिकताएँ','settings.hero'=>'तिथिका को अपने अनुसार बनाएँ।',
+        'settings.intro'=>'थीम, समय प्रारूप, चंद्र मास पद्धति, परंपरा, भाषा और डिफ़ॉल्ट स्थान चुनें। ये सेटिंग्स इसी ब्राउज़र में रहती हैं; खाता या डेटाबेस आवश्यक नहीं है।',
+        'settings.privacy'=>'गोपनीयता मॉडल','settings.local'=>'स्थानीय रूप से संग्रहीत।',
+        'settings.privacy_copy'=>'जन्म डेटा यहाँ संग्रहीत नहीं होता। केवल आपकी स्पष्ट प्राथमिकताएँ और वैकल्पिक डिफ़ॉल्ट स्थान ब्राउज़र में रखे जाते हैं।',
+        'settings.appearance'=>'रूप','settings.theme'=>'थीम','settings.system'=>'सिस्टम','settings.system_note'=>'डिवाइस की थीम अपनाएँ',
+        'settings.light'=>'लाइट','settings.light_note'=>'उज्ज्वल संपादकीय इंटरफ़ेस','settings.dark'=>'डार्क','settings.dark_note'=>'कम रोशनी के लिए इंटरफ़ेस',
+        'settings.time'=>'समय प्रदर्शन','settings.clock'=>'घड़ी','settings.12'=>'12-घंटे','settings.24'=>'24-घंटे',
+        'settings.lunar'=>'चंद्र कैलेंडर','settings.month'=>'मास पद्धति','settings.amanta'=>'अमांत','settings.amanta_note'=>'मास अमावस्या पर समाप्त',
+        'settings.purnimanta'=>'पूर्णिमांत','settings.purnimanta_note'=>'मास पूर्णिमा पर समाप्त',
+        'settings.observance'=>'अनुष्ठान प्राथमिकता','settings.tradition'=>'परंपरा','settings.smarta'=>'स्मार्त',
+        'settings.smarta_note'=>'सामान्य गृहस्थ परंपरा','settings.vaishnava'=>'वैष्णव','settings.vaishnava_note'=>'वैष्णव व्रत पद्धति',
+        'settings.iskcon'=>'ISKCON','settings.iskcon_note'=>'ISKCON-अनुकूल एकादशी पद्धति',
+        'settings.language'=>'भाषा','settings.language_title'=>'इंटरफ़ेस भाषा','settings.english'=>'English','settings.hindi'=>'हिन्दी',
+        'settings.language_note'=>'मुख्य नेविगेशन, डैशबोर्ड और सेटिंग्स उत्पाद पृष्ठों की नकल किए बिना अनुवादित होते हैं।',
+        'settings.context'=>'डिफ़ॉल्ट संदर्भ','settings.saved_location'=>'सहेजा स्थान','settings.no_location'=>'कोई सहेजा स्थान नहीं',
+        'settings.location_fallback'=>'तिथिका जियोलोकेशन या मानक डिफ़ॉल्ट का उपयोग जारी रखेगा।',
+        'settings.save_location'=>'वर्तमान चुना स्थान सहेजें','settings.clear'=>'हटाएँ',
+        'settings.future'=>'भविष्य के स्थानीयकरण के लिए तैयार।',
+        'settings.future_copy'=>'लोकेल प्रणाली अतिरिक्त भाषाएँ जोड़ सकती है, बिना गणना पृष्ठों की नकल किए। हिन्दी पहला उत्पादन लोकेल है।',
+        'dynamic.today'=>'आज','dynamic.tomorrow'=>'कल','dynamic.days_away'=>'दिन बाद',
+        'dynamic.current_location'=>'चुना स्थान','dynamic.no_events'=>'इस अवधि में कोई प्रमुख ट्रैक की गई घटना नहीं मिली। पूरे वर्ष के लिए कैलेंडर खोलें।',
+        'dynamic.dashboard_error'=>'दैनिक डैशबोर्ड रीफ़्रेश नहीं हो सका। अलग-अलग पंचांग और मुहूर्त साधन उपलब्ध हैं।',
+      ],
+    ];
+    return $dict;
+}
+
+function tithika_t(string $key, ?string $fallback = null, array $vars = []): string {
+    $dict = tithika_dictionary();
+    $locale = tithika_locale();
+    $value = $dict[$locale][$key] ?? $dict['en'][$key] ?? $fallback ?? $key;
+    foreach ($vars as $name=>$replacement) {
+        $value = str_replace('{'.$name.'}', (string)$replacement, $value);
+    }
+    return $value;
+}
+
+function tithika_client_messages(): array {
+    $dict = tithika_dictionary();
+    $locale = tithika_locale();
+    return [
+        'locale'=>$locale,
+        'messages'=>$dict[$locale] ?? $dict['en'],
+    ];
+}
