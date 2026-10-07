@@ -1,17 +1,17 @@
 # Tithika Production Certification
 
-This document records the production-readiness contract enforced by CI. It is not a claim that every mapped route is complete; unfinished shells are deliberately excluded from search indexing until their calculation engine or editorial adapter is verified.
+This document records the production-readiness contract enforced by CI. Indexability, route wiring and calculation semantics are separate concerns: a page can be production-quality as a structured reference without being an independent astronomical calculator. The final completion routes are therefore classified explicitly in `config/quality.php`.
 
 ## Certified baseline
 
 - Product route contract: **292**
-- Verified calculation/live routes: **229**
+- Live-route registry entries: **229**
 - Structured editorial routes: **62**
 - Additional canonical live redirect: **1** (`muhurat/choghadiya`)
 - Total production-quality/indexable detail routes: **292**
 - Remaining mapped `noindex,follow` shells: **0**
 
-The indexable set is generated from `config/live.php`, structured editorial coverage and explicit canonical live adapters. The XML sitemap uses the same quality state.
+The indexable set is generated from `config/live.php`, structured editorial coverage and explicit canonical live adapters. The XML sitemap uses the same quality state. For the former 99 shell routes, CI additionally enforces **34 calculated**, **18 aggregated**, **15 hybrid**, and **32 reference** classifications.
 
 ## Newly certified regional adapters
 
@@ -65,7 +65,7 @@ All eight are covered by `scripts/test-panchang-reuse.py`.
 
 ### Completed Panchang rule routes
 
-`panchang/manvadi-tithi`, `panchang/yugadi-tithi`, `panchang/kalpadi-tithi` and `panchang/kranti-samya` are now promoted through `python/panchang_completion.py`. Tithi observances use explicit Purnimanta month/Paksha/Tithi sunrise selectors; Kranti Samya is calculated from tropical Sun/Moon declination convergence on the encoded Mahapata axis pairs rather than treating a full Nitya Yoga span as equivalent.
+`panchang/manvadi-tithi`, `panchang/yugadi-tithi`, `panchang/kalpadi-tithi` and `panchang/kranti-samya` are promoted through `python/panchang_completion.py`. Tithi observances use explicit Purnimanta month/Paksha/Tithi sunrise selectors. Kranti Samya uses true ecliptic longitude/latitude transformed to true-equator-of-date declination, axis-pair classification, a ±30 arcminute Mahapata boundary and refined transition times.
 
 ## Newly certified Muhurat reuse routes
 
@@ -86,7 +86,7 @@ All ten are covered by `scripts/test-muhurat-reuse.py`, including 2026 Pune date
 
 ### Completed Muhurat rule routes
 
-`muhurat/gowri`, `muhurat/jain-pachchakkhan`, `muhurat/pancha-pakshi`, `muhurat/do-ghati` and `muhurat/shubha-dates` are now promoted through `python/muhurat_completion.py` with explicit versioned solar/tradition profiles.
+`muhurat/gowri`, `muhurat/jain-pachchakkhan`, `muhurat/pancha-pakshi`, `muhurat/do-ghati` and `muhurat/shubha-dates` are promoted through `python/muhurat_completion.py`. Do-Ghati uses the canonical 30-name sequence. Pancha Pakshi exposes a named Pulippani mirror-table profile with local solar Yamas and weighted sub-Yamas. Generic Shubha Dates is explicitly labeled as a Tithika filter.
 
 ## Newly certified Vrat recurrence routes
 
@@ -104,7 +104,7 @@ All seven are covered by `scripts/test-vrat-recurrence.py` with 2026 Pune/Mahara
 
 ### Completed Vrat rule routes
 
-`vrat/iskcon-ekadashi` now reuses Tithika's integrated Arunodaya/Vriddhi/Mahadwadashi/Hari-Vasara substrate. Kalashtami, Chandra Darshan, Masik Janmashtami, Ishti/Anvadhan, Shraddha, Purushottam Maas and Chaturmasa are promoted through `python/vrat_completion.py` with explicit night, visibility, lunar-month or multi-month selectors.
+`vrat/iskcon-ekadashi` reuses Tithika's integrated Arunodaya/Vriddhi/Mahadwadashi/Hari-Vasara substrate. Kalashtami uses measured local-night overlap; Masik Janmashtami uses local solar Nishita; Ishti/Anvadhan is Tithi-end paired; Shraddha aggregates implemented Shraddha classes; Purushottam Maas and Chaturmasa use explicit lunar-month profiles. Chandra Darshan reports geometric crescent eligibility and does not claim weather-dependent visibility.
 
 ## Data provenance
 
@@ -119,7 +119,7 @@ A release is certifiable only when all of the following pass on the exact merged
 1. PHP and JavaScript syntax.
 2. 292-route manifest validation.
 3. SEO/content/accessibility/performance release audit.
-4. Production certification counts and provenance.
+4. Production certification counts, provenance and completion quality taxonomy.
 5. Panchang, Vrat, festival and Muhurat regression fixtures.
 6. Regional calendar regressions including Nepali and Jain adapters.
 7. Planetary/Jyotish/Kundali/Varga/Yoga/Shadbala/matching/timing/Rashifal regressions.
@@ -136,4 +136,4 @@ The former 99-route shell queue is complete. All mapped product routes now have 
 5. **Secondary Jyotish calculators** — Prashna, Pancha Pakshi, gemstone/Rudraksha traditional references, Namakarana initials, Sahasra Chandrodaya, Vedic Time, Shraddha Tithi and deterministic Prashnavali context.
 6. **Astronomy reference** — declination parallels/contra-parallels, geocentric ecliptic crossings, six Indian Ritus, and sidereal/tropical zodiac reference tables.
 
-The final completion contract is listed in `config/completion.php`. CI requires all 99 former shell routes to be present in `config/live.php`, backed by their family engine files and regression fixtures. The route contract remains **292**, with **292 indexable routes and zero mapped noindex shells**.
+The final completion contract is listed in `config/completion.php`; its semantic class is enforced by `config/quality.php`. CI requires all 99 former shell routes to be present in `config/live.php`, classified exactly once, backed by their family adapters and truth fixtures where calculation semantics apply. The route contract remains **292**, with **292 indexable routes and zero mapped noindex shells**.
