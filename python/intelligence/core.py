@@ -32,6 +32,9 @@ ENGINE_SPECS = {
     "interpretation": "interpretation.py",
     "timing-timeline": "timing_timeline.py",
     "personal-rashifal": "personal_rashifal.py",
+    "lunar-occurrences": "lunar_occurrences.py",
+    "observances": "observances.py",
+    "sankranti": "sankranti.py",
 }
 
 
