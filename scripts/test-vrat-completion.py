@@ -17,4 +17,6 @@ assert any(r["title"]=="Dwadashi Shraddha" and r["date"]=="2026-10-07" for r in 
 assert any(r["title"]=="Sankranti Shraddha" for r in shr)
 assert any(r["title"].startswith("Vaidhriti") for r in shr) and any(r["title"].startswith("Vyatipata") for r in shr)
 assert any(r["title"].startswith("Kalpadi Shraddha") for r in shr)
+for title in ("Purvedyu Shraddha","Ashtaka Shraddha","Anvashtaka Shraddha"):
+    assert sum(1 for r in shr if r["title"]==title)>=4,(title,[r for r in shr if r["title"]==title])
 print("Vrat completion truth fixture passed")
