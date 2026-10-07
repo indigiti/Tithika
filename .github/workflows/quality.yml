@@ -48,6 +48,7 @@ jobs:
           node --check assets/settings-core.js
           node --check assets/settings.js
           node --check assets/home-dashboard.js
+          node --check assets/kundali-workspace.js
 
       - name: Validate route map
         run: php scripts/validate-routes.php
@@ -72,6 +73,12 @@ jobs:
 
       - name: Dashboard and Settings surface fixture
         run: php scripts/test-gap-closing-surfaces.php
+
+      - name: Kundali Workspace surface fixture
+        run: php scripts/test-kundali-workspace-surface.php
+
+      - name: Kundali Workspace backend contract
+        run: python scripts/test-kundali-workspace.py
 
       # Semantic completion gates run early so rule regressions fail fast.
       - name: Panchang completion regression fixture

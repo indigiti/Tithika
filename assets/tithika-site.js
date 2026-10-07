@@ -188,7 +188,19 @@
   window.addEventListener('tithika:toast',e=>toast(e.detail||'Updated'));
   window.TithikaContext={
     get:()=>({lat:state.lat,lon:state.lon,city:state.city,timezone:state.timezone,date:$('#tkDate')?.value||isoToday(state.timezone)}),
-    refresh:()=>calculate()
+    refresh:()=>calculate(),
+    set:async next=>{
+      if(!next||!Number.isFinite(Number(next.lat))||!Number.isFinite(Number(next.lon)))return false;
+      state.lat=Number(next.lat);state.lon=Number(next.lon);
+      state.city=String(next.city||'Saved location').slice(0,120);
+      state.timezone=String(next.timezone||state.timezone||'Asia/Kolkata').slice(0,80);
+      const input=$('#tkDate');
+      if(input&&/^\d{4}-\d{2}-\d{2}$/.test(String(next.date||''))){
+        input.value=String(next.date);state.dateTouched=true;
+      }
+      await calculate();
+      return true;
+    }
   };
   function emitContext(){
     window.dispatchEvent(new CustomEvent('tithika:context',{detail:window.TithikaContext.get()}));
@@ -446,6 +458,7 @@
         <div class="tk-kundali-charts">${renderKundaliChart(j.d1?.cells,'D1 · Rashi')}${renderKundaliChart(j.d9?.cells,'D9 · Navamsha')}</div>
         <div class="tk-kundali-grahas">${(j.d1?.placements||[]).map(p=>`<span><b>${esc(p.name)}</b>${esc(p.rashi)} ${Number(p.degree_in_rashi).toFixed(2)}° · H${p.house}</span>`).join('')}</div>
         <div class="tk-lunar-note">Tithi ${esc(j.panchang?.tithi||'—')} · Yoga ${esc(j.panchang?.yoga||'—')} · Karana ${esc(j.panchang?.karana||'—')}${yuddha?' · Graha Yuddha: '+yuddha:''}</div>`;
+      window.dispatchEvent(new CustomEvent('tithika:kundali',{detail:{data:j,payload:p}}));
     }catch(e){if(loading)loading.textContent=e.message||'Kundali engine unavailable';toast(e.message||'Kundali engine unavailable')}
   }
 

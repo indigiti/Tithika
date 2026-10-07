@@ -413,6 +413,47 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <label><span>Rahu / Ketu</span><select id="tkKundaliNode"><option value="mean">Mean nodes</option><option value="true">True nodes</option></select></label>
           <button id="tkKundaliCalculate" type="button">Build Kundali</button>
         </div>
+
+        <section class="tk-kundali-workspace" id="tkKundaliWorkspace">
+          <header class="tk-kundali-workspace-head">
+            <div>
+              <span>Workspace 2.0 · local-first</span>
+              <h4>Chart, evidence and timing in one place.</h4>
+              <p>Switch chart presentation, inspect Graha/Yoga/Dasha/strength layers, and optionally save this Kundali on this device.</p>
+            </div>
+            <div class="tk-kundali-workspace-actions">
+              <label><span>Chart layout</span>
+                <select id="tkKundaliLayout">
+                  <option value="south">South Indian</option>
+                  <option value="north">North Indian</option>
+                  <option value="east">East Indian</option>
+                  <option value="west">Western wheel</option>
+                </select>
+              </label>
+              <label><span>Saved Kundali</span><select id="tkKundaliSaved"><option value="">Open saved…</option></select></label>
+            </div>
+          </header>
+
+          <div class="tk-kundali-savebar">
+            <label><span>Chart name</span><input id="tkKundaliName" type="text" maxlength="60" placeholder="e.g. My Kundali"></label>
+            <button id="tkKundaliSave" type="button">Save on this device</button>
+            <button id="tkKundaliDelete" type="button" class="secondary">Delete selected</button>
+            <small>Birth date, time and selected location are stored only in this browser when you choose Save.</small>
+          </div>
+
+          <nav class="tk-kundali-tabs" aria-label="Kundali workspace sections">
+            <button class="is-active" type="button" data-kundali-tab="charts">Charts</button>
+            <button type="button" data-kundali-tab="graha">Graha</button>
+            <button type="button" data-kundali-tab="yogas">Yogas</button>
+            <button type="button" data-kundali-tab="dasha">Dasha</button>
+            <button type="button" data-kundali-tab="shadbala">Shadbala</button>
+            <button type="button" data-kundali-tab="ashtakavarga">Ashtakavarga</button>
+          </nav>
+
+          <div class="tk-kundali-workspace-status" id="tkKundaliWorkspaceStatus">Build the Kundali to load the full evidence workspace.</div>
+          <div class="tk-kundali-workspace-panel" id="tkKundaliWorkspacePanel"></div>
+        </section>
+
         <div id="tkKundaliLoading" class="tk-panchang-loading">Calculating Janma Kundali…</div>
         <div id="tkKundaliResult" class="tk-kundali-result"></div>
       <?php elseif (in_array($page['slug'], ['planets/positions','planets/transit','planets/combustion','planets/retrograde'], true)): ?>
