@@ -5,32 +5,69 @@ require __DIR__ . '/includes/site.php';
 $routes = tithika_routes();
 tithika_render_header('Modern Panchang, Muhurat & Jyotish');
 ?>
-<section class="tk-home-hero">
-  <div class="tk-home-hero-inner">
-    <div>
-      <span class="tk-home-kicker">Location-aware · evidence-first</span>
-      <h1>Vedic time, without the clutter.</h1>
-      <p>Tithika combines daily Panchang, Choghadiya, Muhurat, festivals, regional calendars and Jyotish in one responsive system. Exact astronomy and rule-based observances remain separate so every result can show where it came from.</p>
-      <div class="tk-home-actions">
-        <a class="primary" href="<?= htmlspecialchars(tithika_url('intelligence/')) ?>">Open Tithika Intelligence →</a>
-        <a href="<?= htmlspecialchars(tithika_pretty_url('panchang/daily')) ?>">Daily Panchang</a>
-        <a href="<?= htmlspecialchars(tithika_pretty_url('muhurat/choghadiya')) ?>">Choghadiya</a>
-        <a href="<?= htmlspecialchars(tithika_pretty_url('jyotish/janma-kundali')) ?>">Janma Kundali</a>
-        <a href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>">All tools</a>
-      </div>
+<section class="tk-daily-hero" id="tkDailyDashboard" aria-busy="true">
+  <div class="tk-daily-backdrop" aria-hidden="true"></div>
+  <div class="tk-daily-copy">
+    <span class="tk-home-kicker">Your daily Vedic dashboard</span>
+    <h1>Today, clearly.</h1>
+    <p id="tkDailyLead">Loading verified Panchang, Muhurat and upcoming observances for your selected location…</p>
+    <div class="tk-daily-actions">
+      <a class="primary" href="<?= htmlspecialchars(tithika_url('intelligence/')) ?>">Ask Tithika Intelligence →</a>
+      <a href="<?= htmlspecialchars(tithika_pretty_url('panchang/daily')) ?>">Full Panchang</a>
+      <a href="<?= htmlspecialchars(tithika_url('settings/')) ?>">Personalize</a>
     </div>
-    <aside class="tk-home-panel">
-      <small>Production map</small>
-      <h2><?= tithika_page_count() ?> logical routes</h2>
-      <p>Only verified calculation routes and structured editorial pages are exposed as indexable SEO surfaces. Remaining mapped shells stay available for product development without becoming thin search pages.</p>
-      <div class="tk-home-stats">
-        <div><b><?= tithika_indexable_count() ?></b><span>indexable/live pages</span></div>
-        <div><b><?= count($routes) ?></b><span>product families</span></div>
-        <div><b>1</b><span>shared location/date context</span></div>
-        <div><b>0</b><span>runtime CSS frameworks</span></div>
-      </div>
-    </aside>
   </div>
+
+  <div class="tk-daily-summary">
+    <header>
+      <div><small id="tkDailyDate">Selected date</small><strong id="tkDailyLocation">Resolving location…</strong></div>
+      <span class="tk-daily-live"><i></i> Verified engines</span>
+    </header>
+    <div class="tk-daily-primary-grid">
+      <article><small>Tithi</small><b id="tkDailyTithi">—</b><span id="tkDailyPaksha">—</span></article>
+      <article><small>Nakshatra</small><b id="tkDailyNakshatra">—</b><span id="tkDailyMoon">Moon —</span></article>
+      <article><small>Yoga</small><b id="tkDailyYoga">—</b><span id="tkDailyKarana">Karana —</span></article>
+      <article><small>Lunar month</small><b id="tkDailyMonth">—</b><span id="tkDailyMonthMode">Amanta preference</span></article>
+    </div>
+    <div class="tk-daily-solar">
+      <span><small>Sunrise</small><b id="tkDailySunrise">—</b></span>
+      <span><small>Sunset</small><b id="tkDailySunset">—</b></span>
+      <span><small>Moonrise</small><b id="tkDailyMoonrise">—</b></span>
+    </div>
+  </div>
+</section>
+
+<section class="tk-daily-strip">
+  <article class="tk-now-card">
+    <div class="tk-now-icon">✦</div>
+    <div><small>Choghadiya</small><h2 id="tkDailyChogName">Calculating…</h2><p id="tkDailyChogTime">Local day/night sequence</p></div>
+    <a href="<?= htmlspecialchars(tithika_pretty_url('muhurat/choghadiya')) ?>">Open timeline →</a>
+  </article>
+  <article class="tk-now-card">
+    <div class="tk-now-icon">☀</div>
+    <div><small>Abhijit Muhurat</small><h2 id="tkDailyAbhijit">—</h2><p>Deterministic local solar window</p></div>
+    <a href="<?= htmlspecialchars(tithika_pretty_url('muhurat/abhijit')) ?>">Details →</a>
+  </article>
+  <article class="tk-now-card">
+    <div class="tk-now-icon">◐</div>
+    <div><small>Rahu Kaal</small><h2 id="tkDailyRahu">—</h2><p>Daily blocked-period reference</p></div>
+    <a href="<?= htmlspecialchars(tithika_pretty_url('panchang/rahu-kala')) ?>">Details →</a>
+  </article>
+</section>
+
+<section class="tk-home-section tk-upcoming-section">
+  <div class="tk-home-section-head">
+    <div><span>Upcoming</span><h2>The next few days, already connected.</h2></div>
+    <p>Vrat, Sankranti and planetary events are aggregated from their verified engines for the selected location and preference profile.</p>
+  </div>
+  <div class="tk-upcoming-grid" id="tkUpcomingEvents" aria-live="polite">
+    <div class="tk-upcoming-skeleton"></div><div class="tk-upcoming-skeleton"></div><div class="tk-upcoming-skeleton"></div>
+  </div>
+</section>
+
+<section class="tk-home-ai">
+  <div><span>New · Multi-engine intelligence</span><h2>Don’t just read the Panchang.<br>Ask what it means.</h2><p>Use verified Panchang, Muhurat and Jyotish outputs with confidence and provenance attached to every synthesis.</p></div>
+  <a href="<?= htmlspecialchars(tithika_url('intelligence/')) ?>">Open Tithika Intelligence <b>↗</b></a>
 </section>
 
 <section class="tk-home-section">
