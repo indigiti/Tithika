@@ -14,8 +14,13 @@ function ok(bool $value, string $message): void {
 
 $flat = tithika_flat_routes();
 ok(tithika_page_count() === 292, 'route count must remain 292');
-ok(count(tithika_live_slugs()) === 229, 'verified live route registry drifted');
+ok(count(tithika_live_slugs()) === 159, 'verified live route registry drifted');
 ok(count(array_unique(tithika_live_slugs())) === count(tithika_live_slugs()), 'duplicate live route');
+ok(count(tithika_aggregate_slugs()) === 21, 'calculated aggregate registry drifted');
+ok(count(tithika_reference_slugs()) === 49, 'structured reference registry drifted');
+ok(count(array_intersect(tithika_live_slugs(), tithika_aggregate_slugs())) === 0, 'live/aggregate overlap');
+ok(count(array_intersect(tithika_live_slugs(), tithika_reference_slugs())) === 0, 'live/reference overlap');
+ok(count(array_intersect(tithika_aggregate_slugs(), tithika_reference_slugs())) === 0, 'aggregate/reference overlap');
 foreach (tithika_live_slugs() as $slug) {
     ok(isset($flat[$slug]), "live slug missing from route map: {$slug}");
 }
