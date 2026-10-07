@@ -314,6 +314,7 @@ function tithika_render_footer(): void {
 window.TITHIKA_BASE = <?= json_encode($base, JSON_UNESCAPED_SLASHES) ?>;
 </script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/tithika-site.js')) ?>" defer></script>
+<script src="<?= htmlspecialchars(tithika_asset_url('assets/home-dashboard.js')) ?>" defer></script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/settings.js')) ?>" defer></script>
 </body>
 </html>
