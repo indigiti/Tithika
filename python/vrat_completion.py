@@ -4,7 +4,7 @@ from __future__ import annotations
 import json, sys
 from datetime import date, datetime, timedelta, time
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import panchang, lunar_occurrences
+import panchang, lunar_occurrences, sankranti
 import panchang_completion
 
 ENGINE_VERSION="1.0.0"
@@ -104,20 +104,27 @@ def chandra_darshan(year,lat,lon,tz):
                 break
     return rows
 
+def nishita_window(d,lat,lon,tz):
+    sr=sunrise(d,lat,lon,tz); ss=sunset(d,lat,lon,tz); nr=sunrise(d+timedelta(days=1),lat,lon,tz)
+    if not sr or not ss or not nr: return None,None
+    night_muhurta=(nr-ss)/15
+    return ss+night_muhurta*7, ss+night_muhurta*8
+
 def masik_janmashtami(year,lat,lon,tz):
     rows=[]
     for start,end in exact_tithi_intervals(year,22,tz):
         best=None
-        for d in {start.date(),end.date(),start.date()+timedelta(days=1)}:
+        for d in sorted({start.date()-timedelta(days=1),start.date(),end.date()}):
             if d.year!=year: continue
-            nishita=datetime.combine(d,time(23,59,59),tzinfo=tz)+timedelta(seconds=1)
-            if start<=nishita<end: best=(d,nishita,"Krishna Ashtami prevailing at local Nishita/midnight");break
-        if best is None:
-            midpoint=start+(end-start)/2; best=(midpoint.date(),midpoint,"Krishna Ashtami midpoint fallback when no civil midnight lies inside Tithi")
-        d,anchor,basis=best
-        if d.year==year:
-            rows.append({"title":"Masik Krishna Janmashtami","date":d.isoformat(),"time":fmt(anchor),
-             "meta":"Krishna Ashtami · Nishita selector","detail":basis,"link_date":d.isoformat()})
+            ns,ne=nishita_window(d,lat,lon,tz)
+            if not ns or not ne: continue
+            overlap_start=max(start,ns);overlap_end=min(end,ne)
+            if overlap_start<overlap_end:
+                best=(d,ns,ne,"Krishna Ashtami overlaps the local Nishita Muhurta");break
+        if best is None: continue
+        d,ns,ne,basis=best
+        rows.append({"title":"Masik Krishna Janmashtami","date":d.isoformat(),"time":f"{fmt(ns)} – {fmt(ne)}",
+          "meta":"Krishna Ashtami · local Nishita selector","detail":basis,"link_date":d.isoformat()})
     return rows
 
 def ishti_anvadhan(year,lat,lon,tz):
@@ -185,26 +192,46 @@ def chaturmasa(year,lat,lon,tz):
       "meta":"Ashadha Shukla Ekadashi → Kartika Shukla Ekadashi",
       "detail":"Versioned Smarta four-month observance span; sect-specific endpoints can be layered separately.","link_date":a.isoformat()}]
 
+def yoga_shraddha(year,lat,lon,tz,target):
+    rows=[];d=date(year,1,1);last=False
+    while d.year==year:
+        sr=sunrise(d,lat,lon,tz)
+        yes=False
+        if sr:
+            yes=panchang.state_at(sr+timedelta(seconds=1))["yoga"]==target
+        if yes and not last:
+            rows.append({"title":target+" Yoga Shraddha","date":d.isoformat(),"time":fmt(sr),"meta":target+" Yoga","detail":"Nitya Yoga prevailing at local sunrise.","link_date":d.isoformat()})
+        last=yes;d+=timedelta(days=1)
+    return rows
+
 def shraddha(year,lat,lon,tz):
     rows=[]
-    # Amavasya
+    # 12 Amavasya class.
     for e in lunar_occurrences.events_for_rule(year,lunar_occurrences.KINDS["amavasya"][0],lat,lon,tz,False):
-        mid=datetime.fromisoformat(e["start"])+(datetime.fromisoformat(e["end"])-datetime.fromisoformat(e["start"]))/2
-        if mid.year==year: rows.append({"title":"Amavasya Shraddha","date":mid.date().isoformat(),"time":fmt(mid),"meta":"12-Amavasya class","detail":"Amavasya occurrence","link_date":mid.date().isoformat()})
-    # Pitru Paksha: Krishna Paksha in Bhadrapada/Ashwina sunrise profile
+        a=datetime.fromisoformat(e["start"]);b=datetime.fromisoformat(e["end"]);mid=a+(b-a)/2
+        if mid.year==year:
+            rows.append({"title":"Amavasya Shraddha","date":mid.date().isoformat(),"time":f"{fmt(a)} → {fmt(b)}","meta":"Amavasya class","detail":"Exact Amavasya Tithi occurrence.","link_date":mid.date().isoformat()})
+    # 12 Sankranti class.
+    for e in sankranti.find_year(year,lat,lon,tz,False):
+        rows.append({"title":"Sankranti Shraddha","date":e["date"],"time":e["time_label"],"meta":e["title"],"detail":"Nirayana solar ingress.","link_date":e["date"]})
+    # 15-day Pitru Paksha: same civil dates in Purnimanta Ashwina / Amanta Bhadrapada.
     d=date(year,1,1)
     while d.year==year:
         sr=sunrise(d,lat,lon,tz)
         if sr:
-            st=panchang.state_at(sr+timedelta(seconds=1));mi=panchang.lunar_month_info(sr,st);m=norm_month(mi.get("purnimanta"))
-            if st["paksha"]=="Krishna Paksha" and m in ("Bhadrapada","Ashwina"):
-                rows.append({"title":"Pitru Paksha Shraddha","date":d.isoformat(),"time":fmt(sr),"meta":f'{m} · {st["tithi"]}',"detail":"Krishna Paksha sunrise Tithi in the Pitru-Paksha season profile.","link_date":d.isoformat()})
+            st=panchang.state_at(sr+timedelta(seconds=1));mi=panchang.lunar_month_info(sr,st)
+            pm=norm_month(mi.get("purnimanta"));am=norm_month(mi.get("amanta"))
+            if st["paksha"]=="Krishna Paksha" and (pm=="Ashwina" or am=="Bhadrapada"):
+                rows.append({"title":"Pitru Paksha Shraddha","date":d.isoformat(),"time":fmt(sr),"meta":f'{pm} · {st["tithi"]}',"detail":"Pitru-Paksha sunrise Tithi.","link_date":d.isoformat()})
         d+=timedelta(days=1)
-    # Manvadi / Yugadi Shraddha classes reuse the dedicated selectors.
-    for label,rules in [("Manvadi Shraddha",panchang_completion.MANVADI),("Yugadi Shraddha",panchang_completion.YUGADI)]:
+    # 12 Vaidhriti + 12 Vyatipata classes.
+    rows.extend(yoga_shraddha(year,lat,lon,tz,"Vaidhriti"))
+    rows.extend(yoga_shraddha(year,lat,lon,tz,"Vyatipata"))
+    # 14 Manvadi + 4 Yugadi; 7 Kalpadi are additional traditional occasions.
+    for label,rules in [("Manvadi Shraddha",panchang_completion.MANVADI),("Yugadi Shraddha",panchang_completion.YUGADI),("Kalpadi Shraddha",panchang_completion.KALPADI)]:
         for x in panchang_completion.select_lunar_rules(year,lat,lon,tz,rules):
             rows.append({**x,"title":label+" · "+x["title"],"detail":"Traditional Shraddha class · "+x["detail"]})
-    rows.sort(key=lambda r:r["date"])
+    rows.sort(key=lambda r:(r["date"],r["title"]))
     return rows
 
 def collections(slug):
