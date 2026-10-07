@@ -4,7 +4,7 @@ from __future__ import annotations
 import json, sys
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import panchang, festival_rules, lunar_occurrences, regional_calendar
+import panchang, festival_rules, lunar_occurrences, regional_calendar, observances, sankranti
 
 ENGINE_VERSION="1.0.0"
 MONTH_SLUGS={
@@ -50,6 +50,28 @@ CALENDAR_THEMES={
 def rise(d,lat,lon,tz):
     return panchang.rise_set(d,lat,lon,tz,panchang.astronomy.Body.Sun,panchang.astronomy.Direction.Rise)
 
+def occurrence_rows(year,lat,lon,tz,kind,title):
+    rows=[]
+    for rule in lunar_occurrences.KINDS[kind]:
+        for e in lunar_occurrences.events_for_rule(year,rule,lat,lon,tz,False):
+            a=datetime.fromisoformat(e["start"]);b=datetime.fromisoformat(e["end"])
+            mid=a+(b-a)/2
+            if mid.year!=year: continue
+            obs=e.get("observance") or {}
+            date_text=((obs.get("smarta") or {}).get("date") if kind=="ekadashi" else None) or mid.date().isoformat()
+            rows.append({"title":title,"date":date_text,"time":f'{panchang.fmt(a,False)} → {panchang.fmt(b,False)}',
+              "meta":f'{e.get("purnimanta_month") or ""} · {e.get("paksha") or ""}',
+              "detail":f"Exact {title} Tithi interval from shared lunar engine.","link_date":date_text})
+    return rows
+
+def observance_rows(year,lat,lon,tz,kind,title):
+    rows=[]
+    for e in observances.calculate(kind,year,lat,lon,tz,False):
+        rows.append({"title":title,"date":e["date"],"time":e.get("muhurat_label") or e.get("time_label") or "",
+          "meta":e.get("paksha") or e.get("tithi") or "Recurring observance",
+          "detail":e.get("selection_basis") or str(e.get("rule") or "Shared observance selector"),"link_date":e["date"]})
+    return rows
+
 def major_events(year,lat,lon,tz):
     rows=[]
     for kind in festival_rules.SUPPORTED_KINDS:
@@ -59,7 +81,16 @@ def major_events(year,lat,lon,tz):
         rows.append({"title":e["title"],"date":d,"time":e.get("weekday",""),
           "meta":f'{e.get("month","")} · {e.get("paksha","")}',
           "detail":f'Selector: {e.get("rule",{}).get("selector","verified festival rule")}',"link_date":d})
-    rows.sort(key=lambda x:x["date"])
+    rows.extend(occurrence_rows(year,lat,lon,tz,"purnima","Purnima"))
+    rows.extend(occurrence_rows(year,lat,lon,tz,"amavasya","Amavasya"))
+    rows.extend(occurrence_rows(year,lat,lon,tz,"ekadashi","Ekadashi"))
+    rows.extend(observance_rows(year,lat,lon,tz,"pradosh","Pradosham"))
+    rows.extend(observance_rows(year,lat,lon,tz,"sankashti","Sankashti Chaturthi"))
+    rows.extend(observance_rows(year,lat,lon,tz,"shivaratri","Masik Shivaratri"))
+    for e in sankranti.find_year(year,lat,lon,tz,False):
+        rows.append({"title":e.get("title") or e.get("rashi") or "Sankranti","date":e["date"],"time":e["time_label"],
+          "meta":"Nirayana solar ingress","detail":"Exact Lahiri solar ingress from the shared Sankranti engine.","link_date":e["date"]})
+    rows.sort(key=lambda x:(x["date"],x["title"]))
     return rows
 
 def purnima_rows(year,lat,lon,tz):
@@ -121,12 +152,12 @@ def main():
     major=major_events(year,lat,lon,tz);sections=[];title=slug.split("/")[-1].replace("-"," ").title()
     if slug in ("calendars/hindu","calendars/indian","festivals/hindu"):
         title="Hindu Festival Calendar" if slug!="calendars/indian" else "Indian Festival Calendar"
-        sections=[{"title":f"Verified major festivals {year}","note":"Aggregated from Tithika's declarative festival-rule engine.","items":major},
+        sections=[{"title":f"Hindu observance calendar {year}","note":"Aggregated from major festival selectors plus exact lunar-observance and Sankranti engines.","items":major},
                   {"title":"Purnima calendar","note":"Exact Tithi occurrences","items":purnima_rows(year,lat,lon,tz)}]
     elif slug in ("festivals/tamil","calendars/tamil"):
-        title="Tamil Festival Calendar";sections=[{"title":"Tamil solar calendar","note":"Nirayana solar month aggregation.","items":regional_year(year,lat,lon,tz,"tamil")},{"title":"Major festivals","note":"Verified shared rules","items":major}]
+        title="Tamil Festival Calendar";sections=[{"title":"Tamil solar calendar","note":"Nirayana solar month aggregation.","items":regional_year(year,lat,lon,tz,"tamil")},{"title":"Festival and observance calendar","note":"Shared festival, lunar-observance and Sankranti rules","items":major}]
     elif slug in ("festivals/malayalam","calendars/malayalam"):
-        title="Malayalam Festival Calendar";sections=[{"title":"Malayalam solar calendar","note":"Nirayana solar month aggregation.","items":regional_year(year,lat,lon,tz,"malayalam")},{"title":"Major festivals","note":"Verified shared rules","items":major}]
+        title="Malayalam Festival Calendar";sections=[{"title":"Malayalam solar calendar","note":"Nirayana solar month aggregation.","items":regional_year(year,lat,lon,tz,"malayalam")},{"title":"Festival and observance calendar","note":"Shared festival, lunar-observance and Sankranti rules","items":major}]
     elif slug in MONTH_SLUGS:
         title=MONTH_SLUGS[slug]+" Festivals";sections=[{"title":f"{MONTH_SLUGS[slug]} {year}","note":"Major verified events filtered by Purnimanta month at local sunrise.","items":month_rows(year,lat,lon,tz,MONTH_SLUGS[slug])}]
     elif slug=="calendars/purnima":
