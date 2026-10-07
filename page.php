@@ -751,7 +751,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
       <?php elseif ($isCompletionPage): ?>
         <div class="tk-panchang-live-head">
           <div>
-            <span class="tk-card-tag">Certified completion engine</span>
+            <span class="tk-card-tag">Verified route adapter</span>
             <h3 id="tkPhaseTitle"><?= htmlspecialchars($page['title']) ?></h3>
             <p>Route-specific calculation or structured reference data is generated from Tithika's shared Panchang, festival, Jyotish and astronomy substrates. Tradition-specific assumptions remain visible in each result.</p>
           </div>
@@ -760,9 +760,15 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <?php if (str_starts_with($page['slug'], 'jyotish/')): ?>
         <div class="tk-birth-controls">
           <label><span>Time / birth time</span><input id="tkPhaseTime" type="time" step="60" value="12:00"></label>
-          <?php if ($page['slug'] === 'jyotish/rashi-by-name'): ?>
+          <?php if (in_array($page['slug'], ['jyotish/rashi-by-name','jyotish/name-initials'], true)): ?>
           <label><span>Name</span><input id="tkPhaseName" type="text" maxlength="80" placeholder="Enter name"></label>
           <?php endif; ?>
+          <button id="tkPhaseCalculate" type="button">Calculate</button>
+        </div>
+        <?php endif; ?>
+        <?php if ($page['slug'] === 'muhurat/pancha-pakshi'): ?>
+        <div class="tk-birth-controls">
+          <label><span>Birth bird</span><select id="tkPhaseBird"><option>Vulture</option><option>Owl</option><option>Crow</option><option>Cock</option><option selected>Peacock</option></select></label>
           <button id="tkPhaseCalculate" type="button">Calculate</button>
         </div>
         <?php endif; ?>
