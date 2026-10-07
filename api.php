@@ -306,6 +306,10 @@ try {
         if ($script === null) out(['ok'=>false,'error'=>'Completion engine unavailable'], 422);
         $data = runPythonEngine($script, $payload);
         if (!($data['ok'] ?? false)) out($data, 422);
+        $qualityMap = require __DIR__ . '/config/quality.php';
+        $data['quality'] = $qualityMap[$slug] ?? 'unclassified';
+        $data['metrics'] = is_array($data['metrics'] ?? null) ? $data['metrics'] : [];
+        $data['metrics'][] = ['label'=>'Quality','value'=>$data['quality'],'note'=>'route certification taxonomy'];
         out($data, 200, true);
     }
 
