@@ -217,6 +217,10 @@
       const j=await r.json();
       if(!j.ok)throw new Error(j.error||'Unable to calculate solar context');
       state.data=j;renderSolar(j);
+      window.dispatchEvent(new CustomEvent('tithika:context',{detail:{
+        lat:state.lat,lon:state.lon,city:state.city,timezone:state.timezone,
+        date:payload().date,hour24:false,solar:j
+      }}));
       if(panchangPages.includes(pageSlug)) await calculatePanchang();
       if(lagnaPages.includes(pageSlug)) await calculateLagna();
       if(monthPages.includes(pageSlug)) await calculateMonth();
