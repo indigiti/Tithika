@@ -216,7 +216,7 @@ function tithika_schema(?array $page, string $title, string $description, string
         'name'=>$title,
         'description'=>$description,
         'isPartOf'=>['@id'=>$website['@id']],
-        'inLanguage'=>'en',
+        'inLanguage'=>tithika_locale(),
     ];
 
     $graph = [$website, $webpage];
@@ -226,7 +226,7 @@ function tithika_schema(?array $page, string $title, string $description, string
             '@id'=>$canonical . '#breadcrumbs',
             'itemListElement'=>[
                 ['@type'=>'ListItem','position'=>1,'name'=>'Home','item'=>tithika_absolute_url(tithika_url())],
-                ['@type'=>'ListItem','position'=>2,'name'=>$page['group_title'],'item'=>tithika_absolute_url(tithika_pretty_url($page['group']))],
+                ['@type'=>'ListItem','position'=>2,'name'=>tithika_t('nav.' . $page['group'], $page['group_title']),'item'=>tithika_absolute_url(tithika_pretty_url($page['group']))],
                 ['@type'=>'ListItem','position'=>3,'name'=>$page['title'],'item'=>$canonical],
             ],
         ];
@@ -276,7 +276,7 @@ function tithika_render_header(string $title, ?array $page = null): void {
     </a>
     <nav class="tk-nav" aria-label="<?= htmlspecialchars(tithika_t('nav.primary')) ?>">
       <?php foreach (array_slice($routes, 0, 6, true) as $key => $group): ?>
-        <a href="<?= htmlspecialchars(tithika_pretty_url($key)) ?>"<?= ($page && $page['group'] === $key) ? ' class="is-active" aria-current="page"' : '' ?>?><?= htmlspecialchars(tithika_t('nav.' . $key, $group['title'])) ?></a>
+        <a href="<?= htmlspecialchars(tithika_pretty_url($key)) ?>"<?= ($page && $page['group'] === $key) ? ' class="is-active" aria-current="page"' : '' ?><?= htmlspecialchars(tithika_t('nav.' . $key, $group['title'])) ?></a>
       <?php endforeach; ?>
       <a href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>"><?= htmlspecialchars(tithika_t('nav.all_tools')) ?></a>
       <a href="<?= htmlspecialchars(tithika_url('settings/')) ?>"><?= htmlspecialchars(tithika_t('nav.settings')) ?></a>
