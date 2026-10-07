@@ -1,0 +1,18 @@
+<?php
+declare(strict_types=1);
+$root=dirname(__DIR__).'/release';
+function must(bool $ok,string $message): void { if(!$ok) throw new RuntimeException($message); }
+must(is_file($root.'/RELEASE.json'),'RELEASE.json missing');
+$meta=json_decode((string)file_get_contents($root.'/RELEASE.json'),true);
+must(is_array($meta),'invalid RELEASE.json');
+must(($meta['schema']??'')==='DIGIOPS-RELEASE/1','release schema mismatch');
+must(($meta['name']??'')==='Tithika','release name mismatch');
+must(($meta['publicPath']??'')==='public_html/tithika/','public path mismatch');
+must(($meta['privatePath']??'')==='private_html/tithika/','private path mismatch');
+foreach(['.htaccess','index.php','page.php','api.php','assets/tithika-site.js','config/routes.php','includes/site.php','python/panchang.py','python/panchang_completion.py'] as $path){
+    must(is_file($root.'/public/'.$path),"payload missing: {$path}");
+}
+must(is_file($root.'/private/build/release.json'),'private release metadata missing');
+must(!is_dir($root.'/public/.git'),'git metadata must not ship');
+must(!is_dir($root.'/public/.github'),'workflow metadata must not ship');
+echo "DigiOps release payload verified\n";
