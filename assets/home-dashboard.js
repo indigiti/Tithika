@@ -8,6 +8,7 @@
   const locale=window.TITHIKA_I18N?.locale||'en';
   const messages=window.TITHIKA_I18N?.messages||{};
   const tr=(key,fallback)=>messages[key]||fallback||key;
+  function trf(key,fallback,vars){let text=tr(key,fallback);for(const name of Object.keys(vars||{})){text=text.split('{'+name+'}').join(String(vars[name]));}return text;}
   let controller=null,lastKey='';
 
   const esc=(v='')=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -19,7 +20,8 @@
   function formatDay(value,tz){
     if(!value)return '';
     try{
-      return new Intl.DateTimeFormat(locale==='hi'?'hi-IN':'en-IN',{timeZone:tz||'Asia/Kolkata',weekday:'short',day:'numeric',month:'short'}).format(new Date(value+'T12:00:00'));
+      const pref=settings();
+      return new Intl.DateTimeFormat(locale==='hi'?'hi-IN':'en-IN',{numberingSystem:pref.numerals==='deva'?'deva':'latn',timeZone:tz||'Asia/Kolkata',weekday:'short',day:'numeric',month:'short'}).format(new Date(value+'T12:00:00'));
     }catch(e){return value}
   }
   function routeUrl(route){return base+String(route||'').replace(/^\/+|\/+$/g,'')+'/';}
@@ -36,7 +38,7 @@
     set('#tkDailyYoga',today.yoga||'—');
     set('#tkDailyKarana',tr('dynamic.karana','Karana')+' '+(today.karana||'—'));
     set('#tkDailyMonth',month||'—');
-    set('#tkDailyMonthMode',(pref.lunarMonth==='purnimanta'?'Purnimanta':'Amanta')+' '+tr('dynamic.preference','preference'));
+    set('#tkDailyMonthMode',tr(pref.lunarMonth==='purnimanta'?'dynamic.purnimanta':'dynamic.amanta',pref.lunarMonth==='purnimanta'?'Purnimanta':'Amanta')+' '+tr('dynamic.preference','preference'));
     set('#tkDailySunrise',today.sunrise||'—');
     set('#tkDailySunset',today.sunset||'—');
     set('#tkDailyMoonrise',today.moonrise||'—');
