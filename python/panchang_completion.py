@@ -4,9 +4,9 @@ from __future__ import annotations
 import json, math, sys
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import panchang
+import panchang, planetary
 
-ENGINE_VERSION="1.0.0"
+ENGINE_VERSION="1.1.0"
 
 MANVADI=[
 ("Brahma Savarni Manvadi","Magha","Shukla Paksha",7),
@@ -75,37 +75,78 @@ def select_lunar_rules(year,lat,lon,tz,rules):
         d+=timedelta(days=1)
     return rows
 
-def declination(lon_deg,eps=23.4392911):
-    return math.degrees(math.asin(math.sin(math.radians(lon_deg))*math.sin(math.radians(eps))))
+def declination(lon_deg,lat_deg=0.0,moment=None,dist=1.0):
+    """True-equator-of-date declination from tropical ecliptic coordinates."""
+    if moment is None:
+        ob=math.radians(23.4392911);lo=math.radians(lon_deg);la=math.radians(lat_deg)
+        return math.degrees(math.asin(math.sin(la)*math.cos(ob)+math.cos(la)*math.sin(ob)*math.sin(lo)))
+    t=panchang.astronomy_time(moment);lo=math.radians(lon_deg);la=math.radians(lat_deg);cb=math.cos(la)
+    vec=panchang.astronomy.Vector(dist*cb*math.cos(lo),dist*cb*math.sin(lo),dist*math.sin(la),t)
+    eq=panchang.astronomy.RotateVector(panchang.astronomy.Rotation_ECT_EQD(t),vec)
+    return math.degrees(math.atan2(eq.z,math.hypot(eq.x,eq.y)))
 
-def kranti_active(moment):
-    sun,moon,_=panchang.tropical_longitudes(moment)
-    ds,dm=declination(sun),declination(moon)
-    pair=(int(sun//30),int(moon//30))
-    opposite_axis={(0,4),(4,0),(1,9),(9,1),(2,8),(8,2),(3,7),(7,3),(5,11),(11,5),(6,10),(10,6)}
-    diff=abs(abs(ds)-abs(dm))
-    return pair in opposite_axis and diff<=0.25, ds, dm, diff
+MAHAPATA_ORB_DEG=0.5
+
+def kranti_state(moment):
+    sun_lon,sun_lat,sun_dist=planetary.tropical_coordinates("Sun",moment)
+    moon_lon,moon_lat,moon_dist=planetary.tropical_coordinates("Moon",moment)
+    ds=declination(sun_lon,sun_lat,moment,sun_dist);dm=declination(moon_lon,moon_lat,moment,moon_dist)
+    pair=(int(sun_lon//30),int(moon_lon//30))
+    same_side=ds*dm>=0
+    signed_gap=(dm-ds) if same_side else (dm+ds)
+    yoga="Vyatipata Yoga" if same_side else "Vaidhriti Yoga"
+    # Exact Mahapata is defined by equality of Sun/Moon declination, not by
+    # using the broad Gyata-Chakra sign-pair mnemonic as a second hard gate.
+    # The inauspicious interval spans ±30 arc minutes around exact equality.
+    active=abs(signed_gap)<=MAHAPATA_ORB_DEG
+    return {
+      "active":active,"sun_declination":ds,"moon_declination":dm,
+      "signed_gap":signed_gap,"gap":abs(signed_gap),"pair":pair,"yoga":yoga,
+      "sun_longitude":sun_lon,"moon_longitude":moon_lon,
+    }
+
+def _refine_active_boundary(left,right,want_active):
+    lo,hi=left,right
+    for _ in range(34):
+        mid=lo+(hi-lo)/2
+        if bool(kranti_state(mid)["active"])==want_active:
+            hi=mid
+        else:
+            lo=mid
+    return hi
 
 def kranti_rows(year,tz):
-    start=datetime(year,1,1,tzinfo=tz); end=datetime(year+1,1,1,tzinfo=tz)
-    step=timedelta(minutes=20); rows=[]; cur=start; active=False; began=None; best=None
+    # Modern Mahapata profile: true Sun/Moon declinations and the
+    # traditional +/-30 arc-minute band around exact equality.
+    start=datetime(year,1,1,tzinfo=tz);end=datetime(year+1,1,1,tzinfo=tz)
+    step=timedelta(minutes=15);rows=[];prev_t=start;prev=kranti_state(prev_t)
+    active=prev["active"];began=start if active else None;best=(prev["gap"],start,prev) if active else None
+    cur=start+step
     while cur<=end:
-        yes,ds,dm,diff=kranti_active(cur)
-        if yes and not active:
-            began=cur; best=(diff,cur,ds,dm); active=True
-        elif yes and active and diff<(best[0] if best else 99):
-            best=(diff,cur,ds,dm)
-        elif active and not yes:
-            stop=cur
-            rows.append({
-              "title":"Kranti Samya / Mahapata","date":began.date().isoformat(),
-              "time":f'{panchang.fmt(began,False)} – {panchang.fmt(stop,False)}',
-              "meta":f'min |declination| difference {best[0]:.4f}°',
-              "detail":"Tropical Sun/Moon occupy a Kranti-Samya axis pair and absolute declinations converge within the encoded 0.25° Mahapata profile.",
-              "link_date":began.date().isoformat()
-            })
-            active=False; began=None; best=None
-        cur+=step
+        st=kranti_state(cur)
+        if st["active"] and not active:
+            began=_refine_active_boundary(prev_t,cur,True)
+            bstate=kranti_state(began);best=(bstate["gap"],began,bstate);active=True
+        elif st["active"] and active and st["gap"]<(best[0] if best else 99):
+            best=(st["gap"],cur,st)
+        elif active and not st["active"]:
+            stop=_refine_active_boundary(prev_t,cur,False)
+            if began and best:
+                bs=best[2]
+                rows.append({
+                  "title":bs["yoga"],"date":began.date().isoformat(),
+                  "time":f'{panchang.fmt(began,False)} – {panchang.fmt(stop,False)}',
+                  "meta":f'min declination residual {best[0]:.5f}°',
+                  "detail":(
+                    f'True tropical declinations within ±30 arc minutes of equality. '
+                    f'Sun {bs["sun_declination"]:+.5f}°, Moon {bs["moon_declination"]:+.5f}° at closest approach. '
+                    f'Vyatipata = same declination hemisphere; Vaidhriti = opposite hemispheres.'
+                  ),
+                  "link_date":began.date().isoformat(),"start":began.isoformat(),"end":stop.isoformat(),
+                  "profile":"true-declination-30-arcmin"
+                })
+            active=False;began=None;best=None
+        prev_t=cur;prev=st;cur+=step
     return rows
 
 def published_snapshot(selected,lat,lon,tz):

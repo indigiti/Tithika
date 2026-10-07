@@ -34,6 +34,7 @@ function curlJson(string $url): array {
 
 function readPayload(): array {
     $raw = file_get_contents('php://input') ?: '{}';
+    if (strlen($raw) > 65536) out(['ok'=>false,'error'=>'Request body too large'], 413);
     $payload = json_decode($raw, true);
     if (!is_array($payload)) out(['ok'=>false,'error'=>'Invalid JSON'], 400);
     $lat = (float)($payload['lat'] ?? 19.0760);
@@ -51,11 +52,60 @@ function runPythonEngine(string $relativeScript, array $payload): array {
     $desc = [0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']];
     $proc = proc_open([$python, $script], $desc, $pipes, __DIR__, null, ['bypass_shell'=>true]);
     if (!is_resource($proc)) throw new RuntimeException('Unable to start Python calculation engine');
-    fwrite($pipes[0], json_encode($payload, JSON_UNESCAPED_UNICODE));
+
+    $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE);
+    if ($encoded === false) {
+        proc_terminate($proc);
+        foreach ($pipes as $pipe) if (is_resource($pipe)) fclose($pipe);
+        proc_close($proc);
+        throw new RuntimeException('Unable to encode calculation payload');
+    }
+    fwrite($pipes[0], $encoded);
     fclose($pipes[0]);
-    $stdout = stream_get_contents($pipes[1]); fclose($pipes[1]);
-    $stderr = stream_get_contents($pipes[2]); fclose($pipes[2]);
-    $exit = proc_close($proc);
+
+    stream_set_blocking($pipes[1], false);
+    stream_set_blocking($pipes[2], false);
+    $stdout = '';
+    $stderr = '';
+    $started = microtime(true);
+    $timeoutSeconds = 30.0;
+    $maxOutputBytes = 8 * 1024 * 1024;
+    $exit = null;
+
+    while (true) {
+        $stdout .= stream_get_contents($pipes[1]) ?: '';
+        $stderr .= stream_get_contents($pipes[2]) ?: '';
+        if (strlen($stdout) + strlen($stderr) > $maxOutputBytes) {
+            proc_terminate($proc);
+            usleep(100000);
+            $status = proc_get_status($proc);
+            if ($status['running']) proc_terminate($proc, 9);
+            fclose($pipes[1]); fclose($pipes[2]); proc_close($proc);
+            throw new RuntimeException('Calculation engine output exceeded safety limit');
+        }
+
+        $status = proc_get_status($proc);
+        if (!$status['running']) {
+            $exit = (int)$status['exitcode'];
+            break;
+        }
+        if (microtime(true) - $started > $timeoutSeconds) {
+            proc_terminate($proc);
+            usleep(100000);
+            $status = proc_get_status($proc);
+            if ($status['running']) proc_terminate($proc, 9);
+            fclose($pipes[1]); fclose($pipes[2]); proc_close($proc);
+            throw new RuntimeException('Calculation engine timed out');
+        }
+        usleep(10000);
+    }
+
+    $stdout .= stream_get_contents($pipes[1]) ?: '';
+    $stderr .= stream_get_contents($pipes[2]) ?: '';
+    fclose($pipes[1]); fclose($pipes[2]);
+    $closedExit = proc_close($proc);
+    if ($exit === null || $exit < 0) $exit = $closedExit;
+
     $data = json_decode($stdout ?: '{}', true);
     if (!is_array($data)) {
         throw new RuntimeException('Invalid calculation response' . ($stderr ? ': ' . trim($stderr) : ''));
@@ -73,7 +123,7 @@ try {
     if ($action === 'reverse') {
         $lat = filter_input(INPUT_GET, 'lat', FILTER_VALIDATE_FLOAT);
         $lon = filter_input(INPUT_GET, 'lon', FILTER_VALIDATE_FLOAT);
-        if ($lat === false || $lon === false || $lat === null || $lon === null) out(['ok'=>false,'error'=>'Invalid coordinates'], 422);
+        if ($lat === false || $lon === false || $lat === null || $lon === null || $lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) out(['ok'=>false,'error'=>'Invalid coordinates'], 422);
         $url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=1&lat=' . rawurlencode((string)$lat) . '&lon=' . rawurlencode((string)$lon);
         $r = curlJson($url); $a = $r['address'] ?? [];
         $city = $a['city'] ?? $a['town'] ?? $a['village'] ?? $a['municipality'] ?? $a['county'] ?? 'Current location';
@@ -85,7 +135,7 @@ try {
     if ($action === 'timezone') {
         $lat = filter_input(INPUT_GET, 'lat', FILTER_VALIDATE_FLOAT);
         $lon = filter_input(INPUT_GET, 'lon', FILTER_VALIDATE_FLOAT);
-        if ($lat === false || $lon === false || $lat === null || $lon === null) {
+        if ($lat === false || $lon === false || $lat === null || $lon === null || $lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
             out(['ok'=>false,'error'=>'Invalid coordinates'], 422);
         }
         $url = 'https://timeapi.io/api/timezone/coordinate?latitude=' . rawurlencode((string)$lat) . '&longitude=' . rawurlencode((string)$lon);
@@ -100,6 +150,7 @@ try {
     if ($action === 'search') {
         $q = trim((string)($_GET['q'] ?? ''));
         if (mb_strlen($q) < 2) out(['ok'=>true,'results'=>[]]);
+        if (mb_strlen($q) > 120) out(['ok'=>false,'error'=>'Search query too long'], 422);
         $url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&addressdetails=1&q=' . rawurlencode($q);
         $rows = curlJson($url); $results = [];
         foreach ($rows as $r) {
@@ -304,6 +355,10 @@ try {
         if ($script === null) out(['ok'=>false,'error'=>'Completion engine unavailable'], 422);
         $data = runPythonEngine($script, $payload);
         if (!($data['ok'] ?? false)) out($data, 422);
+        $qualityMap = require __DIR__ . '/config/quality.php';
+        $data['quality'] = $qualityMap[$slug] ?? 'unclassified';
+        $data['metrics'] = is_array($data['metrics'] ?? null) ? $data['metrics'] : [];
+        $data['metrics'][] = ['label'=>'Quality','value'=>$data['quality'],'note'=>'route certification taxonomy'];
         out($data, 200, true);
     }
 

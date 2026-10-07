@@ -36,6 +36,12 @@ function tithika_live_slugs(): array {
     return $live;
 }
 
+function tithika_completion_quality(string $slug): ?string {
+    static $quality;
+    if ($quality === null) $quality = require __DIR__ . '/../config/quality.php';
+    return $quality[$slug] ?? null;
+}
+
 function tithika_is_live_page(string $slug): bool {
     static $lookup;
     if ($lookup === null) $lookup = array_fill_keys(tithika_live_slugs(), true);

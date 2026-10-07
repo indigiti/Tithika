@@ -31,6 +31,15 @@ foreach ($completion as $slug) {
     certify(tithika_is_indexable_page($flat[$slug]), "completion route is not indexable: {$slug}");
 }
 
+$quality = require dirname(__DIR__) . '/config/quality.php';
+certify(count($quality) === 99, 'completion quality taxonomy must classify all 99 routes');
+certify(count(array_diff($completion, array_keys($quality))) === 0, 'completion route missing quality classification');
+certify(count(array_diff(array_keys($quality), $completion)) === 0, 'quality taxonomy contains non-completion route');
+$qualityCounts = array_count_values($quality);
+foreach (['calculated'=>34,'aggregated'=>18,'hybrid'=>15,'reference'=>32] as $kind=>$count) {
+    certify(($qualityCounts[$kind] ?? 0) === $count, "completion quality count drifted for {$kind}");
+}
+
 
 foreach (['panchang/nepali','calendars/nepali','calendars/jain','panchang/sunrise','panchang/nakshatra','panchang/ganda-moola','panchang/abhijit-nakshatra','panchang/vinchudo','panchang/jwalamukhi-yoga','panchang/sankalpa','panchang/vedic-clock','muhurat/shubha-hora','muhurat/panchaka-rahita','muhurat/auspicious-yoga','muhurat/guru-pushya','muhurat/sarvartha-siddhi','muhurat/amrit-siddhi','muhurat/dwipushkar','muhurat/tripushkar','muhurat/ravi-pushya','muhurat/ravi-yoga','vrat/satyanarayana','vrat/durgashtami','vrat/skanda-sashti','vrat/karthigai','vrat/rohini','vrat/sawan-somwar','vrat/mangala-gauri' ] as $slug) {
     certify(in_array($slug, $live, true), "certified route not promoted: {$slug}");
@@ -51,6 +60,7 @@ foreach ([
     'python/vrat_recurrence.py',
     'scripts/test-vrat-recurrence.py',
     'config/completion.php',
+    'config/quality.php',
     'python/panchang_completion.py',
     'python/muhurat_completion.py',
     'python/vrat_completion.py',
@@ -85,4 +95,5 @@ echo json_encode([
     'mapped_noindex'=>count($noindex),
     'noindex_by_family'=>$queue,
     'newly_certified'=>$completion,
+    'completion_quality'=>$qualityCounts,
 ], JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) . PHP_EOL;

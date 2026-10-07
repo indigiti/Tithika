@@ -46,6 +46,9 @@ jobs:
       - name: Production certification contract
         run: php scripts/test-production-certification.php
 
+      - name: Runtime indexable route coverage
+        run: php scripts/test-runtime-route-coverage.php
+
       - name: Panchang regression fixture
         run: python scripts/test-panchang.py
 
