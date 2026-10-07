@@ -59,7 +59,7 @@ def normalize_event(kind: str,row: dict[str,Any],tradition: str) -> dict[str,Any
             "type":"solar","kind":"sankranti","date":d.isoformat(),
             "title":f"{row.get('rashi','')} Sankranti".strip(),
             "subtitle":"Nirayana solar ingress","datetime":row.get("datetime"),
-            "route":"panchang/sankranti",
+            "route":"vrat/sankranti",
         }
     if kind in {"transit","retrograde"}:
         planet=str(row.get("planet") or "Planet")
