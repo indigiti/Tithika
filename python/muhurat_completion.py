@@ -27,8 +27,10 @@ NIGHT_GOWRI={
 4:["Rogam","Laabam","Dhanam","Sugam","Soram","Uthi","Visham","Amirdha"],
 5:["Laabam","Dhanam","Sugam","Soram","Uthi","Visham","Amirdha","Rogam"],
 }
-MUHURTA_NAMES=["Rudra","Ahi","Mitra","Pitri","Vasu","Varaha","Vishvadeva","Vidhi","Satamukhi","Puruhuta","Vahini","Naktanakara","Varuna","Aryaman","Bhaga",
-"Girisha","Ajapada","Ahirbudhnya","Pushya","Ashwini","Yama","Agni","Vidhatri","Kanda","Aditi","Jiva","Vishnu","Dyumadgadyuti","Brahma","Samudram"]
+MUHURTA_NAMES=["Rudra","Uraga","Mitra","Pitara","Vasu","Ambu","Vishwedeva","Vidhi","Brahma","Indra","Indragni","Daitya","Varuna","Aryama","Bhaga",
+"Ishwara","Ajaikapada","Ahirbudhnya","Pusha","Ashwini","Yama","Agni","Brahma","Chandra","Aditi","Brihaspati","Vishnu","Surya","Tvashta","Samirana"]
+MUHURTA_AUSPICIOUS=[False,False,True,False,True,True,True,True,True,True,False,False,True,True,False,
+False,False,True,True,True,False,False,True,True,True,True,True,True,True,True]
 PAKSHI=["Vulture","Owl","Crow","Cock","Peacock"]
 ACT=["Ruling","Eating","Walking","Sleeping","Dying"]
 ACT_SCORE={"Ruling":"Best","Eating":"Good","Walking":"Average","Sleeping":"Bad","Dying":"Very Bad"}
@@ -84,11 +86,21 @@ def do_ghati(selected,lat,lon,tz):
     rows=[]; day=(ss-sr)/15; night=(nr-ss)/15
     for i in range(15):
         a=sr+day*i;b=sr+day*(i+1)
-        rows.append({"title":MUHURTA_NAMES[i],"date":selected.isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"Day Muhurta {i+1} · 2 Ghati","detail":"One fifteenth of local daylight","link_date":selected.isoformat()})
+        quality="Auspicious" if MUHURTA_AUSPICIOUS[i] else "Inauspicious"
+        rows.append({"title":MUHURTA_NAMES[i],"date":selected.isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"Day Muhurta {i+1} · {quality}","detail":"One fifteenth of local daylight = two local Ghatis","link_date":selected.isoformat()})
     for i in range(15):
-        a=ss+night*i;b=ss+night*(i+1)
-        rows.append({"title":MUHURTA_NAMES[15+i],"date":selected.isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"Night Muhurta {i+16} · 2 Ghati","detail":"One fifteenth of local night","link_date":selected.isoformat()})
-    return [{"title":"30 Do-Ghati Muhurtas","note":"15 daylight + 15 night Muhurtas; each interval equals two local Ghatis.","items":rows}]
+        j=15+i;a=ss+night*i;b=ss+night*(i+1)
+        quality="Auspicious" if MUHURTA_AUSPICIOUS[j] else "Inauspicious"
+        rows.append({"title":MUHURTA_NAMES[j],"date":selected.isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"Night Muhurta {j+1} · {quality}","detail":"One fifteenth of local night = two local Ghatis","link_date":selected.isoformat()})
+    return [{"title":"30 Do-Ghati Muhurtas","note":"Canonical 30-Muhurta sequence; 15 daylight + 15 night Muhurtas, each equal to two local Ghatis.","items":rows}]
+
+def activity_weights(label):
+    # Pancha Pakshi activity durations are unequal. Day fractions are
+    # Ruling 1/8, Eating 1/3, Walking 1/4, Sleeping 1/12, Dying 5/24.
+    # Night uses Ruling 1/8, Eating 7/24, Walking 7/24, Sleeping 1/8, Dying 1/6.
+    return ({"Ruling":1/8,"Eating":1/3,"Walking":1/4,"Sleeping":1/12,"Dying":5/24}
+            if label=="Day" else
+            {"Ruling":1/8,"Eating":7/24,"Walking":7/24,"Sleeping":1/8,"Dying":1/6})
 
 def pakshi_sections(selected,lat,lon,tz):
     sr,ss,nr=sun_events(selected,lat,lon,tz)
@@ -98,14 +110,16 @@ def pakshi_sections(selected,lat,lon,tz):
     sections=[]
     for label,start,end,halfshift in [("Day",sr,ss,0),("Night",ss,nr,2)]:
         major=(end-start)/5; items=[]
+        weights=activity_weights(label)
         for m in range(5):
-            sub=major/5
-            for s in range(5):
-                a=start+major*m+sub*s;b=a+sub
-                bird=PAKSHI[(s+weekday_shift+halfshift)%5]
-                activity=ACT[(m+s+weekday_shift+halfshift)%5]
-                items.append({"title":f"{bird} · {activity}","date":a.date().isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"{label} · {ACT_SCORE[activity]}","detail":f'{st["paksha"]} · versioned Tithika Pakshi-cycle profile',"link_date":a.date().isoformat()})
-        sections.append({"title":f"{label} Pancha Pakshi","note":"Five major periods × five subperiods; activity/bird cycle is explicit and versioned.","items":items})
+            cursor=start+major*m
+            activities=[ACT[(m+s+weekday_shift+halfshift)%5] for s in range(5)]
+            birds=[PAKSHI[(s+weekday_shift+halfshift)%5] for s in range(5)]
+            for bird,activity in zip(birds,activities):
+                span=major*weights[activity]
+                a=cursor;b=a+span;cursor=b
+                items.append({"title":f"{bird} · {activity}","date":a.date().isoformat(),"time":f"{fmt(a)} – {fmt(b)}","meta":f"{label} · {ACT_SCORE[activity]}","detail":f'{st["paksha"]} · unequal traditional activity-duration profile',"link_date":a.date().isoformat()})
+        sections.append({"title":f"{label} Pancha Pakshi","note":"Five major periods with unequal activity durations; weekday/Paksha cycle remains explicit and versioned.","items":items})
     return sections
 
 def shubha_dates(year,lat,lon,tz):

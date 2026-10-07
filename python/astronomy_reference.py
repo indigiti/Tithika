@@ -22,16 +22,42 @@ def declination(name,moment):
     dec=math.asin(math.sin(la)*math.cos(eps)+math.cos(la)*math.sin(eps)*math.sin(lo))
     return math.degrees(dec)
 
+def refine_declination_root(a,b,fa,fb,contra=False):
+    for _ in range(42):
+        mid=a+(b-a)/2
+        dm={x:declination(x,mid) for x in BODIES}
+        # caller stores names on function attributes to avoid duplicate closure plumbing
+        va=dm[refine_declination_root.pa]; vb=dm[refine_declination_root.pb]
+        fm=va+vb if contra else va-vb
+        if fa*fm<=0:
+            b=mid;fb=fm
+        else:
+            a=mid;fa=fm
+    return a+(b-a)/2
+
 def parallel_rows(moment):
-    vals={b:declination(b,moment) for b in BODIES};rows=[]
-    for i,a in enumerate(BODIES):
-        for b in BODIES[i+1:]:
-            da,db=vals[a],vals[b];same=da*db>=0;diff=abs(da-db if same else abs(da)-abs(db))
-            if diff<=1.0:
-                rows.append({"title":f"{a} {'Parallel' if same else 'Contra-parallel'} {b}","date":moment.date().isoformat(),
-                 "time":moment.strftime("%H:%M"),"meta":f"{da:+.3f}° / {db:+.3f}°","detail":f"Declination separation metric {diff:.3f}°; exact-aspect threshold shown as a reference, not a classical Jyotish dignity.","link_date":moment.date().isoformat()})
-    if not rows:
-        rows=[{"title":"No close declination pairs","meta":"1.0° scan threshold","detail":"Use another date/time to inspect parallel geometry."}]
+    year=moment.year; tz=moment.tzinfo
+    start=datetime(year,1,1,tzinfo=tz);end=datetime(year+1,1,1,tzinfo=tz)
+    rows=[];step=timedelta(hours=6)
+    for i,a_name in enumerate(BODIES):
+        for b_name in BODIES[i+1:]:
+            refine_declination_root.pa=a_name;refine_declination_root.pb=b_name
+            cur=start
+            da=declination(a_name,cur);db=declination(b_name,cur)
+            fp=da-db;fc=da+db
+            while cur<end:
+                nxt=min(end,cur+step);na=declination(a_name,nxt);nb=declination(b_name,nxt)
+                np=na-nb;nc=na+nb
+                for contra,f0,f1 in ((False,fp,np),(True,fc,nc)):
+                    if f0==0 or f0*f1<0:
+                        at=refine_declination_root(cur,nxt,f0,f1,contra)
+                        aa=declination(a_name,at);bb=declination(b_name,at)
+                        if not rows or not any(r["title"]==f"{a_name} {'Contra-parallel' if contra else 'Parallel'} {b_name}" and abs((datetime.fromisoformat(r["detail"])-at).total_seconds())<3600 for r in rows):
+                            rows.append({"title":f"{a_name} {'Contra-parallel' if contra else 'Parallel'} {b_name}","date":at.date().isoformat(),
+                              "time":at.strftime("%H:%M"),"meta":f"{aa:+.5f}° / {bb:+.5f}°",
+                              "detail":at.isoformat(),"link_date":at.date().isoformat()})
+                cur=nxt;fp=np;fc=nc
+    rows.sort(key=lambda r:(r["date"],r["time"],r["title"]))
     return rows
 
 def latitude(name,moment): return planetary.tropical_coordinates(name,moment)[1]
@@ -55,14 +81,22 @@ def crossing_rows(year,tz):
     rows.sort(key=lambda r:(r.get("date",""),r.get("time","")))
     return rows
 
+def tropical_solar_ingress(year,longitude,tz):
+    # Search a window that safely covers the target tropical solar longitude.
+    approx={330:(2,1),30:(4,1),90:(6,1),150:(8,1),210:(10,1),270:(12,1)}[longitude]
+    start=datetime(year,approx[0],approx[1],tzinfo=tz)-timedelta(days=25)
+    found=panchang.astronomy.SearchSunLongitude(float(longitude),panchang.astronomy_time(start),55.0)
+    if found is None: return None
+    return panchang.datetime_from_astronomy(found,tz)
+
 def season_rows(year,lat,lon,tz):
-    events=sankranti.find_year(year,lat,lon,tz,False); bysign={int(e["rashi_id"]):e for e in events}
-    starts=[11,1,3,5,7,9]  # Meena, Vrishabha, Karka, Kanya, Vrishchika, Makara
+    starts=[330,30,90,150,210,270]
     rows=[]
-    for (name,span,english),sid in zip(RITUS,starts):
-        e=bysign.get(sid)
-        if not e:continue
-        rows.append({"title":name,"date":e["date"],"time":e["time_label"],"meta":f"{span} · {english}","detail":"Tithika six-Ritu reference anchored to Nirayana solar ingress.","link_date":e["date"]})
+    for (name,span,english),lon in zip(RITUS,starts):
+        at=tropical_solar_ingress(year,lon,tz)
+        if at is None: continue
+        rows.append({"title":name,"date":at.date().isoformat(),"time":panchang.fmt(at,True),
+          "meta":f"{span} · {english}","detail":f"Tropical solar longitude {lon}° boundary.","link_date":at.date().isoformat()})
     return rows
 
 def zodiac_rows(moment,sidereal):

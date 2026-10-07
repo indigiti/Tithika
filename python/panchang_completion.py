@@ -4,7 +4,7 @@ from __future__ import annotations
 import json, math, sys
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import panchang
+import panchang, planetary
 
 ENGINE_VERSION="1.0.0"
 
@@ -75,37 +75,98 @@ def select_lunar_rules(year,lat,lon,tz,rules):
         d+=timedelta(days=1)
     return rows
 
-def declination(lon_deg,eps=23.4392911):
-    return math.degrees(math.asin(math.sin(math.radians(lon_deg))*math.sin(math.radians(eps))))
+def declination_from_ecliptic(lon_deg, lat_deg, eps=23.4392911):
+    lo=math.radians(lon_deg); la=math.radians(lat_deg); ob=math.radians(eps)
+    return math.degrees(math.asin(
+        math.sin(la)*math.cos(ob)+math.cos(la)*math.sin(ob)*math.sin(lo)
+    ))
 
-def kranti_active(moment):
-    sun,moon,_=panchang.tropical_longitudes(moment)
-    ds,dm=declination(sun),declination(moon)
-    pair=(int(sun//30),int(moon//30))
-    opposite_axis={(0,4),(4,0),(1,9),(9,1),(2,8),(8,2),(3,7),(7,3),(5,11),(11,5),(6,10),(10,6)}
-    diff=abs(abs(ds)-abs(dm))
-    return pair in opposite_axis and diff<=0.25, ds, dm, diff
+def angular_distance(a,b):
+    return abs((a-b+180.0)%360.0-180.0)
+
+def kranti_geometry(moment):
+    slon,slat,_=planetary.tropical_coordinates("Sun",moment)
+    mlon,mlat,_=planetary.tropical_coordinates("Moon",moment)
+    ds=declination_from_ecliptic(slon,slat)
+    dm=declination_from_ecliptic(mlon,mlat)
+    return slon,mlon,ds,dm
+
+def kranti_function(moment,kind):
+    _,_,ds,dm=kranti_geometry(moment)
+    return (dm-ds) if kind=="Vyatipata" else (dm+ds)
+
+def valid_mahapata_root(moment,kind):
+    slon,mlon,ds,dm=kranti_geometry(moment)
+    total=(slon+mlon)%360.0
+    if kind=="Vyatipata":
+        # Equal declinations on the same side of the equator; the classical
+        # longitude sum is approximately 180 degrees before lunar-latitude correction.
+        return ds*dm>0 and angular_distance(total,180.0)<=20.0
+    # Equal and opposite declinations; longitude sum approximately one circle.
+    return ds*dm<0 and angular_distance(total,0.0)<=20.0
+
+def refine_root(lo,hi,kind):
+    flo=kranti_function(lo,kind)
+    for _ in range(44):
+        mid=lo+(hi-lo)/2
+        fm=kranti_function(mid,kind)
+        if flo*fm<=0:
+            hi=mid
+        else:
+            lo=mid;flo=fm
+    return lo+(hi-lo)/2
+
+def refine_abs_boundary(lo,hi,kind,target=0.5):
+    flo=abs(kranti_function(lo,kind))-target
+    for _ in range(44):
+        mid=lo+(hi-lo)/2
+        fm=abs(kranti_function(mid,kind))-target
+        if flo*fm<=0:
+            hi=mid
+        else:
+            lo=mid;flo=fm
+    return lo+(hi-lo)/2
+
+def mahapata_window(root,kind):
+    step=timedelta(minutes=10)
+    # Search outward until the declination difference reaches 30 arcminutes.
+    left=root; right=root
+    for _ in range(144):
+        prev=left-step
+        if abs(kranti_function(prev,kind))>=0.5:
+            left=refine_abs_boundary(prev,left,kind);break
+        left=prev
+    for _ in range(144):
+        nxt=right+step
+        if abs(kranti_function(nxt,kind))>=0.5:
+            right=refine_abs_boundary(right,nxt,kind);break
+        right=nxt
+    return left,right
 
 def kranti_rows(year,tz):
-    start=datetime(year,1,1,tzinfo=tz); end=datetime(year+1,1,1,tzinfo=tz)
-    step=timedelta(minutes=20); rows=[]; cur=start; active=False; began=None; best=None
-    while cur<=end:
-        yes,ds,dm,diff=kranti_active(cur)
-        if yes and not active:
-            began=cur; best=(diff,cur,ds,dm); active=True
-        elif yes and active and diff<(best[0] if best else 99):
-            best=(diff,cur,ds,dm)
-        elif active and not yes:
-            stop=cur
-            rows.append({
-              "title":"Kranti Samya / Mahapata","date":began.date().isoformat(),
-              "time":f'{panchang.fmt(began,False)} – {panchang.fmt(stop,False)}',
-              "meta":f'min |declination| difference {best[0]:.4f}°',
-              "detail":"Tropical Sun/Moon occupy a Kranti-Samya axis pair and absolute declinations converge within the encoded 0.25° Mahapata profile.",
-              "link_date":began.date().isoformat()
-            })
-            active=False; began=None; best=None
-        cur+=step
+    start=datetime(year,1,1,tzinfo=tz)-timedelta(days=1)
+    end=datetime(year+1,1,1,tzinfo=tz)+timedelta(days=1)
+    step=timedelta(hours=2);rows=[]
+    for kind in ("Vyatipata","Vaidhriti"):
+        cur=start;prev=kranti_function(cur,kind)
+        while cur<end:
+            nxt=min(end,cur+step);now=kranti_function(nxt,kind)
+            if prev==0 or prev*now<0:
+                root=refine_root(cur,nxt,kind)
+                if valid_mahapata_root(root,kind):
+                    began,stop=mahapata_window(root,kind)
+                    if began.year==year or stop.year==year:
+                        _,_,ds,dm=kranti_geometry(root)
+                        rows.append({
+                          "title":f"{kind} Kranti Samya / Mahapata",
+                          "date":began.astimezone(tz).date().isoformat(),
+                          "time":f"{panchang.fmt(began,False)} – {panchang.fmt(stop,False)}",
+                          "meta":f"midpoint declinations Sun {ds:+.5f}° · Moon {dm:+.5f}°",
+                          "detail":f"Mahapata midpoint {root.isoformat()} · |declination relation| ≤ 0.5° · {began.isoformat()} → {stop.isoformat()}",
+                          "link_date":began.astimezone(tz).date().isoformat()
+                        })
+            cur=nxt;prev=now
+    rows.sort(key=lambda r:datetime.fromisoformat(r["detail"].split(" · ")[0].replace("Mahapata midpoint ","")))
     return rows
 
 def published_snapshot(selected,lat,lon,tz):
