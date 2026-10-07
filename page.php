@@ -58,7 +58,12 @@ $group = $routes[$page['group']];
 $related = tithika_related($page);
 $completionSlugs = require __DIR__ . '/config/completion.php';
 $isCompletionPage = in_array($page['slug'], $completionSlugs, true);
-$isComputed = tithika_is_live_page($page['slug']) || tithika_has_editorial_content($page);
+$isVerifiedLive = tithika_is_live_page($page['slug']);
+$isAggregate = tithika_is_aggregate_page($page['slug']);
+$isReference = tithika_is_reference_page($page['slug']);
+$isComputed = $isVerifiedLive || $isAggregate || $isReference || tithika_has_editorial_content($page);
+$completionLabel = $isVerifiedLive ? 'Verified calculation' : ($isAggregate ? 'Calculated aggregation' : ($isReference ? 'Structured reference' : 'Completion adapter'));
+$completionLoading = $isVerifiedLive ? 'Building verified result…' : ($isAggregate ? 'Building calculated aggregation…' : 'Building structured reference…');
 tithika_render_header($page['title'], $page);
 echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESCAPED_SLASHES) . ';</script>';
 ?>
@@ -751,9 +756,9 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
       <?php elseif ($isCompletionPage): ?>
         <div class="tk-panchang-live-head">
           <div>
-            <span class="tk-card-tag">Certified completion engine</span>
+            <span class="tk-card-tag"><?= htmlspecialchars($completionLabel) ?></span>
             <h3 id="tkPhaseTitle"><?= htmlspecialchars($page['title']) ?></h3>
-            <p>Route-specific calculation or structured reference data is generated from Tithika's shared Panchang, festival, Jyotish and astronomy substrates. Tradition-specific assumptions remain visible in each result.</p>
+            <p>Route-specific output is generated from Tithika's shared Panchang, festival, Jyotish and astronomy substrates. The quality tier above distinguishes verified calculations from aggregations and bounded references; tradition-specific assumptions remain visible in each result.</p>
           </div>
           <div class="tk-panchang-engine" id="tkPhaseEngine">Six-phase completion</div>
         </div>
@@ -766,7 +771,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <button id="tkPhaseCalculate" type="button">Calculate</button>
         </div>
         <?php endif; ?>
-        <div id="tkPhaseLoading" class="tk-panchang-loading">Building verified result…</div>
+        <div id="tkPhaseLoading" class="tk-panchang-loading"><?= htmlspecialchars($completionLoading) ?></div>
         <div id="tkPhaseSummary" class="tk-lunar-note"></div>
         <div id="tkPhaseMetrics" class="tk-panchang-summary"></div>
         <div id="tkPhaseSections" class="tk-observance-list"></div>
