@@ -46,6 +46,9 @@ jobs:
       - name: Production certification contract
         run: php scripts/test-production-certification.php
 
+      - name: Indexable route render coverage
+        run: php scripts/test-route-render-coverage.php
+
       # Semantic completion gates run early so rule regressions fail fast.
       - name: Panchang completion regression fixture
         run: python scripts/test-panchang-completion.py
