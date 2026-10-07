@@ -25,8 +25,15 @@
   $$('[data-setting] [data-value]').forEach(btn=>btn.addEventListener('click',()=>{
     const group=btn.closest('[data-setting]');
     if(!group)return;
-    settings.set({[group.dataset.setting]:btn.dataset.value});
+    const key=group.dataset.setting;
+    const before=settings.get()[key];
+    settings.set({[key]:btn.dataset.value});
     render();
+    if(key==='language' && before!==btn.dataset.value){
+      const url=new URL(window.location.href);
+      url.searchParams.set('lang',btn.dataset.value);
+      window.location.href=url.toString();
+    }
   }));
 
   $('#tkSaveCurrentLocation')?.addEventListener('click',()=>{
