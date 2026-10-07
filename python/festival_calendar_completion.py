@@ -78,7 +78,7 @@ def recurring_events(year,lat,lon,tz):
                 rows.append({"title":title,"date":d,"time":"","meta":e.get("purnimanta_month") or "",
                   "detail":"Shared lunar-occurrence engine","link_date":d})
     for e in sankranti.find_year(year,lat,lon,tz,False):
-        rows.append({"title":e["title"],"date":e["date"],"time":e["time_label"],"meta":"Sankranti",
+        rows.append({"title":e["name"],"date":e["date"],"time":e["time_label"],"meta":"Sankranti",
           "detail":"Shared Nirayana solar-ingress engine","link_date":e["date"]})
     # De-duplicate same-title/date combinations from overlapping collections.
     out=[];seen=set()
