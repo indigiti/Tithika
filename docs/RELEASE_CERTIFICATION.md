@@ -1,6 +1,6 @@
 # Tithika Production Certification
 
-This document records the production-readiness contract enforced by CI. It is not a claim that every mapped route is complete; unfinished shells are deliberately excluded from search indexing until their calculation engine or editorial adapter is verified.
+This document records the production-readiness contract enforced by CI. All mapped routes now have either a verified calculation engine, a versioned traditional rule profile, or a structured reference/editorial adapter; semantic certification distinguishes these categories rather than treating every route as the same kind of calculator.
 
 ## Certified baseline
 
