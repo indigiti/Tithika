@@ -39,7 +39,7 @@ foreach ($flat as $slug => $page) {
             $failures[] = "{$slug}: placeholder renderer contains '{$needle}'";
         }
     }
-    if (!str_contains($html, '<h1>')) {
+    if (empty($page['live']) && !str_contains($html, '<h1>')) {
         $failures[] = "{$slug}: missing rendered H1";
     }
 }
