@@ -5,13 +5,15 @@ This document records the production-readiness contract enforced by CI. It is no
 ## Certified baseline
 
 - Product route contract: **292**
-- Verified calculation/live routes: **229**
+- Verified calculation/live routes: **159**
+- Calculated aggregation routes: **21**
+- Structured reference routes: **49**
 - Structured editorial routes: **62**
 - Additional canonical live redirect: **1** (`muhurat/choghadiya`)
 - Total production-quality/indexable detail routes: **292**
 - Remaining mapped `noindex,follow` shells: **0**
 
-The indexable set is generated from `config/live.php`, structured editorial coverage and explicit canonical live adapters. The XML sitemap uses the same quality state.
+The indexable set is generated from four distinct quality states: verified calculation/live routes (`config/live.php`), calculated aggregations (`config/aggregate.php`), structured references (`config/reference.php`) and structured editorial coverage. **Indexable does not mean verified calculator.** The XML sitemap uses the same quality state.
 
 ## Newly certified regional adapters
 
@@ -65,7 +67,7 @@ All eight are covered by `scripts/test-panchang-reuse.py`.
 
 ### Completed Panchang rule routes
 
-`panchang/manvadi-tithi`, `panchang/yugadi-tithi`, `panchang/kalpadi-tithi` and `panchang/kranti-samya` are now promoted through `python/panchang_completion.py`. Tithi observances use explicit Purnimanta month/Paksha/Tithi sunrise selectors; Kranti Samya is calculated from tropical Sun/Moon declination convergence on the encoded Mahapata axis pairs rather than treating a full Nitya Yoga span as equivalent.
+`panchang/manvadi-tithi`, `panchang/yugadi-tithi` and `panchang/kalpadi-tithi` are verified through `python/panchang_completion.py` with explicit Purnimanta month/Paksha/Tithi sunrise selectors and dated regression anchors. `panchang/kranti-samya` remains indexable as a **geometry reference**, not a certified exact Mahapata calculator: it uses true geocentric Sun/Moon declinations including lunar ecliptic latitude and exposes the 0.25° proximity screen explicitly.
 
 ## Newly certified Muhurat reuse routes
 
@@ -86,7 +88,7 @@ All ten are covered by `scripts/test-muhurat-reuse.py`, including 2026 Pune date
 
 ### Completed Muhurat rule routes
 
-`muhurat/gowri`, `muhurat/jain-pachchakkhan`, `muhurat/pancha-pakshi`, `muhurat/do-ghati` and `muhurat/shubha-dates` are now promoted through `python/muhurat_completion.py` with explicit versioned solar/tradition profiles.
+`muhurat/gowri`, `muhurat/jain-pachchakkhan`, `muhurat/pancha-pakshi` and `muhurat/do-ghati` are verified through `python/muhurat_completion.py`. Do-Ghati uses the canonical 30 Muhurta names and auspicious flags. Pancha Pakshi exposes the defensible five-Yama day/night mirror schedule and explicitly does not fabricate Sukshma sub-periods. `muhurat/shubha-dates` is a named Tithika generic reference profile, not a universal traditional Muhurat claim.
 
 ## Newly certified Vrat recurrence routes
 
@@ -104,7 +106,7 @@ All seven are covered by `scripts/test-vrat-recurrence.py` with 2026 Pune/Mahara
 
 ### Completed Vrat rule routes
 
-`vrat/iskcon-ekadashi` now reuses Tithika's integrated Arunodaya/Vriddhi/Mahadwadashi/Hari-Vasara substrate. Kalashtami, Chandra Darshan, Masik Janmashtami, Ishti/Anvadhan, Shraddha, Purushottam Maas and Chaturmasa are promoted through `python/vrat_completion.py` with explicit night, visibility, lunar-month or multi-month selectors.
+`vrat/iskcon-ekadashi` reuses Tithika's integrated Arunodaya/Vriddhi/Mahadwadashi/Hari-Vasara substrate. Kalashtami uses a night selector; Masik Janmashtami uses local solar Nishita; Chandra Darshan exposes a conservative geometric crescent screen; Ishti/Anvadhan uses local-sunrise Tithi prevalence; Purushottam Maas and Chaturmasa use explicit lunar-month selectors. `vrat/shraddha` is classified as a calculated aggregation because it combines Amavasya, Pitru Paksha, Sankranti, Manvadi, Yugadi and Kalpadi classes rather than claiming an exhaustive traditional Shraddha canon.
 
 ## Data provenance
 
@@ -125,15 +127,22 @@ A release is certifiable only when all of the following pass on the exact merged
 7. Planetary/Jyotish/Kundali/Varga/Yoga/Shadbala/matching/timing/Rashifal regressions.
 8. Eclipse, season and Sankranti regression fixtures.
 
-## Final six-phase completion
+## Final six-phase hardening
 
-The former 99-route shell queue is complete. All mapped product routes now have a calculation engine, aggregation adapter, or structured reference adapter and are included in the production-quality indexable contract.
+The former 99-route shell queue now has an explicit quality tier. Routes are not promoted merely because they render.
 
-1. **Panchang rule-completion** — Manvadi, Yugadi and Kalpadi sunrise selectors; Kranti Samya/Mahapata declination geometry; Published Panchang and Utilities adapters.
-2. **Muhurat rule-completion** — versioned Gowri day/night cycles, Jain Pachchakkhan solar-Prahar timings, 30 Do-Ghati Muhurtas, Pancha Pakshi activity cycles and conservative generic Shubha Dates.
-3. **Vrat rule-completion** — shared integrated ISKCON/Vaishnava Ekadashi substrate, night-sensitive Kalashtami and Masik Janmashtami, post-Amavasya Chandra Darshan, Ishti/Anvadhan, Shraddha aggregation, Adhika/Purushottam Maas, Chaturmasa and remaining Vrat/reference surfaces.
-4. **Festival/calendar aggregation** — Hindu, Tamil and Malayalam yearly aggregation, lunar-month festival collections, themed yearly calendars and structured festival/puja collections.
-5. **Secondary Jyotish calculators** — Prashna, Pancha Pakshi, gemstone/Rudraksha traditional references, Namakarana initials, Sahasra Chandrodaya, Vedic Time, Shraddha Tithi and deterministic Prashnavali context.
-6. **Astronomy reference** — declination parallels/contra-parallels, geocentric ecliptic crossings, six Indian Ritus, and sidereal/tropical zodiac reference tables.
+- **Verified calculation/live** — deterministic rule/ephemeris engine with route-specific regression evidence.
+- **Calculated aggregation** — combines verified substrates into a calendar/collection but is not itself a new independent rule engine.
+- **Structured reference** — useful, indexable reference content or a deliberately bounded traditional profile; not counted as a verified calculator.
+- **Editorial** — independently structured explanatory content.
 
-The final completion contract is listed in `config/completion.php`. CI requires all 99 former shell routes to be present in `config/live.php`, backed by their family engine files and regression fixtures. The route contract remains **292**, with **292 indexable routes and zero mapped noindex shells**.
+The six hardening families are:
+
+1. **Panchang** — Manvadi, Yugadi and Kalpadi have dated recurrence anchors; Kranti Samya is explicitly a true-declination geometry reference rather than an exact Mahapata claim.
+2. **Muhurat** — canonical Do-Ghati names, audited Gowri/Jain timings and a five-Yama Pancha Pakshi mirror model; generic Shubha Dates is reference-only.
+3. **Vrat** — solar Nishita for Masik Janmashtami, geometric Chandra Darshan screening, sunrise-based Ishti pairing, integrated ISKCON/Mahadwadashi logic and Shraddha aggregation.
+4. **Festival/calendar** — yearly/monthly views are classified as calculated aggregations; themed discovery pages remain structured references unless every observance has a dated selector.
+5. **Secondary Jyotish** — Name Initials dispatch is corrected; Pancha Pakshi birth-bird selection is Paksha-aware; Prashnavali no longer invents modulo-based omens; gemstone/Rudraksha are honestly labeled references; Sahasra Chandrodaya uses exact full-Moon phase search.
+6. **Astronomy** — mutual parallels/contra-parallels are root-refined exact declination events, ecliptic crossings remain exact latitude-zero events, and Indian Ritus use tropical solar longitude boundaries.
+
+The route contract remains **292 indexable routes with zero mapped noindex shells**, but CI separately enforces **159 verified/live calculators**, **21 calculated aggregations** and **49 structured references**. The remaining indexable routes are structured editorial/canonical adapters. These categories are deliberately disjoint.
