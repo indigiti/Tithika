@@ -61,6 +61,14 @@ tithika_render_header(tithika_t('settings.title'));
       <p class="tk-settings-helper"><?= htmlspecialchars(tithika_t('settings.language_note')) ?></p>
     </article>
 
+    <article class="tk-settings-card">
+      <header><span><?= htmlspecialchars(tithika_t('settings.numerals')) ?></span><h2><?= htmlspecialchars(tithika_t('settings.numerals_title')) ?></h2></header>
+      <div class="tk-settings-options" data-setting="numerals">
+        <button type="button" data-value="latin"><b><?= htmlspecialchars(tithika_t('settings.latin')) ?></b><small><?= htmlspecialchars(tithika_t('settings.latin_note')) ?></small></button>
+        <button type="button" data-value="deva"><b><?= htmlspecialchars(tithika_t('settings.devanagari')) ?></b><small><?= htmlspecialchars(tithika_t('settings.devanagari_note')) ?></small></button>
+      </div>
+    </article>
+
     <article class="tk-settings-card span-2">
       <header><span><?= htmlspecialchars(tithika_t('settings.context')) ?></span><h2><?= htmlspecialchars(tithika_t('settings.saved_location')) ?></h2></header>
       <div class="tk-settings-location">
