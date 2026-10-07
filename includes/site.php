@@ -247,7 +247,7 @@ function tithika_render_header(string $title, ?array $page = null): void {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#f8fafc">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
   <title><?= htmlspecialchars($title) ?> — Tithika</title>
   <meta name="description" content="<?= htmlspecialchars($description) ?>">
   <meta name="robots" content="<?= $indexable ? 'index,follow,max-image-preview:large' : 'noindex,follow' ?>">
@@ -261,6 +261,7 @@ function tithika_render_header(string $title, ?array $page = null): void {
   <meta name="twitter:title" content="<?= htmlspecialchars($title) ?> — Tithika">
   <meta name="twitter:description" content="<?= htmlspecialchars($description) ?>">
   <link rel="manifest" href="<?= htmlspecialchars(tithika_url('manifest.webmanifest')) ?>">
+  <script src="<?= htmlspecialchars(tithika_asset_url('assets/settings-core.js')) ?>"></script>
   <link rel="stylesheet" href="<?= htmlspecialchars(tithika_asset_url('assets/tithika.css')) ?>">
   <script type="application/ld+json"><?= json_encode($schema, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_HEX_TAG|JSON_HEX_AMP) ?></script>
 </head>
@@ -277,6 +278,7 @@ function tithika_render_header(string $title, ?array $page = null): void {
         <a href="<?= htmlspecialchars(tithika_pretty_url($key)) ?>"<?= ($page && $page['group'] === $key) ? ' class="is-active" aria-current="page"' : '' ?>><?= htmlspecialchars($group['title']) ?></a>
       <?php endforeach; ?>
       <a href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>">All tools</a>
+      <a href="<?= htmlspecialchars(tithika_url('settings/')) ?>">Settings</a>
     </nav>
     <a class="tk-mobile-tools" href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>">All tools</a>
     <button class="tk-place-button" id="tkPlaceButton" type="button" aria-expanded="false" aria-controls="tkPlacePanel"><span aria-hidden="true">⌖</span><b id="tkPlaceText">Location</b></button>
@@ -312,6 +314,7 @@ function tithika_render_footer(): void {
 window.TITHIKA_BASE = <?= json_encode($base, JSON_UNESCAPED_SLASHES) ?>;
 </script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/tithika-site.js')) ?>" defer></script>
+<script src="<?= htmlspecialchars(tithika_asset_url('assets/settings.js')) ?>" defer></script>
 </body>
 </html>
 <?php
