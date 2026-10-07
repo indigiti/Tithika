@@ -16,7 +16,7 @@ Hindu/Indian and regional yearly calendars plus major festival calendars such as
 Choghadiya, Hora, Vivah, Griha Pravesh, vehicle/property purchase, Lagna, Gowri, Jain Pachchakkhan, Rahu Kala, auspicious Yoga, Panchaka Rahita, Abhijit, Do Ghati, Shubha Dates and Pancha Pakshi. The shared substrate powers specialized Vivah/Griha/Property/Vehicle/Sanskar profiles. A second reuse engine now makes Shubha Hora, Panchaka Rahita, aggregate Auspicious Yogas, Sarvartha Siddhi, Amrit Siddhi, Guru/Ravi Pushya, Dwipushkar, Tripushkar and Ravi Yoga live with explicit rule tables. Gowri, Jain Pachchakkhan, Pancha Pakshi, Do Ghati and generic Shubha Dates remain deliberately gated.
 
 ### 4. Vrat & Upavas
-Ekadashi, Pradosh, Sankashti, Dwadashi, Purnima, Amavasya, Shivaratri, Skanda Sashti, Karthigai, Shraddha, Durgashtami, Kalashtami, Chaturmasa and special Vrat collections. The verified recurrence layer now makes Satyanarayana/Purnima, Masik Durgashtami, Skanda Sashti, Karthigai, Rohini Vrat, Sawan Somwar and Mangala Gauri live. Shravana weekday observances expose separate Purnimanta/Amanta profiles. The mapped ISKCON Ekadashi route remains gated until a fully GCal-compatible selector replaces the current simplified profile; Kalashtami, Chandra Darshan and other ritual/visibility-driven rules remain pending.
+Ekadashi, Pradosh, Sankashti, Dwadashi, Purnima, Amavasya, Shivaratri, Skanda Sashti, Karthigai, Durgashtami, Kalashtami, Chaturmasa and special Vrat collections. The shared ISKCON/Vaishnava layer now uses Arunodaya, Vriddhi, Mahadwadashi and Hari-Vasara-aware Parana. Masik Janmashtami uses local solar Nishita; Chandra Darshan exposes a conservative geometric visibility screen. Shraddha is a calculated aggregation rather than an exhaustive single-rule calculator.
 
 ### 5. Festivals
 Popular collections, lunar-month festival lists, Tamil/Malayalam/Sankranti collections, Gurus/Saints, Navdurga, Dashavatara, Puja Vidhi, deities and pilgrimage content. The 13 verified major-festival calculations now run through one declarative festival rule registry with reusable local-time selectors.
@@ -40,9 +40,11 @@ Tutorials, Panchang concepts, Choghadiya, Muhurat, Nakshatra, Rahu Kala, FAQ and
 
 Current certified detail-route state:
 
-- **229** verified/live calculation routes
+- **159** verified/live calculation routes
 - **62** structured editorial routes
 - **1** canonical live redirect (`muhurat/choghadiya`)
+- **21** calculated aggregation routes
+- **49** structured reference routes
 - **292** production-quality/indexable detail routes
 - **0** mapped `noindex,follow` shells
 
@@ -50,9 +52,9 @@ The exact contract and promotion queue are documented in `docs/RELEASE_CERTIFICA
 
 ## SEO and release state
 
-The 292-route map is intentionally larger than the set exposed to search engines. A centralized live-route registry plus structured editorial coverage determines which detail pages receive `index,follow`; unfinished mapped shells receive `noindex,follow`. The XML sitemap contains only production-quality routes plus family landing pages.
+The 292-route map is fully indexable, but indexability is no longer conflated with calculation certification. `config/live.php` contains verified calculators, `config/aggregate.php` contains calculated collections, `config/reference.php` contains bounded reference routes, and structured editorial pages form a fourth quality class. The XML sitemap uses the same indexable-state contract.
 
-The shared shell now emits canonical/OpenGraph/Twitter metadata, JSON-LD and breadcrumbs; related links are topic-aware across families. The human site map labels routes as Live, Editorial or Mapped.
+The shared shell now emits canonical/OpenGraph/Twitter metadata, JSON-LD and breadcrumbs; related links are topic-aware across families. The human site map can distinguish verified live engines from aggregation/reference/editorial routes.
 
 ## Rendering templates
 
