@@ -64,6 +64,12 @@ jobs:
       - name: Intelligence multi-engine regression fixture
         run: python scripts/test-intelligence.py
 
+      - name: Daily dashboard surface fixture
+        run: php scripts/test-home-dashboard-surface.php
+
+      - name: Daily dashboard aggregation fixture
+        run: python scripts/test-home-dashboard.py
+
       # Semantic completion gates run early so rule regressions fail fast.
       - name: Panchang completion regression fixture
         run: python scripts/test-panchang-completion.py
