@@ -177,3 +177,6 @@ jobs:
 
       - name: Astronomy reference regression fixture
         run: python scripts/test-astronomy-reference.py
+
+      - name: Repository semantic hardening guard
+        run: python scripts/test-semantic-hardening.py

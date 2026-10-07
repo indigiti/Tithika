@@ -473,7 +473,7 @@ def select_pradosh(ctx):
                 )
                 if puja_overlap else None
             )
-        extra["vrishabha_lagna_status"] = "verified"
+        extra["vrishabha_lagna_status"] = "calculated-from-lagna-timeline"
 
     return selected, extra
 

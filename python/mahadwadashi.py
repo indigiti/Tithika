@@ -4,8 +4,9 @@ Tithika Mahadwadashi detector.
 
 This module classifies the eight traditional Mahadwadashi combinations using
 the shared Lahiri Panchang core. It is intentionally a detector first: multiple
-Mahadwadashi yogas may coexist on one Dwadashi, and the detector does not yet
-override the base Ekadashi/Parana selector.
+Mahadwadashi yogas may coexist on one Dwadashi. The integrated Ekadashi layer
+uses this classifier to override ordinary Vaishnava/ISKCON dates and Parana
+when a valid Mahadwadashi profile is detected.
 
 Primary rule profile used by Tithika
 ------------------------------------

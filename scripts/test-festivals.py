@@ -76,7 +76,7 @@ diwali = run("diwali")
 assert diwali["date"] == "2026-11-08", diwali
 assert within(diwali["pradosh"]["start"], "2026-11-08T18:02:00+05:30", 10)
 assert within(diwali["pradosh"]["end"], "2026-11-08T20:34:00+05:30", 10)
-assert diwali["vrishabha_lagna_status"] == "verified"
+assert diwali["vrishabha_lagna_status"] == "calculated-from-lagna-timeline"
 assert within(diwali["vrishabha_lagna"]["start"], "2026-11-08T18:27:00+05:30", 6)
 assert within(diwali["vrishabha_lagna"]["end"], "2026-11-08T20:27:00+05:30", 6)
 assert within(diwali["lakshmi_puja"]["start"], "2026-11-08T18:27:00+05:30", 6)

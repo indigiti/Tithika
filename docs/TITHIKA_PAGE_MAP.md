@@ -50,7 +50,7 @@ The exact contract and promotion queue are documented in `docs/RELEASE_CERTIFICA
 
 ## SEO and release state
 
-The 292-route map is intentionally larger than the set exposed to search engines. A centralized live-route registry plus structured editorial coverage determines which detail pages receive `index,follow`; unfinished mapped shells receive `noindex,follow`. The XML sitemap contains only production-quality routes plus family landing pages.
+The 292-route map is fully represented in the indexable contract. A centralized live-route registry plus structured editorial/reference coverage determines each route's implementation class; the XML sitemap follows the same production-quality contract. Calculation-backed, editorial and structured-reference routes are semantically distinguished rather than treating all indexable pages as equivalent calculators.
 
 The shared shell now emits canonical/OpenGraph/Twitter metadata, JSON-LD and breadcrumbs; related links are topic-aware across families. The human site map labels routes as Live, Editorial or Mapped.
 

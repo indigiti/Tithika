@@ -29,7 +29,7 @@ event=festival_rules.calculate_event(
 assert event["date"]=="2026-11-08",event
 assert event["rule"]["selector"]=="pradosh"
 assert event["rule"]["profile"]=="diwali"
-assert event["vrishabha_lagna_status"]=="verified"
+assert event["vrishabha_lagna_status"]=="calculated-from-lagna-timeline"
 assert event["lakshmi_puja"]
 
 print("Festival rule registry fixture passed")
