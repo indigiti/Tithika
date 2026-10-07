@@ -376,6 +376,7 @@ html[data-tk-theme="dark"] .tk-content,html[data-tk-theme="dark"] .tk-upcoming-s
 html[data-tk-theme="dark"] .tk-daily-primary-grid article,html[data-tk-theme="dark"] .tk-daily-solar span,html[data-tk-theme="dark"] .tk-settings-note{background:#172130;border-color:#293243}
 html[data-tk-theme="dark"] .tk-daily-copy>p,html[data-tk-theme="dark"] .tk-settings-hero>div>p{color:#9ba6b8}
 html[data-tk-theme="dark"] .tk-settings-options button.is-selected{background:#242244;border-color:#7568e2;color:#c7c1ff;box-shadow:0 0 0 3px #1d1c37}
+html[data-tk-theme="dark"] .tk-daily-actions a.primary,html[data-tk-theme="dark"] .tk-settings-actions button.primary,html[data-tk-theme="dark"] .tk-place-search button,html[data-tk-theme="dark"] .tk-primary{background:#e6dcff;color:#171525}
 
 @media(max-width:1100px){
   .tk-daily-hero{grid-template-columns:1fr;padding-left:24px;padding-right:24px}.tk-daily-strip{grid-template-columns:1fr;padding-left:24px;padding-right:24px}.tk-upcoming-grid{grid-template-columns:repeat(2,1fr)}.tk-home-ai{margin-left:24px;margin-right:24px}.tk-settings-hero{grid-template-columns:1fr;padding-left:24px;padding-right:24px}.tk-settings-grid{grid-template-columns:1fr}.tk-settings-card.span-2{grid-column:auto}
