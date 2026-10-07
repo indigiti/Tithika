@@ -123,6 +123,13 @@ try {
         out($data);
     }
 
+    if ($action === 'home-dashboard') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/home_dashboard.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     if ($action === 'panchang') {
         $payload = readPayload();
         $data = runPythonEngine('python/panchang.py', $payload);
