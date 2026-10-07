@@ -119,7 +119,8 @@ def prashnavali(moment,lat,lon):
 
 def pancha_pakshi(moment):
     moon=planetary.planet_state("Moon",moment);st=panchang.state_at(moment);lon=float(moon["longitude"])
-    band=min(4,int(lon/(360.0/5.0)))
+    bounds=(66.6666666667,133.3333333333,200.0,266.6666666667)
+    band=0 if lon<bounds[0] else 1 if lon<bounds[1] else 2 if lon<bounds[2] else 3 if lon<bounds[3] else 4
     bird=BIRDS[band] if st["paksha"]=="Shukla Paksha" else list(reversed(BIRDS))[band]
     return [row("Birth bird",bird,moon["nakshatra"],f'{st["paksha"]} · Moon {lon:.2f}°'),row("Assignment profile","Pulippani longitude bands","0–66°40′, 66°40′–133°20′, 133°20′–200°, 200°–266°40′, 266°40′–360°","Dark-half bird order reverses the bright-half mapping."),row("Current Panchang",st["tithi"],moment.strftime("%A"),"Open Pancha Pakshi Muhurat for location-aware Yama/sub-Yama timing.")]
 
