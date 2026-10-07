@@ -15,7 +15,7 @@
     clock:new Set(['12','24']),
     lunarMonth:new Set(['amanta','purnimanta']),
     tradition:new Set(['smarta','vaishnava','iskcon']),
-    language:new Set(['en'])
+    language:new Set(['en','hi'])
   };
   function safe(raw){
     const out={...defaults};
@@ -44,6 +44,8 @@
   function apply(){
     document.documentElement.dataset.tkTheme=resolvedTheme();
     document.documentElement.style.colorScheme=resolvedTheme();
+    document.documentElement.lang=state.language||'en';
+    document.cookie='tithika_lang='+encodeURIComponent(state.language||'en')+'; Max-Age=31536000; Path=/; SameSite=Lax';
   }
   function set(patch){
     state=safe({...state,...patch});persist();apply();
