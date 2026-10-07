@@ -87,20 +87,49 @@ def kalashtami(year,lat,lon,tz):
              "detail":evidence,"link_date":selected.isoformat()})
     return rows
 
+def crescent_visibility_metrics(moment,lat,lon):
+    """Conservative first-crescent geometry at local sunset.
+
+    Chandra Darshan is not selected merely because the Moon sets after the Sun.
+    The young Moon must have separated far enough from the Sun and stand high
+    enough above the western horizon to be a plausible naked-eye crescent.
+    """
+    t=panchang.astronomy_time(moment)
+    observer=panchang.astronomy.Observer(lat,lon,0.0)
+    eq=panchang.astronomy.Equator(
+        panchang.astronomy.Body.Moon,t,observer,True,True
+    )
+    hor=panchang.astronomy.Horizon(
+        t,observer,eq.ra,eq.dec,panchang.astronomy.Refraction.Normal
+    )
+    elong=float(panchang.astronomy.AngleFromSun(panchang.astronomy.Body.Moon,t))
+    return elong,float(hor.altitude),float(hor.azimuth)
+
 def chandra_darshan(year,lat,lon,tz):
     rows=[]
     rule=lunar_occurrences.KINDS["amavasya"][0]
     for event in lunar_occurrences.events_for_rule(year,rule,lat,lon,tz,False):
         newmoon_end=datetime.fromisoformat(event["end"])
-        for offset in range(0,3):
+        # Search the first three post-Amavasya evenings. A 10-degree elongation
+        # and 5-degree apparent sunset altitude form a deliberately conservative
+        # geometric visibility gate; moonset lag remains positive as a horizon
+        # sanity check. This avoids treating every post-sunset moonset as Darshan.
+        for offset in range(0,4):
             d=newmoon_end.date()+timedelta(days=offset)
             if d.year!=year: continue
             ss=sunset(d,lat,lon,tz); ms=moonset(d,lat,lon,tz)
-            if ss and ms and newmoon_end<=ss and ms>ss and ms-ss<=timedelta(hours=4):
-                rows.append({"title":"Chandra Darshan","date":d.isoformat(),"time":f"{fmt(ss)} – {fmt(ms)}",
-                  "meta":"First Shukla-Pratipada sunset sighting window",
-                  "detail":"Amavasya has ended before local sunset and the Moon remains above the horizon until moonset.","link_date":d.isoformat()})
-                break
+            if not ss or not ms or newmoon_end>ss or ms<=ss: continue
+            elong,alt,az=crescent_visibility_metrics(ss,lat,lon)
+            lag=(ms-ss).total_seconds()/60.0
+            if elong<10.0 or alt<5.0 or lag<30.0: continue
+            rows.append({
+              "title":"Chandra Darshan","date":d.isoformat(),
+              "time":f"{fmt(ss)} – {fmt(ms)}",
+              "meta":"First geometrically visible post-Amavasya crescent",
+              "detail":f"Sunset elongation {elong:.2f}° · Moon altitude {alt:.2f}° · azimuth {az:.2f}° · moonset lag {lag:.0f} min",
+              "link_date":d.isoformat()
+            })
+            break
     return rows
 
 def nishita_window(d,lat,lon,tz):
