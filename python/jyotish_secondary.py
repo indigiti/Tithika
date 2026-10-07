@@ -50,13 +50,59 @@ def prashna(moment,lat,lon):
         rows.append(row(p["name"],f'{p["rashi"]} · House {house}',f'{p["degree_in_rashi"]:.2f}°',"Question-time whole-sign placement"))
     return rows
 
+def trinal_lord_context(moment,lat,lon):
+    moon,_,asc,_=base_state(moment,lat,lon)
+    lagna_id=int(asc["lagna_id"])
+    roles=[
+      ("Life stone · Lagna lord",lagna_id),
+      ("Supporting stone · 5th lord",(lagna_id+4)%12),
+      ("Fortune stone · 9th lord",(lagna_id+8)%12),
+    ]
+    out=[]
+    seen=set()
+    for role,sign_id in roles:
+        sign=panchang.RASHI_NAMES[sign_id];lord=RASHI_LORD[sign]
+        if lord in seen: continue
+        seen.add(lord)
+        state=planetary.planet_state(lord,moment)
+        house=((int(state["rashi_id"])-lagna_id)%12)+1
+        out.append((role,sign,lord,state,house))
+    moon_lord=RASHI_LORD[moon["rashi"]]
+    if moon_lord not in seen:
+        state=planetary.planet_state(moon_lord,moment)
+        house=((int(state["rashi_id"])-lagna_id)%12)+1
+        out.append(("Moon-sign support",moon["rashi"],moon_lord,state,house))
+    return moon,asc,out
+
 def gemstone(moment,lat,lon):
-    moon,_,asc,_=base_state(moment,lat,lon); lord=RASHI_LORD.get(asc["lagna"],"")
-    return [row("Lagna lord",lord,asc["lagna"],"Traditional baseline"),row("Traditional gemstone",GEMS.get(lord,"Consult a qualified practitioner"),"Not a medical or financial recommendation","Gem prescriptions require chart-strength and contraindication review."),row("Moon sign",moon["rashi"],moon["nakshatra"],"Context only")]
+    moon,asc,candidates=trinal_lord_context(moment,lat,lon)
+    rows=[
+      row("Lagna",asc["lagna"],f'{asc["degree_in_sign"]:.2f}°',"Whole-sign chart anchor"),
+      row("Moon sign",moon["rashi"],moon["nakshatra"],"Mind/emotional context"),
+    ]
+    for role,sign,lord,state,house in candidates:
+        gem=GEMS.get(lord,"—")
+        rows.append(row(
+          role,gem,f"{lord} rules {sign}",
+          f'Natal placement: {state["rashi"]} · House {house} · {state["degree_in_rashi"]:.2f}°. '
+          "This is a lordship-based candidate, not an automatic prescription; dignity, strength, affliction and contraindications require full-chart review."
+        ))
+    return rows
 
 def rudraksha(moment,lat,lon):
-    moon,_,asc,_=base_state(moment,lat,lon); lord=RASHI_LORD.get(asc["lagna"],"")
-    return [row("Lagna lord",lord,asc["lagna"],"Traditional baseline"),row("Traditional Rudraksha",RUDRA.get(lord,"5 Mukhi"),"Reference profile","Sectarian practice and suitability can differ."),row("Janma Nakshatra",moon["nakshatra"],f'Pada {moon["pada"]}',"Birth-Moon context")]
+    moon,asc,candidates=trinal_lord_context(moment,lat,lon)
+    rows=[
+      row("Lagna",asc["lagna"],f'{asc["degree_in_sign"]:.2f}°',"Primary birth-chart anchor"),
+      row("Janma Nakshatra",moon["nakshatra"],f'Pada {moon["pada"]}',f'Moon sign {moon["rashi"]}'),
+    ]
+    for role,sign,lord,state,house in candidates:
+        rows.append(row(
+          role,RUDRA.get(lord,"5 Mukhi"),f"{lord} · {sign}",
+          f'Natal {lord}: {state["rashi"]} · House {house}. Traditional lordship mapping; sectarian practice and suitability can differ.'
+        ))
+    if not any(r["meta"]=="5 Mukhi" for r in rows):
+        rows.append(row("General devotional option","5 Mukhi","Traditional broad-use reference","Not a substitute for Sampradaya or practitioner guidance."))
+    return rows
 
 def baby(moment):
     moon=planetary.planet_state("Moon",moment); nak=moon["nakshatra"];pada=int(moon["pada"]);syll=NAK_SYLLABLES.get(nak,[])
@@ -70,8 +116,26 @@ def initials(name=""):
     return [row("Name initial",initial or "Enter a name","Traditional name-Rashi heuristic","Birth chart remains authoritative"),row("Possible Rashis",", ".join(matches) if matches else "No unique mapping","","Initial-based Rashi is approximate by tradition.")]
 
 def sahasra(moment):
-    synodic=29.530588861; target=moment+timedelta(days=synodic*1000)
-    return [row("1000th lunar-cycle estimate",target.date().isoformat(),f"{synodic:.9f} days × 1000","Astronomical mean-synodic estimate; ritual celebration date should be verified against local Panchang."),row("Elapsed mean days",f"{synodic*1000:.3f}","","Mean cycle, not a phase-by-phase ephemeris count.")]
+    """Find the 1000th astronomical full Moon after the birth instant."""
+    first_event=panchang.astronomy.SearchMoonPhase(
+        180.0,panchang.astronomy_time(moment),40.0
+    )
+    if first_event is None: raise ValueError("First post-birth full Moon not found")
+    first=panchang.datetime_from_astronomy(first_event,moment.tzinfo)
+    # The mean synodic month is used only to jump near lunation #1000.
+    # The reported milestone itself is refined by Astronomy Engine.
+    approx=first+timedelta(days=29.530588861*999)
+    target_event=panchang.astronomy.SearchMoonPhase(
+        180.0,panchang.astronomy_time(approx-timedelta(days=3)),7.0
+    )
+    if target_event is None: raise ValueError("1000th full Moon not found")
+    target=panchang.datetime_from_astronomy(target_event,moment.tzinfo)
+    age=target-moment
+    return [
+      row("First full Moon after birth",first.isoformat(),first.strftime("%A"),"Counted as full Moon #1."),
+      row("1000th full Moon",target.isoformat(),target.strftime("%A"),"Exact geocentric Sun-Moon opposition refined by Astronomy Engine."),
+      row("Age at milestone",f"{age.days} days",f"{age.days/365.2425:.2f} tropical years","Ritual scheduling can still follow family or priestly convention.")
+    ]
 
 def vedic_time(moment,lat,lon,tz):
     d=moment.date();sr=panchang_reuse.sunrise_for(d,lat,lon,tz)
