@@ -96,11 +96,10 @@ def chandra_darshan(year,lat,lon,tz):
             d=newmoon_end.date()+timedelta(days=offset)
             if d.year!=year: continue
             ss=sunset(d,lat,lon,tz); ms=moonset(d,lat,lon,tz)
-            if ss and ms and ms>ss and ms-ss<=timedelta(hours=4) and newmoon_end<ms:
-                start=max(ss,newmoon_end)
-                rows.append({"title":"Chandra Darshan","date":d.isoformat(),"time":f"{fmt(start)} – {fmt(ms)}",
-                  "meta":"First post-Amavasya sunset visibility window",
-                  "detail":"Moonset occurs after local sunset; window begins after both sunset and Amavasya end.","link_date":d.isoformat()})
+            if ss and ms and newmoon_end<=ss and ms>ss and ms-ss<=timedelta(hours=4):
+                rows.append({"title":"Chandra Darshan","date":d.isoformat(),"time":f"{fmt(ss)} – {fmt(ms)}",
+                  "meta":"First Shukla-Pratipada sunset sighting window",
+                  "detail":"Amavasya has ended before local sunset and the Moon remains above the horizon until moonset.","link_date":d.isoformat()})
                 break
     return rows
 
