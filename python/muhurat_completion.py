@@ -27,8 +27,8 @@ NIGHT_GOWRI={
 4:["Rogam","Laabam","Dhanam","Sugam","Soram","Uthi","Visham","Amirdha"],
 5:["Laabam","Dhanam","Sugam","Soram","Uthi","Visham","Amirdha","Rogam"],
 }
-MUHURTA_NAMES=["Rudra","Ahi","Mitra","Pitri","Vasu","Varaha","Vishvadeva","Vidhi","Satamukhi","Puruhuta","Vahini","Naktanakara","Varuna","Aryaman","Bhaga",
-"Girisha","Ajapada","Ahirbudhnya","Pushya","Ashwini","Yama","Agni","Vidhatri","Kanda","Aditi","Jiva","Vishnu","Dyumadgadyuti","Brahma","Samudram"]
+MUHURTA_NAMES=["Rudra","Uraga","Mitra","Pitara","Vasu","Ambu","Vishwedeva","Vidhi","Brahma","Indra","Indragni","Daitya","Varuna","Aryama","Bhaga",
+"Ishwara","Ajaikapada","Ahirbudhnya","Pusha","Ashwini","Yama","Agni","Brahma","Chandra","Aditi","Brihaspati","Vishnu","Surya","Tvashta","Samirana"]
 PAKSHI=["Vulture","Owl","Crow","Cock","Peacock"]
 ACT=["Ruling","Eating","Walking","Sleeping","Dying"]
 ACT_SCORE={"Ruling":"Best","Eating":"Good","Walking":"Average","Sleeping":"Bad","Dying":"Very Bad"}
