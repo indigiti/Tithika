@@ -776,53 +776,8 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <div id="tkPhaseSummary" class="tk-lunar-note"></div>
         <div id="tkPhaseMetrics" class="tk-panchang-summary"></div>
         <div id="tkPhaseSections" class="tk-observance-list"></div>
-      <?php elseif ($page['template'] === 'calendar' || $page['template'] === 'festival'): ?>
-        <span class="tk-card-tag">Calendar interface</span>
-        <h3>Month-first navigation</h3>
-        <p>Compact calendar cells, event badges and drill-down replace long page tables. Location and selected date stay in shared context.</p>
-        <div class="tk-calendar-demo">
-          <?php for($d=1;$d<=28;$d++): ?>
-            <div class="tk-day<?= $d===6?' mark':'' ?><?= in_array($d,[11,19,24],true)?' good':'' ?>"><b><?= $d ?></b><?= $d===6?'Today':'' ?></div>
-          <?php endfor; ?>
-        </div>
-      <?php elseif ($page['template'] === 'calculator'): ?>
-        <span class="tk-card-tag">Focused calculator</span>
-        <h3>Inputs first. Result second.</h3>
-        <p>Birth/location details are separated from the result so mobile users are not forced through a long reference document.</p>
-        <div class="tk-form-demo">
-          <div class="tk-field">Date / birth date</div>
-          <div class="tk-field">Time / birth time</div>
-          <div class="tk-field">Location</div>
-          <button class="tk-primary" type="button" disabled>Calculation engine adapter pending</button>
-        </div>
-      <?php elseif ($page['template'] === 'astronomy'): ?>
-        <span class="tk-card-tag">Event timeline</span>
-        <h3>Chronological astronomical events</h3>
-        <p>Event pages use a timeline with exact timestamps, state changes and explanatory metadata instead of dense tables.</p>
-        <div class="tk-event-list">
-          <?php foreach (['Previous event','Current state','Next event'] as $i=>$label): ?>
-            <div class="tk-event"><div class="tk-event-date"><?= $i===1?'NOW':'DATE' ?></div><div><strong><?= htmlspecialchars($label) ?></strong><span>Verified calculation data will populate this row.</span></div><em>Details →</em></div>
-          <?php endforeach; ?>
-        </div>
-      <?php elseif ($page['template'] === 'devotion' || $page['template'] === 'article'): ?>
-        <span class="tk-card-tag">Reading mode</span>
-        <h3>Distraction-light reference content</h3>
-        <div class="tk-reading"><p><span class="tk-drop"><?= htmlspecialchars(mb_substr($page['title'],0,1)) ?></span><?= htmlspecialchars($page['title']) ?> is mapped into Tithika as a focused reading page. The final editorial content can support language switching, larger text, audio, bookmarks and links back to the relevant calendar or Muhurat tool without mixing those controls into the reading surface.</p></div>
-      <?php elseif ($page['template'] === 'gallery'): ?>
-        <span class="tk-card-tag">Visual collection</span>
-        <h3>Fast, lazy-loaded visual browsing</h3>
-        <p>Image-heavy pages are separated from calculation pages and designed for responsive lazy loading.</p>
-        <div class="tk-gallery-demo"><?php for($i=0;$i<9;$i++): ?><div class="tk-gallery-tile"></div><?php endfor; ?></div>
       <?php else: ?>
-        <span class="tk-card-tag"><?= htmlspecialchars(tithika_template_label($page['template'])) ?></span>
-        <h3>Task-first results</h3>
-        <p>This page uses compact result rows, a sticky date/location context and progressive disclosure. Unsupported values remain intentionally blank until their engine module is validated.</p>
-        <div class="tk-placeholder-list">
-          <div class="tk-placeholder-row"><i></i><span>Primary timing / result</span></div>
-          <div class="tk-placeholder-row"><i></i><span>Secondary timing / context</span></div>
-          <div class="tk-placeholder-row"><i></i><span>Related Panchang condition</span></div>
-          <div class="tk-placeholder-row"><i></i><span>Notes and calculation method</span></div>
-        </div>
+        <?php throw new RuntimeException('No production renderer configured for route: ' . $page['slug']); ?>
       <?php endif; ?>
     </div>
 
