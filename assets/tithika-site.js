@@ -147,9 +147,11 @@
   };
   const RASHIS=['Mesha','Vrishabha','Mithuna','Karka','Simha','Kanya','Tula','Vrishchika','Dhanu','Makara','Kumbha','Meena'];
   const browserTimezone=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata';
+  const productSettings=window.TithikaSettings?.get?.()||{};
+  const savedLocation=productSettings.defaultLocation||null;
   const state={
-    lat:19.076,lon:72.8777,city:'Mumbai, Maharashtra, India',
-    timezone:'Asia/Kolkata',
+    lat:savedLocation?.lat??19.076,lon:savedLocation?.lon??72.8777,city:savedLocation?.city||'Mumbai, Maharashtra, India',
+    timezone:savedLocation?.timezone||'Asia/Kolkata',
     data:null,panchang:null,searchTimer:null,dateTouched:false,
     monthData:null,monthKey:'',lunarCache:new Map(),observanceCache:new Map(),festivalCache:new Map(),dwadashiCache:new Map(),mahadwadashiCache:new Map(),sankrantiCache:new Map()
   };
@@ -169,7 +171,10 @@
   function payload(){
     return {
       lat:state.lat,lon:state.lon,city:state.city,
-      date:$('#tkDate')?.value||isoToday(),timezone:state.timezone,hour24:false
+      date:$('#tkDate')?.value||isoToday(),timezone:state.timezone,
+      hour24:window.TithikaSettings?.hour24?.()||false,
+      month_system:window.TithikaSettings?.get?.().lunarMonth||'amanta',
+      tradition:window.TithikaSettings?.get?.().tradition||'smarta'
     };
   }
 
@@ -180,6 +185,14 @@
   }
 
   function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  window.addEventListener('tithika:toast',e=>toast(e.detail||'Updated'));
+  window.TithikaContext={
+    get:()=>({lat:state.lat,lon:state.lon,city:state.city,timezone:state.timezone,date:$('#tkDate')?.value||isoToday(state.timezone)}),
+    refresh:()=>calculate()
+  };
+  function emitContext(){
+    window.dispatchEvent(new CustomEvent('tithika:context',{detail:window.TithikaContext.get()}));
+  }
 
   async function reverse(lat,lon){
     try{
@@ -216,7 +229,7 @@
       });
       const j=await r.json();
       if(!j.ok)throw new Error(j.error||'Unable to calculate solar context');
-      state.data=j;renderSolar(j);
+      state.data=j;renderSolar(j);emitContext();
       if(panchangPages.includes(pageSlug)) await calculatePanchang();
       if(lagnaPages.includes(pageSlug)) await calculateLagna();
       if(monthPages.includes(pageSlug)) await calculateMonth();
@@ -2007,5 +2020,10 @@
   const rashTarget=$('#tkRashifalTargetDate');if(rashTarget&&!rashTarget.value)rashTarget.value=isoToday(state.timezone);
   const timelineStart=$('#tkTimelineStart');if(timelineStart&&!timelineStart.value)timelineStart.value=isoToday(state.timezone).slice(0,7);
   initMatching();
-  locate(true);
+  if(savedLocation){
+    if($('#tkDate')&&!$('#tkDate').value)$('#tkDate').value=isoToday(state.timezone);
+    calculate();
+  }else{
+    locate(true);
+  }
 })();

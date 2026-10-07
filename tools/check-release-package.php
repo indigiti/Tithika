@@ -9,7 +9,7 @@ must(($meta['schema']??'')==='DIGIOPS-RELEASE/1','release schema mismatch');
 must(($meta['name']??'')==='Tithika','release name mismatch');
 must(($meta['publicPath']??'')==='public_html/tithika/','public path mismatch');
 must(($meta['privatePath']??'')==='private_html/tithika/','private path mismatch');
-foreach(['.htaccess','index.php','page.php','api.php','intelligence.php','assets/tithika-site.js','assets/app.js','assets/choghadiya.css','assets/intelligence.css','assets/intelligence.js','config/routes.php','includes/site.php','python/panchang.py','python/panchang_completion.py','python/intelligence_gateway.py','python/intelligence/service.py'] as $path){
+foreach(['.htaccess','index.php','page.php','api.php','intelligence.php','settings.php','assets/tithika-site.js','assets/app.js','assets/choghadiya.css','assets/intelligence.css','assets/intelligence.js','assets/settings-core.js','assets/settings.js','assets/home-dashboard.js','config/routes.php','includes/site.php','python/panchang.py','python/panchang_completion.py','python/intelligence_gateway.py','python/intelligence/service.py','python/home_dashboard.py'] as $path){
     must(is_file($root.'/public/'.$path),"payload missing: {$path}");
 }
 must(is_file($root.'/private/build/release.json'),'private release metadata missing');
