@@ -138,7 +138,7 @@ The shared Muhurat reuse engine now powers:
 - `/muhurat/tripushkar/`
 - `/muhurat/ravi-yoga/`
 
-Hora uses exact local day/night twelfths; Panchaka Rahita uses verified Lagna transitions plus the modulo-9 formula; recurring Yogas preserve separate weekday/Nakshatra/Tithi rule tables. Gowri, Jain Pachchakkhan, Pancha Pakshi, Do Ghati and generic Shubha Dates remain deliberately gated.
+Hora uses exact local day/night twelfths; Panchaka Rahita uses verified Lagna transitions plus the modulo-9 formula; recurring Yogas preserve separate weekday/Nakshatra/Tithi rule tables. Gowri, Jain Pachchakkhan, Do Ghati and the named Pancha Pakshi profile are now engine-backed. Generic Shubha Dates is explicitly labeled as Tithika's conservative generic filter rather than a universal ritual selector.
 
 ### Reusable Vrat recurrences
 
@@ -152,7 +152,7 @@ A shared recurrence engine now promotes seven additional Vrat calendars without 
 - `/vrat/sawan-somwar/` — Purnimanta + Amanta Shravana Monday profiles
 - `/vrat/mangala-gauri/` — Purnimanta + Amanta Shravana Tuesday profiles
 
-The mapped ISKCON Ekadashi route remains deliberately unreleased: regression against published 2026 Pune dates showed that the current simplified ISKCON-compatible layer is not yet fully GCal-compatible. Kalashtami, Chandra Darshan and other ritual/visibility-driven recurrences remain gated for dedicated selectors.
+ISKCON Ekadashi now reuses the integrated Arunodaya/Vriddhi/Mahadwadashi/Hari-Vasara substrate. Kalashtami uses measured local-night overlap; Masik Janmashtami uses local solar Nishita; Chandra Darshan is explicitly reported as a geometric crescent-eligibility window rather than a weather-dependent visibility guarantee.
 
 ### Regional calendar engine
 
@@ -374,10 +374,12 @@ Pretty URLs are handled through Apache rewrite rules, for example:
 
 Tithika deliberately separates page creation from calculation-engine readiness:
 
-- **Live** — backed by a verified calculation/content engine.
-- **Mapped** — production URL and UI shell exist; specialized engine/content adapter is still pending.
-- **Verified** — calculation rules have fixtures and cross-source tests.
-- **Released** — engine, UI, SEO, mobile and accessibility audit passed.
+- **Live** — backed by a calculation, aggregation or structured-reference adapter.
+- **Calculated** — primary output is deterministic astronomy/Panchang/Jyotish geometry.
+- **Aggregated/Hybrid** — reuses calculated selectors and may include explicitly labeled reference rows.
+- **Reference** — structured knowledge surface; not presented as an independent calculator.
+- **Verified** — applicable calculation rules have truth fixtures and cross-source anchors.
+- **Released** — engine/adapter, UI, SEO, mobile and accessibility audit passed.
 
 Unsupported Tithi, Nakshatra, Yoga, Karana, planetary and Jyotish values are **not fabricated** simply to fill the UI.
 
