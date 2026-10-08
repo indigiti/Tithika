@@ -34,6 +34,14 @@
     return {lat:19.0760,lon:72.8777,city:'Current location',timezone:'Asia/Kolkata',date:new Date().toISOString().slice(0,10)};
   }
 
+  function localToday(timeZone){
+    try{
+      const parts=new Intl.DateTimeFormat('en-US',{timeZone:timeZone||'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+      const get=type=>parts.find(part=>part.type===type)?.value;
+      return get('year')+'-'+get('month')+'-'+get('day');
+    }catch(e){return new Date().toISOString().slice(0,10)}
+  }
+
   function payload(ctx,horizon=90){
     const s=settings.get();
     return {
@@ -51,7 +59,6 @@
     url.searchParams.set('lon',String(p.lon));
     url.searchParams.set('city',p.city);
     url.searchParams.set('timezone',p.timezone);
-    url.searchParams.set('date',p.date);
     url.searchParams.set('days','90');
     url.searchParams.set('tradition',p.tradition);
     url.searchParams.set('categories',p.categories.join(','));
@@ -185,9 +192,10 @@
   async function surfaceAlerts(ctx){
     const s=settings.get();
     if(!s.onsiteAlerts||!('Notification' in window)||Notification.permission!=='granted')return;
-    const data=await fetchAgenda(ctx,2,false);
+    const alertCtx={...ctx,date:localToday(ctx.timezone)};
+    const data=await fetchAgenda(alertCtx,2,false);
     if(!data)return;
-    const today=String(ctx.date||new Date().toISOString().slice(0,10));
+    const today=alertCtx.date;
     const tomorrow=new Date(today+'T12:00:00');tomorrow.setDate(tomorrow.getDate()+1);
     const tomorrowIso=tomorrow.toISOString().slice(0,10);
     const store=notifiedStore();
