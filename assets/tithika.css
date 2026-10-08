@@ -275,7 +275,7 @@ button{cursor:pointer}
 .tk-editorial>section p{margin-top:8px;font-size:12px;line-height:1.8;color:#657187}
 .tk-editorial-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:18px}
 .tk-editorial-links a{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--tk-line);border-radius:14px;background:#f9fafc;font-size:10px;font-weight:900}
-.tk-editorial-links a:hover{background:#f1efff;border-color:#ddd8fb}
+.tk-editorial-links a:hover{background:#f1efff;border-color:#ddd8fb}.tk-devotion-index{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.tk-devotion-index span{padding:8px 10px;border:1px solid var(--tk-line);border-radius:999px;background:#fafbfc;font-size:9px;font-weight:800;color:#647086}.tk-devotion-source{margin-top:18px;padding:14px 16px;border:1px solid #e7e1c8;border-radius:16px;background:#fffaf0}.tk-devotion-source b,.tk-devotion-source span{display:block}.tk-devotion-source b{font-size:10px}.tk-devotion-source span{margin-top:4px;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#9a7b3f}.tk-devotion-source p{margin:7px 0 0;font-size:9px;line-height:1.6;color:#786b53}
 .tk-content-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}
 .tk-content-gallery-item{margin:0;padding:8px;border:1px solid var(--tk-line);border-radius:18px;background:#fff}
 .tk-content-art{aspect-ratio:1.15;display:grid;place-items:center;border-radius:14px;overflow:hidden}
@@ -375,7 +375,7 @@ html[data-tk-theme="dark"] .tk-page-hero,html[data-tk-theme="dark"] .tk-group-he
 html[data-tk-theme="dark"] .tk-content,html[data-tk-theme="dark"] .tk-upcoming-section,html[data-tk-theme="dark"] .tk-daily-strip{background:#0f1622}
 html[data-tk-theme="dark"] .tk-daily-primary-grid article,html[data-tk-theme="dark"] .tk-daily-solar span,html[data-tk-theme="dark"] .tk-settings-note{background:#172130;border-color:#293243}
 html[data-tk-theme="dark"] .tk-daily-copy>p,html[data-tk-theme="dark"] .tk-settings-hero>div>p{color:#9ba6b8}
-html[data-tk-theme="dark"] .tk-settings-options button.is-selected{background:#242244;border-color:#7568e2;color:#c7c1ff;box-shadow:0 0 0 3px #1d1c37}
+html[data-tk-theme="dark"] .tk-settings-options button.is-selected{background:#242244;border-color:#7568e2;color:#c7c1ff;box-shadow:0 0 0 3px #1d1c37}html[data-tk-theme="dark"] .tk-devotion-index span{background:#192232;border-color:#2a3140;color:#dce3ef}html[data-tk-theme="dark"] .tk-devotion-source{background:#211f19;border-color:#3d382a;color:#edf1f8}
 html[data-tk-theme="dark"] .tk-daily-actions a.primary,html[data-tk-theme="dark"] .tk-settings-actions button.primary,html[data-tk-theme="dark"] .tk-settings-actions a.primary,html[data-tk-theme="dark"] .tk-place-search button,html[data-tk-theme="dark"] .tk-primary{background:#e6dcff;color:#171525}
 
 @media(max-width:1100px){
