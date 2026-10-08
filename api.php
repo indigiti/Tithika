@@ -137,7 +137,7 @@ try {
         $q = trim((string)($_GET['q'] ?? ''));
         if (mb_strlen($q) < 2) out(['ok'=>true,'results'=>[]]);
         $results = tithikaLocalSearch($q, 6);
-        if (count($results) < 6) {
+        if (count($results) === 0) {
             try {
                 $url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&addressdetails=1&q=' . rawurlencode($q);
                 $rows = curlJson($url);
