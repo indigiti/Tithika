@@ -159,7 +159,7 @@
   const savedLocation=productSettings.defaultLocation||null;
   const state={
     lat:savedLocation?.lat??19.076,lon:savedLocation?.lon??72.8777,city:savedLocation?.city||'Mumbai, Maharashtra, India',
-    timezone:savedLocation?.timezone||'Asia/Kolkata',
+    timezone:savedLocation?.timezone||'Asia/Kolkata',elevation:Number(savedLocation?.elevation??0),
     data:null,panchang:null,searchTimer:null,dateTouched:false,
     monthData:null,monthKey:'',lunarCache:new Map(),observanceCache:new Map(),festivalCache:new Map(),dwadashiCache:new Map(),mahadwadashiCache:new Map(),sankrantiCache:new Map()
   };
@@ -178,7 +178,7 @@
 
   function payload(){
     return {
-      lat:state.lat,lon:state.lon,city:state.city,
+      lat:state.lat,lon:state.lon,city:state.city,elevation:state.elevation,
       date:$('#tkDate')?.value||isoToday(),timezone:state.timezone,
       hour24:window.TithikaSettings?.hour24?.()||false,
       month_system:window.TithikaSettings?.get?.().lunarMonth||'amanta',
@@ -195,13 +195,15 @@
   function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
   window.addEventListener('tithika:toast',e=>toast(e.detail||'Updated'));
   window.TithikaContext={
-    get:()=>({lat:state.lat,lon:state.lon,city:state.city,timezone:state.timezone,date:$('#tkDate')?.value||isoToday(state.timezone)}),
+    get:()=>({lat:state.lat,lon:state.lon,city:state.city,timezone:state.timezone,elevation:state.elevation,date:$('#tkDate')?.value||isoToday(state.timezone)}),
     refresh:()=>calculate(),
     set:async next=>{
       if(!next||!Number.isFinite(Number(next.lat))||!Number.isFinite(Number(next.lon)))return false;
       state.lat=Number(next.lat);state.lon=Number(next.lon);
       state.city=String(next.city||'Saved location').slice(0,120);
       state.timezone=String(next.timezone||state.timezone||'Asia/Kolkata').slice(0,80);
+      const elevation=Number(next.elevation??state.elevation??0);
+      state.elevation=Number.isFinite(elevation)?Math.max(-500,Math.min(9000,elevation)):0;
       const input=$('#tkDate');
       if(input&&/^\d{4}-\d{2}-\d{2}$/.test(String(next.date||''))){
         input.value=String(next.date);state.dateTouched=true;
@@ -219,6 +221,8 @@
       const r=await fetch(`${base}api.php?action=reverse&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
       const j=await r.json();
       if(j.ok&&j.label)state.city=j.label;
+      if(j.ok&&j.timezone)state.timezone=j.timezone;
+      if(j.ok&&Number.isFinite(Number(j.elevation)))state.elevation=Math.max(-500,Math.min(9000,Number(j.elevation)));
     }catch(e){}
   }
 
@@ -1996,6 +2000,7 @@
     if(!navigator.geolocation){calculate();return}
     navigator.geolocation.getCurrentPosition(async p=>{
       state.lat=p.coords.latitude;state.lon=p.coords.longitude;state.city='Current location';
+      if(Number.isFinite(Number(p.coords.altitude)))state.elevation=Math.max(-500,Math.min(9000,Number(p.coords.altitude)));
       await Promise.all([
         reverse(state.lat,state.lon),
         resolveTimezone(state.lat,state.lon,{fallback:browserTimezone})
@@ -2036,13 +2041,21 @@
       const r=await fetch(`${base}api.php?action=search&q=${encodeURIComponent(q)}`);
       const j=await r.json();
       if(!j.ok||!j.results?.length){box.innerHTML='<div class="tk-search-item"><span>No places found</span></div>';return}
-      box.innerHTML=j.results.map((x,i)=>`<button class="tk-search-item" data-i="${i}"><strong>${esc(x.label)}</strong><span>${esc(x.display_name)}</span></button>`).join('');
+      box.innerHTML=j.results.map((x,i)=>`<button class="tk-search-item" data-i="${i}"><strong>${esc(x.label)}</strong><span>${esc(x.display_name)}${x.source==='offline-index'?' · offline':''}</span></button>`).join('');
       box._rows=j.results;
       box.querySelectorAll('.tk-search-item[data-i]').forEach(btn=>btn.addEventListener('click',async()=>{
         const x=box._rows[Number(btn.dataset.i)];
-        const old={lat:state.lat,lon:state.lon,city:state.city,timezone:state.timezone};
+        const old={lat:state.lat,lon:state.lon,city:state.city,timezone:state.timezone,elevation:state.elevation};
         state.lat=x.lat;state.lon=x.lon;state.city=x.label;
-        const resolved=await resolveTimezone(state.lat,state.lon);
+        if(Number.isFinite(Number(x.elevation)))state.elevation=Math.max(-500,Math.min(9000,Number(x.elevation)));
+        let resolved=false;
+        if(x.timezone){
+          state.timezone=String(x.timezone);
+          if(!state.dateTouched&&$('#tkDate'))$('#tkDate').value=isoToday(state.timezone);
+          resolved=true;
+        }else{
+          resolved=await resolveTimezone(state.lat,state.lon);
+        }
         if(!resolved){
           Object.assign(state,old);
           return;
@@ -2054,15 +2067,15 @@
   }
 
   $('#tkDate')?.addEventListener('change',()=>{state.dateTouched=true;calculate()});
+  $('#tkRegionalDayTab')?.addEventListener('click',e=>{e.preventDefault();setRegionalView('day',true);calculateRegionalDay()});
+  $('#tkRegionalMonthTab')?.addEventListener('click',e=>{e.preventDefault();setRegionalView('month',true);calculateRegionalCalendar()});
+  setRegionalView(regionalView,false);
+
   document.querySelectorAll('[data-shift-date]').forEach(btn=>btn.addEventListener('click',()=>{
     const input=$('#tkDate');if(!input)return;
     const d=new Date((input.value||isoToday())+'T12:00:00');
     const shift=Number(btn.dataset.shiftDate||0);
-    $('#tkRegionalDayTab')?.addEventListener('click',e=>{e.preventDefault();setRegionalView('day',true);calculateRegionalDay()});
-  $('#tkRegionalMonthTab')?.addEventListener('click',e=>{e.preventDefault();setRegionalView('month',true);calculateRegionalCalendar()});
-  setRegionalView(regionalView,false);
-
-  if(pageSlug==='panchang/month'||specializedMuhuratModes[pageSlug]||regionalVariants[pageSlug]||panchangReuseMonthly.has(pageSlug)){
+    if(pageSlug==='panchang/month'||specializedMuhuratModes[pageSlug]||regionalVariants[pageSlug]||panchangReuseMonthly.has(pageSlug)){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
     }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)||muhuratReuseYearly.has(pageSlug)||vratReuseYearly.has(pageSlug)){
