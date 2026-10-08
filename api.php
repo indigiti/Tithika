@@ -120,10 +120,6 @@ try {
         if ($nearest && (float)$nearest['distance_km'] <= 250.0) {
             out(['ok'=>true,'timezone'=>(string)$nearest['timezone'],'source'=>'offline-index'], 200, true);
         }
-        $regional = tithikaRegionalTimezone((float)$lat,(float)$lon);
-        if ($regional !== null) {
-            out(['ok'=>true,'timezone'=>$regional,'source'=>'offline-region'], 200, true);
-        }
         try {
             $url = 'https://timeapi.io/api/timezone/coordinate?latitude=' . rawurlencode((string)$lat) . '&longitude=' . rawurlencode((string)$lon);
             $r = curlJson($url);
