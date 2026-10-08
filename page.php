@@ -768,11 +768,26 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           </div>
           <div class="tk-panchang-engine" id="tkRegionalBasis">Regional convention</div>
         </div>
-        <div id="tkRegionalLoading" class="tk-panchang-loading">Building regional calendar…</div>
-        <div class="tk-month-weekdays" aria-hidden="true">
-          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        <?php $isRegionalPanchang = str_starts_with($page['slug'], 'panchang/'); ?>
+        <?php if ($isRegionalPanchang): ?>
+        <nav class="tk-rashifal-tabs" id="tkRegionalTabs" aria-label="Regional Panchang view">
+          <a href="?view=day" id="tkRegionalDayTab" class="active" data-regional-view="day">Day</a>
+          <a href="?view=month" id="tkRegionalMonthTab" data-regional-view="month">Month</a>
+        </nav>
+        <?php endif; ?>
+        <div id="tkRegionalLoading" class="tk-panchang-loading">Building regional <?= $isRegionalPanchang ? 'Panchang' : 'calendar' ?>…</div>
+        <?php if ($isRegionalPanchang): ?>
+        <div id="tkRegionalDayView">
+          <div id="tkRegionalDaySummary" class="tk-panchang-summary"></div>
+          <div id="tkRegionalDayTimings" class="tk-observance-list"></div>
         </div>
-        <div id="tkRegionalGrid" class="tk-month-grid" aria-live="polite"></div>
+        <?php endif; ?>
+        <div id="tkRegionalMonthView"<?= $isRegionalPanchang ? ' hidden' : '' ?>>
+          <div class="tk-month-weekdays" aria-hidden="true">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+          <div id="tkRegionalGrid" class="tk-month-grid" aria-live="polite"></div>
+        </div>
         <div id="tkRegionalNote" class="tk-lunar-note"></div>
       <?php elseif (in_array($page['slug'], ['panchang/moonrise-moonset','panchang/rahu-kala','muhurat/rahu-kala','muhurat/abhijit'], true)): ?>
         <div class="tk-panchang-live-head">
