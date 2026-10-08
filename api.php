@@ -482,6 +482,13 @@ try {
         out($data, 200, true);
     }
 
+    if ($action === 'notification-agenda') {
+        $payload = readPayload();
+        $data = runPythonEngine('python/notification_agenda.py', $payload);
+        if (!($data['ok'] ?? false)) out($data, 422);
+        out($data, 200, true);
+    }
+
     $intelligenceModes = [
         'ai-health' => 'health',
         'ai-advisor' => 'advisor',
