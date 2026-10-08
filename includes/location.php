@@ -34,10 +34,11 @@ function tithikaLocalSearch(string $query, int $limit = 6): array {
         $label = tithikaLocationLabel($row);
         $hay = mb_strtolower($label);
         $city = mb_strtolower((string)($row['city'] ?? ''));
+        $aliases = array_map(static fn($v)=>mb_strtolower((string)$v), (array)($row['aliases'] ?? []));
         $score = null;
-        if ($city === $needle) $score = 0;
-        elseif (str_starts_with($city, $needle)) $score = 1;
-        elseif (str_contains($city, $needle)) $score = 2;
+        if ($city === $needle || in_array($needle,$aliases,true)) $score = 0;
+        elseif (str_starts_with($city, $needle) || array_filter($aliases,static fn($v)=>str_starts_with($v,$needle))) $score = 1;
+        elseif (str_contains($city, $needle) || array_filter($aliases,static fn($v)=>str_contains($v,$needle))) $score = 2;
         elseif (str_contains($hay, $needle)) $score = 3;
         if ($score === null) continue;
         $scored[] = [$score, strlen($label), $row];
