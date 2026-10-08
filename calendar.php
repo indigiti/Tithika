@@ -58,11 +58,12 @@ if($lat===false || $lat===null) $lat=19.0760;
 if($lon===false || $lon===null) $lon=72.8777;
 if($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) calendarFail('Invalid coordinates',422);
 
-$date=trim((string)($_GET['date']??date('Y-m-d')));
-if(!preg_match('/^\d{4}-\d{2}-\d{2}$/',$date)) calendarFail('Invalid date',422);
 $horizon=max(1,min((int)($_GET['days']??90),366));
 $timezone=trim((string)($_GET['timezone']??'Asia/Kolkata'));
 if(!in_array($timezone,timezone_identifiers_list(),true)) $timezone='Asia/Kolkata';
+$defaultDate=(new DateTimeImmutable('now',new DateTimeZone($timezone)))->format('Y-m-d');
+$date=trim((string)($_GET['date']??$defaultDate));
+if(!preg_match('/^\d{4}-\d{2}-\d{2}$/',$date)) calendarFail('Invalid date',422);
 $city=mb_substr(trim((string)($_GET['city']??'Current location')),0,120);
 $tradition=strtolower(trim((string)($_GET['tradition']??'smarta')));
 if(!in_array($tradition,['smarta','vaishnava','iskcon'],true)) $tradition='smarta';
