@@ -70,13 +70,3 @@ function tithikaNearestLocal(float $lat, float $lon): ?array {
     $best['distance_km'] = $bestKm;
     return $best;
 }
-
-function tithikaRegionalTimezone(float $lat, float $lon): ?string {
-    // Specific neighboring-country regions precede the broad India fallback.
-    if ($lat >= 26.0 && $lat <= 31.0 && $lon >= 80.0 && $lon <= 89.0) return 'Asia/Kathmandu';
-    if ($lat >= 5.5 && $lat <= 10.2 && $lon >= 79.0 && $lon <= 82.2) return 'Asia/Colombo';
-    if ($lat >= 20.5 && $lat <= 26.8 && $lon >= 88.0 && $lon <= 92.8) return 'Asia/Dhaka';
-    if ($lat >= 23.0 && $lat <= 37.2 && $lon >= 60.0 && $lon <= 78.5) return 'Asia/Karachi';
-    if ($lat >= 6.0 && $lat <= 37.5 && $lon >= 68.0 && $lon <= 98.0) return 'Asia/Kolkata';
-    return null;
-}
