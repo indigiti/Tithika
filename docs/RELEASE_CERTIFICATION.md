@@ -4,11 +4,11 @@ This document records the production-readiness contract enforced by CI. All mapp
 
 ## Certified baseline
 
-- Product route contract: **292**
-- Verified calculation/live routes: **229**
+- Product route contract: **304**
+- Verified calculation/live routes: **241**
 - Structured editorial routes: **62**
 - Additional canonical live redirect: **1** (`muhurat/choghadiya`)
-- Total production-quality/indexable detail routes: **292**
+- Total production-quality/indexable detail routes: **304**
 - Remaining mapped `noindex,follow` shells: **0**
 
 The indexable set is generated from `config/live.php`, structured editorial coverage and explicit canonical live adapters. The XML sitemap uses the same quality state.
@@ -123,7 +123,7 @@ Key hardening gates include exact/known-date fixtures for the six final completi
 A release is certifiable only when all of the following pass on the exact merged `main` commit:
 
 1. PHP and JavaScript syntax.
-2. 292-route manifest validation.
+2. 304-route manifest validation.
 3. SEO/content/accessibility/performance release audit.
 4. Full indexable-route render coverage with no placeholder/shell renderer.
 5. Production certification counts and provenance.
@@ -143,4 +143,4 @@ The former 99-route shell queue is complete. All mapped product routes now have 
 5. **Secondary Jyotish calculators** — Prashna, Pancha Pakshi, gemstone/Rudraksha traditional references, Namakarana initials, Sahasra Chandrodaya, Vedic Time, Shraddha Tithi and deterministic Prashnavali context.
 6. **Astronomy reference** — declination parallels/contra-parallels, geocentric ecliptic crossings, six Indian Ritus, and sidereal/tropical zodiac reference tables.
 
-The final completion contract is listed in `config/completion.php`. CI requires all 99 former shell routes to be present in `config/live.php`, backed by their family engine files and regression fixtures. The route contract remains **292**, with **292 indexable routes and zero mapped noindex shells**.
+The final completion contract is listed in `config/completion.php`. CI requires all 99 former shell routes to be present in `config/live.php`, backed by their family engine files and regression fixtures. The route contract is now **304**, with **304 indexable routes and zero mapped noindex shells**. The additional 12 routes are regional daily Panchang views backed by the existing regional adapters and verified daily Panchang engine.
