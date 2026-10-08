@@ -17,9 +17,9 @@ $live = tithika_live_slugs();
 $indexable = array_values(array_filter($flat, 'tithika_is_indexable_page'));
 $noindex = array_values(array_filter($flat, fn($p) => !tithika_is_indexable_page($p)));
 
-certify(count($flat) === 292, 'route contract must remain 292');
-certify(count($live) === 229, 'verified live route count must be 229');
-certify(count($indexable) === 292, 'production indexable route count must be 292');
+certify(count($flat) === 304, 'route contract must remain 304');
+certify(count($live) === 241, 'verified live route count must be 241');
+certify(count($indexable) === 304, 'production indexable route count must be 304');
 certify(count($noindex) === 0, 'mapped noindex route count must be zero');
 
 $completion = require dirname(__DIR__) . '/config/completion.php';
