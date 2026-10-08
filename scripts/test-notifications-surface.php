@@ -39,6 +39,8 @@ notify_ok(str_contains($calendar,'BEGIN:VEVENT'),'ICS event emission missing');
 notify_ok(str_contains($calendar,'python/notification_agenda.py'),'ICS feed does not reuse notification agenda engine');
 notify_ok(str_contains($calendar,'DTSTART;VALUE=DATE'),'all-day ICS support missing');
 notify_ok(str_contains($calendar,'DTSTART:'),'timed ICS support missing');
+notify_ok(str_contains($calendar,'$defaultDate='),'calendar feed is not rolling from local current date');
+notify_ok(!str_contains($client,"searchParams.set('date'"),'subscription feed URL must not freeze the current date');
 
 $api=(string)file_get_contents(dirname(__DIR__).'/api.php');
 notify_ok(str_contains($api,"$action === 'notification-agenda'"),'notification agenda API route missing');
