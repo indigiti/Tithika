@@ -20,6 +20,8 @@ RewriteRule ^ - [L]
 # Standalone product surfaces.
 RewriteRule ^intelligence/?$ intelligence.php [L,QSA]
 RewriteRule ^settings/?$ settings.php [L,QSA]
+RewriteRule ^notifications/?$ notifications.php [L,QSA]
+RewriteRule ^calendar\.ics$ calendar.php [L,QSA]
 
 # Canonical live tool.
 RewriteRule ^muhurat/choghadiya/?$ choghadiya.php [L,QSA]

@@ -79,6 +79,14 @@ tithika_render_header(tithika_t('settings.title'));
         </div>
       </div>
     </article>
+
+    <article class="tk-settings-card span-2">
+      <header><span><?= htmlspecialchars(tithika_t('settings.notifications')) ?></span><h2><?= htmlspecialchars(tithika_t('settings.notifications_title')) ?></h2></header>
+      <p class="tk-settings-helper"><?= htmlspecialchars(tithika_t('settings.notifications_copy')) ?></p>
+      <div class="tk-settings-actions">
+        <a class="primary" href="<?= htmlspecialchars(tithika_url('notifications/')) ?>"><?= htmlspecialchars(tithika_t('settings.manage_notifications')) ?></a>
+      </div>
+    </article>
   </div>
 
   <div class="tk-settings-note">

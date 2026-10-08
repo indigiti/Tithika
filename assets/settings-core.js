@@ -1,6 +1,8 @@
 (() => {
   'use strict';
   const KEY='tithika.settings.v1';
+  const notificationDefaults=['ekadashi','purnima','amavasya','sankashti','pradosh','shivaratri','sankranti','festivals','transit','retrograde'];
+  const notificationAllowed=new Set([...notificationDefaults,'solar']);
   const defaults={
     schema:1,
     theme:'system',
@@ -9,6 +11,8 @@
     tradition:'smarta',
     language:'en',
     numerals:'latin',
+    notificationCategories:[...notificationDefaults],
+    onsiteAlerts:false,
     defaultLocation:null
   };
   const allowed={
@@ -25,6 +29,11 @@
     for(const key of Object.keys(allowed)){
       if(allowed[key].has(String(raw[key]??'')))out[key]=String(raw[key]);
     }
+    if(Array.isArray(raw.notificationCategories)){
+      const selected=[...new Set(raw.notificationCategories.map(v=>String(v).toLowerCase()).filter(v=>notificationAllowed.has(v)))];
+      out.notificationCategories=selected.length?selected:[...notificationDefaults];
+    }
+    out.onsiteAlerts=raw.onsiteAlerts===true;
     const loc=raw.defaultLocation;
     if(loc&&Number.isFinite(Number(loc.lat))&&Number.isFinite(Number(loc.lon))&&typeof loc.city==='string'&&typeof loc.timezone==='string'){
       out.defaultLocation={
