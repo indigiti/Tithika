@@ -317,6 +317,7 @@ window.TITHIKA_I18N = <?= json_encode(tithika_client_messages(), JSON_UNESCAPED_
 </script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/tithika-site.js')) ?>" defer></script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/home-dashboard.js')) ?>" defer></script>
+<script src="<?= htmlspecialchars(tithika_asset_url('assets/notifications.js')) ?>" defer></script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/settings.js')) ?>" defer></script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/kundali-workspace.js')) ?>" defer></script>
 </body>
