@@ -759,6 +759,41 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         <?php endif; ?>
         <div id="tkUtilityLoading" class="tk-panchang-loading">Calculating Panchang utility…</div>
         <div id="tkUtilityResult" class="tk-observance-list"></div>
+      <?php elseif (preg_match('~^panchang/(hindi|tamil|telugu|kannada|malayalam|gujarati|marathi|bengali|odia|nepali|iskcon|assamese)/daily$~', $page['slug'])):
+        $regionalParent = preg_replace('~/daily$~', '', $page['slug']);
+      ?>
+        <div class="tk-panchang-live-head">
+          <div>
+            <span class="tk-card-tag">Regional day Panchang</span>
+            <h3 id="tkRegionalDailyTitle"><?= htmlspecialchars($page['title']) ?></h3>
+            <p id="tkRegionalDailyLead">Combining the selected regional calendar convention with Tithika's verified daily Panchang state.</p>
+          </div>
+          <div class="tk-panchang-engine" id="tkRegionalDailyBasis">Regional profile · Lahiri</div>
+        </div>
+        <div id="tkRegionalDailyLoading" class="tk-panchang-loading">Building regional day Panchang…</div>
+        <div class="tk-daily-primary-grid tk-regional-daily-grid">
+          <article><small>Regional date</small><b id="tkRegionalDailyDate">—</b><span id="tkRegionalDailyEra">—</span></article>
+          <article><small>Tithi</small><b id="tkRegionalDailyTithi">—</b><span id="tkRegionalDailyPaksha">—</span></article>
+          <article><small>Nakshatra</small><b id="tkRegionalDailyNakshatra">—</b><span id="tkRegionalDailyMoon">—</span></article>
+          <article><small>Yoga · Karana</small><b id="tkRegionalDailyYoga">—</b><span id="tkRegionalDailyKarana">—</span></article>
+        </div>
+        <div class="tk-daily-solar">
+          <span><small>Sunrise</small><b id="tkRegionalDailySunrise">—</b></span>
+          <span><small>Sunset</small><b id="tkRegionalDailySunset">—</b></span>
+          <span><small>Moonrise</small><b id="tkRegionalDailyMoonrise">—</b></span>
+        </div>
+        <div class="tk-daily-strip tk-regional-daily-windows">
+          <article class="tk-now-card">
+            <div class="tk-now-icon">◐</div><div><small>Rahu Kaal</small><h2 id="tkRegionalDailyRahu">—</h2><p>Local blocked-period reference</p></div>
+          </article>
+          <article class="tk-now-card">
+            <div class="tk-now-icon">☀</div><div><small>Abhijit Muhurat</small><h2 id="tkRegionalDailyAbhijit">—</h2><p>Local solar Muhurta window</p></div>
+          </article>
+        </div>
+        <div class="tk-daily-actions tk-regional-daily-actions">
+          <a href="<?= htmlspecialchars(tithika_pretty_url($regionalParent)) ?>">Open monthly regional Panchang</a>
+          <a href="<?= htmlspecialchars(tithika_pretty_url('panchang/daily')) ?>">Open full Dainik Panchang</a>
+        </div>
       <?php elseif (in_array($page['slug'], ['panchang/hindi','panchang/tamil','panchang/telugu','panchang/kannada','panchang/malayalam','panchang/gujarati','panchang/marathi','panchang/bengali','panchang/odia','panchang/assamese','panchang/iskcon','panchang/nepali','calendars/tamil','calendars/telugu','calendars/kannada','calendars/malayalam','calendars/gujarati','calendars/marathi','calendars/bengali','calendars/odia','calendars/assamese','calendars/iskcon','calendars/nepali','calendars/jain'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
