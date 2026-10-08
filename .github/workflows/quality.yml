@@ -78,6 +78,9 @@ jobs:
       - name: Localization regression fixture
         run: php scripts/test-localization.php
 
+      - name: Devotion corpus integrity fixture
+        run: php scripts/test-devotion-corpus.php
+
       - name: Offline location resolver fixture
         run: php scripts/test-offline-location.php
 
