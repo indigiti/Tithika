@@ -19,7 +19,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import panchang
 
-ENGINE_VERSION = "0.1.0"
+ENGINE_VERSION = "0.2.0"
 DATA_PATH = os.path.join(os.path.dirname(__file__), "vendor", "nepali_bs_calendar.json")
 
 MONTHS_EN = [
@@ -102,6 +102,105 @@ def bs_to_ad(year: int, month: int, day: int) -> date:
     return start + timedelta(days=sum(MONTH_LENGTHS[year][:month - 1]) + day - 1)
 
 
+
+def calculate_day(selected: date, lat: float, lon: float, tz: ZoneInfo, hour24: bool):
+    bs = ad_to_bs(selected)
+    sunrise = panchang.rise_set(
+        selected, lat, lon, tz,
+        panchang.astronomy.Body.Sun,
+        panchang.astronomy.Direction.Rise,
+    )
+    sunset = panchang.rise_set(
+        selected, lat, lon, tz,
+        panchang.astronomy.Body.Sun,
+        panchang.astronomy.Direction.Set,
+    )
+    next_sunrise = panchang.rise_set(
+        selected + timedelta(days=1), lat, lon, tz,
+        panchang.astronomy.Body.Sun,
+        panchang.astronomy.Direction.Rise,
+    )
+    if not sunrise or not sunset or not next_sunrise:
+        raise ValueError("Sunrise/sunset unavailable for this latitude/date")
+
+    state = panchang.state_at(sunrise)
+    moonrise = panchang.rise_set(
+        selected, lat, lon, tz,
+        panchang.astronomy.Body.Moon,
+        panchang.astronomy.Direction.Rise,
+    )
+    moonset = panchang.rise_set(
+        selected, lat, lon, tz,
+        panchang.astronomy.Body.Moon,
+        panchang.astronomy.Direction.Set,
+    )
+    muhurtas = panchang.daily_muhurtas(
+        selected, sunrise, sunset, next_sunrise,
+        lat, lon, tz, hour24,
+    )
+    tithi_end = panchang.find_transition(
+        sunrise, next_sunrise, "tithi_id", state["tithi_id"]
+    )
+    nakshatra_end = panchang.find_transition(
+        sunrise, next_sunrise, "nakshatra_id", state["nakshatra_id"]
+    )
+    yoga_end = panchang.find_transition(
+        sunrise, next_sunrise, "yoga_id", state["yoga_id"]
+    )
+    karana_end = panchang.find_transition(
+        sunrise, next_sunrise, "karana_id", state["karana_id"]
+    )
+
+    return {
+        "date": selected.isoformat(),
+        "weekday": selected.strftime("%A"),
+        "available": True,
+        "sunrise": sunrise.isoformat(),
+        "sunrise_label": panchang.fmt(sunrise, hour24),
+        "sunset": sunset.isoformat(),
+        "sunset_label": panchang.fmt(sunset, hour24),
+        "moonrise": moonrise.isoformat() if moonrise else None,
+        "moonrise_label": panchang.fmt(moonrise, hour24),
+        "moonset": moonset.isoformat() if moonset else None,
+        "moonset_label": panchang.fmt(moonset, hour24),
+        "tithi": state["tithi"],
+        "tithi_number": state["tithi_number"],
+        "paksha": state["paksha"],
+        "tithi_end": tithi_end.isoformat() if tithi_end else None,
+        "tithi_end_label": (
+            panchang.transition_label(tithi_end, selected, hour24)
+            if tithi_end else None
+        ),
+        "nakshatra": state["nakshatra"],
+        "nakshatra_pada": state["nakshatra_pada"],
+        "nakshatra_end": nakshatra_end.isoformat() if nakshatra_end else None,
+        "nakshatra_end_label": (
+            panchang.transition_label(nakshatra_end, selected, hour24)
+            if nakshatra_end else None
+        ),
+        "yoga": state["yoga"],
+        "yoga_end_label": (
+            panchang.transition_label(yoga_end, selected, hour24)
+            if yoga_end else None
+        ),
+        "karana": state["karana"],
+        "karana_end_label": (
+            panchang.transition_label(karana_end, selected, hour24)
+            if karana_end else None
+        ),
+        "moon_rashi": state["moon_rashi"],
+        "sun_rashi": state["sun_rashi"],
+        "sun_nakshatra": state["sun_nakshatra"],
+        "regional_month": bs["month_name"],
+        "regional_month_native": bs["month_name_nepali"],
+        "regional_day": bs["day"],
+        "regional_year": bs["year"],
+        "regional_date_native": bs["date_nepali"],
+        "calendar_basis": "bikram-sambat-civil",
+        "data_quality": bs["data_quality"],
+        "muhurtas": muhurtas,
+    }
+
 def calculate_month(selected: date, lat: float, lon: float, tz: ZoneInfo, hour24: bool):
     _, count = calendar.monthrange(selected.year, selected.month)
     rows = []
@@ -168,12 +267,22 @@ def main():
         "%Y-%m-%d",
     ).date()
     hour24 = bool(payload.get("hour24", False))
-    rows = calculate_month(selected, lat, lon, tz, hour24)
+    view = str(payload.get("view") or "month").lower()
+    if view not in ("day", "month"):
+        raise ValueError("Unsupported Nepali calendar view")
+    rows = calculate_month(selected, lat, lon, tz, hour24) if view == "month" else []
+    day = calculate_day(selected, lat, lon, tz, hour24) if view == "day" else None
 
-    qualities = sorted({row.get("data_quality") for row in rows if row.get("data_quality")})
+    qualities = sorted({
+        row.get("data_quality")
+        for row in (rows + ([day] if day else []))
+        if row and row.get("data_quality")
+    })
     print(json.dumps({
         "ok": True,
         "variant": "nepali",
+        "view": view,
+        "date": selected.isoformat(),
         "year": selected.year,
         "month": selected.month,
         "month_name": selected.strftime("%B"),
@@ -194,6 +303,7 @@ def main():
             "lon": lon,
             "timezone": timezone_name,
         },
+        "day": day,
         "days": rows,
         "note": (
             "Bikram Sambat civil dates use a bundled offline month-length table. "

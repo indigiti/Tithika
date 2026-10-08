@@ -22,7 +22,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import panchang
 import sankranti
 
-ENGINE_VERSION = "0.1.0"
+ENGINE_VERSION = "0.2.0"
 
 SOLAR_MONTHS = {
     "tamil": [
@@ -207,6 +207,110 @@ def lunar_day_row(variant, sunrise, state):
     }
 
 
+
+def calculate_day(variant, selected, lat, lon, tz, hour24):
+    sunrise = panchang.rise_set(
+        selected, lat, lon, tz,
+        panchang.astronomy.Body.Sun,
+        panchang.astronomy.Direction.Rise,
+    )
+    sunset = panchang.rise_set(
+        selected, lat, lon, tz,
+        panchang.astronomy.Body.Sun,
+        panchang.astronomy.Direction.Set,
+    )
+    next_sunrise = panchang.rise_set(
+        selected + timedelta(days=1), lat, lon, tz,
+        panchang.astronomy.Body.Sun,
+        panchang.astronomy.Direction.Rise,
+    )
+    if not sunrise or not sunset or not next_sunrise:
+        raise ValueError("Sunrise/sunset unavailable for this latitude/date")
+
+    state = panchang.state_at(sunrise)
+    ingresses = (
+        ingress_index(selected.year, lat, lon, tz, hour24)
+        if variant in SOLAR_MONTHS else []
+    )
+    regional = (
+        solar_day_row(
+            variant, selected, sunrise, state, ingresses, lat, lon, tz
+        )
+        if variant in SOLAR_MONTHS
+        else lunar_day_row(variant, sunrise, state)
+    )
+
+    moonrise = panchang.rise_set(
+        selected, lat, lon, tz,
+        panchang.astronomy.Body.Moon,
+        panchang.astronomy.Direction.Rise,
+    )
+    moonset = panchang.rise_set(
+        selected, lat, lon, tz,
+        panchang.astronomy.Body.Moon,
+        panchang.astronomy.Direction.Set,
+    )
+    muhurtas = panchang.daily_muhurtas(
+        selected, sunrise, sunset, next_sunrise,
+        lat, lon, tz, hour24,
+    )
+    tithi_end = panchang.find_transition(
+        sunrise, next_sunrise, "tithi_id", state["tithi_id"]
+    )
+    nakshatra_end = panchang.find_transition(
+        sunrise, next_sunrise, "nakshatra_id", state["nakshatra_id"]
+    )
+    yoga_end = panchang.find_transition(
+        sunrise, next_sunrise, "yoga_id", state["yoga_id"]
+    )
+    karana_end = panchang.find_transition(
+        sunrise, next_sunrise, "karana_id", state["karana_id"]
+    )
+
+    return {
+        "date": selected.isoformat(),
+        "weekday": selected.strftime("%A"),
+        "available": True,
+        "sunrise": sunrise.isoformat(),
+        "sunrise_label": panchang.fmt(sunrise, hour24),
+        "sunset": sunset.isoformat(),
+        "sunset_label": panchang.fmt(sunset, hour24),
+        "moonrise": moonrise.isoformat() if moonrise else None,
+        "moonrise_label": panchang.fmt(moonrise, hour24),
+        "moonset": moonset.isoformat() if moonset else None,
+        "moonset_label": panchang.fmt(moonset, hour24),
+        "tithi": state["tithi"],
+        "tithi_number": state["tithi_number"],
+        "paksha": state["paksha"],
+        "tithi_end": tithi_end.isoformat() if tithi_end else None,
+        "tithi_end_label": (
+            panchang.transition_label(tithi_end, selected, hour24)
+            if tithi_end else None
+        ),
+        "nakshatra": state["nakshatra"],
+        "nakshatra_pada": state["nakshatra_pada"],
+        "nakshatra_end": nakshatra_end.isoformat() if nakshatra_end else None,
+        "nakshatra_end_label": (
+            panchang.transition_label(nakshatra_end, selected, hour24)
+            if nakshatra_end else None
+        ),
+        "yoga": state["yoga"],
+        "yoga_end_label": (
+            panchang.transition_label(yoga_end, selected, hour24)
+            if yoga_end else None
+        ),
+        "karana": state["karana"],
+        "karana_end_label": (
+            panchang.transition_label(karana_end, selected, hour24)
+            if karana_end else None
+        ),
+        "moon_rashi": state["moon_rashi"],
+        "sun_rashi": state["sun_rashi"],
+        "sun_nakshatra": state["sun_nakshatra"],
+        "muhurtas": muhurtas,
+        **regional,
+    }
+
 def calculate_month(variant, selected, lat, lon, tz, hour24):
     _, count = calendar.monthrange(selected.year, selected.month)
     dates = [selected.replace(day=x) for x in range(1, count + 1)]
@@ -293,9 +397,16 @@ def main():
         "%Y-%m-%d",
     ).date()
     hour24 = bool(payload.get("hour24", False))
+    view = str(payload.get("view") or "month").lower()
+    if view not in ("day", "month"):
+        raise ValueError("Unsupported regional calendar view")
+
     rows = calculate_month(
         variant, selected, lat, lon, tz, hour24
-    )
+    ) if view == "month" else None
+    day = calculate_day(
+        variant, selected, lat, lon, tz, hour24
+    ) if view == "day" else None
 
     basis = (
         "nirayana-solar" if variant in SOLAR_MONTHS
@@ -304,6 +415,8 @@ def main():
     print(json.dumps({
         "ok": True,
         "variant": variant,
+        "view": view,
+        "date": selected.isoformat(),
         "year": selected.year,
         "month": selected.month,
         "month_name": selected.strftime("%B"),
@@ -323,7 +436,8 @@ def main():
             "lon": lon,
             "timezone": timezone_name,
         },
-        "days": rows,
+        "day": day,
+        "days": rows or [],
         "note": (
             "Regional labels share one Lahiri astronomy core while preserving "
             "the calendar's solar, Amanta or Purnimanta month convention."
