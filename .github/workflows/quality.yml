@@ -211,6 +211,9 @@ jobs:
       - name: Regional calendar regression fixture
         run: python scripts/test-regional-calendar.py
 
+      - name: Regional daily Panchang surface fixture
+        run: php scripts/test-regional-daily-panchang.php
+
       - name: Nepali Bikram Sambat regression fixture
         run: python scripts/test-nepali-calendar.py
 

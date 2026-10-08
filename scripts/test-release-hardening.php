@@ -13,8 +13,8 @@ function ok(bool $value, string $message): void {
 }
 
 $flat = tithika_flat_routes();
-ok(tithika_page_count() === 292, 'route count must remain 292');
-ok(count(tithika_live_slugs()) === 229, 'verified live route registry drifted');
+ok(tithika_page_count() === 304, 'route count must remain 304');
+ok(count(tithika_live_slugs()) === 241, 'verified live route registry drifted');
 ok(count(array_unique(tithika_live_slugs())) === count(tithika_live_slugs()), 'duplicate live route');
 foreach (tithika_live_slugs() as $slug) {
     ok(isset($flat[$slug]), "live slug missing from route map: {$slug}");
@@ -30,7 +30,7 @@ foreach ($flat as $page) {
 }
 ok($editorialCount >= 60, 'editorial coverage unexpectedly small');
 ok(tithika_indexable_count() === count(array_filter($flat, 'tithika_is_indexable_page')), 'indexable count mismatch');
-ok(tithika_indexable_count() === 292, 'all mapped routes must now be production-quality indexable');
+ok(tithika_indexable_count() === 304, 'all mapped routes must now be production-quality indexable');
 
 foreach ($flat as $page) {
     if (!tithika_is_indexable_page($page)) continue;

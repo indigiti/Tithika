@@ -145,6 +145,12 @@
     'calendars/bengali':'bengali','calendars/odia':'odia','calendars/assamese':'assamese',
     'calendars/iskcon':'iskcon','calendars/nepali':'nepali','calendars/jain':'jain'
   };
+  const regionalDailyVariants={
+    'panchang/hindi/daily':'hindi','panchang/tamil/daily':'tamil','panchang/telugu/daily':'telugu',
+    'panchang/kannada/daily':'kannada','panchang/malayalam/daily':'malayalam','panchang/gujarati/daily':'gujarati',
+    'panchang/marathi/daily':'marathi','panchang/bengali/daily':'bengali','panchang/odia/daily':'odia',
+    'panchang/nepali/daily':'nepali','panchang/iskcon/daily':'iskcon','panchang/assamese/daily':'assamese'
+  };
   const RASHIS=['Mesha','Vrishabha','Mithuna','Karka','Simha','Kanya','Tula','Vrishchika','Dhanu','Makara','Kumbha','Meena'];
   const browserTimezone=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata';
   const productSettings=window.TithikaSettings?.get?.()||{};
@@ -272,6 +278,7 @@
       if(muhuratReuseModes[pageSlug]) await calculateMuhuratReuse();
       if(utilityModes[pageSlug]) await calculatePanchangUtility();
       if(panchangReuseModes[pageSlug]) await calculatePanchangReuse();
+      if(regionalDailyVariants[pageSlug]) await calculateRegionalDaily();
       if(regionalVariants[pageSlug]) await calculateRegionalCalendar();
       if($('#tkPhaseSections')) await calculatePhaseCompletion();
     }catch(e){toast(e.message||'Unable to load location context')}
@@ -1843,6 +1850,63 @@
         }).join(''):'<div class="tk-panchang-empty">No matching result for the selected context.</div>'}
       </section>`;
     }).join(''):'<div class="tk-panchang-empty">No completion data available.</div>';
+  }
+
+  async function calculateRegionalDaily(){
+    const loading=$('#tkRegionalDailyLoading');
+    if(loading){loading.hidden=false;loading.textContent='Building regional day Panchang…'}
+    try{
+      const variant=regionalDailyVariants[pageSlug],p=payload();
+      const [regionalResponse,panchangResponse]=await Promise.all([
+        fetch(`${base}api.php?action=regional-calendar&variant=${encodeURIComponent(variant)}`,{
+          method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+        }),
+        fetch(`${base}api.php?action=panchang`,{
+          method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+        })
+      ]);
+      const [regional,day]=await Promise.all([regionalResponse.json(),panchangResponse.json()]);
+      if(!regionalResponse.ok||!regional.ok)throw new Error(regional.error||'Regional calendar unavailable');
+      if(!panchangResponse.ok||!day.ok)throw new Error(day.error||'Daily Panchang unavailable');
+      const row=(regional.days||[]).find(item=>item.date===p.date);
+      if(!row||!row.available)throw new Error('Regional date is unavailable for the selected day');
+      if(loading)loading.hidden=true;
+      renderRegionalDaily(regional,row,day,variant);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Regional day Panchang unavailable'}
+      toast(e.message||'Regional day Panchang unavailable');
+    }
+  }
+
+  function renderRegionalDaily(regional,row,day,variant){
+    const set=(id,value)=>{const el=$(id);if(el)el.textContent=value??'—'};
+    const state=day.current_state||day.sunrise_state||{};
+    const title=variant==='iskcon'?'ISKCON':variant.charAt(0).toUpperCase()+variant.slice(1);
+    set('#tkRegionalDailyTitle',`${title} · ${day.date_label||row.date}`);
+    set('#tkRegionalDailyBasis',`${regional.engine?.basis||row.calendar_basis||'regional'} · Lahiri`);
+    const regionalDate=row.regional_date_native||
+      [row.regional_month,row.regional_day].filter(v=>v!==null&&v!==undefined&&v!=='').join(' ')||
+      row.date;
+    const year=row.regional_year? ` · ${row.regional_year}`:'';
+    set('#tkRegionalDailyDate',regionalDate+year);
+    const era=row.era&&typeof row.era==='object'?[row.era.name,row.era.year].filter(Boolean).join(' '):'Regional sunrise convention';
+    set('#tkRegionalDailyEra',era);
+    set('#tkRegionalDailyTithi',state.tithi||row.tithi||'—');
+    set('#tkRegionalDailyPaksha',state.paksha||row.paksha||'—');
+    set('#tkRegionalDailyNakshatra',state.nakshatra||row.nakshatra||'—');
+    set('#tkRegionalDailyMoon',`Moon ${day.moon_rashi||row.moon_rashi||'—'}`);
+    set('#tkRegionalDailyYoga',state.yoga||'—');
+    set('#tkRegionalDailyKarana',state.karana||'—');
+    set('#tkRegionalDailySunrise',day.sunrise_label||row.sunrise_label||'—');
+    set('#tkRegionalDailySunset',day.sunset_label||row.sunset_label||'—');
+    set('#tkRegionalDailyMoonrise',day.moonrise_label||'—');
+    const rahu=day.muhurtas?.rahu_kaal;
+    const abhijit=day.muhurtas?.abhijit;
+    set('#tkRegionalDailyRahu',rahu?[rahu.start_label,rahu.end_label].filter(Boolean).join(' – '):'—');
+    set('#tkRegionalDailyAbhijit',abhijit?[abhijit.start_label,abhijit.end_label].filter(Boolean).join(' – '):'—');
+    set('#tkRegionalDailyLead',
+      `${regional.note||'Regional convention'} Tithi, Nakshatra, Yoga, Karana and local solar windows come from the shared verified daily Panchang engine.`
+    );
   }
 
   async function calculateRegionalCalendar(){
