@@ -36,9 +36,11 @@
     out.onsiteAlerts=raw.onsiteAlerts===true;
     const loc=raw.defaultLocation;
     if(loc&&Number.isFinite(Number(loc.lat))&&Number.isFinite(Number(loc.lon))&&typeof loc.city==='string'&&typeof loc.timezone==='string'){
+      const elevation=Number(loc.elevation??0);
       out.defaultLocation={
         lat:Number(loc.lat),lon:Number(loc.lon),
-        city:loc.city.slice(0,120),timezone:loc.timezone.slice(0,80)
+        city:loc.city.slice(0,120),timezone:loc.timezone.slice(0,80),
+        elevation:Number.isFinite(elevation)?Math.max(-500,Math.min(9000,elevation)):0
       };
     }
     return out;
@@ -65,10 +67,12 @@
   }
   function saveLocation(location){
     if(!location)return set({defaultLocation:null});
+    const elevation=Number(location.elevation??0);
     return set({defaultLocation:{
       lat:Number(location.lat),lon:Number(location.lon),
       city:String(location.city||'Saved location').slice(0,120),
-      timezone:String(location.timezone||'Asia/Kolkata').slice(0,80)
+      timezone:String(location.timezone||'Asia/Kolkata').slice(0,80),
+      elevation:Number.isFinite(elevation)?Math.max(-500,Math.min(9000,elevation)):0
     }});
   }
   function get(){return JSON.parse(JSON.stringify(state))}

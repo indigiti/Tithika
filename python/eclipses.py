@@ -111,7 +111,7 @@ def global_solar_events(year: int, tz: ZoneInfo):
 
 
 def local_solar_events(year: int, lat: float, lon: float, tz: ZoneInfo):
-    observer = panchang.astronomy.Observer(lat, lon, 0.0)
+    observer = panchang.astronomy.Observer(lat, lon, panchang.observer_elevation())
     start = panchang.astronomy_time(datetime(year, 1, 1, tzinfo=tz))
     rows = []
     eclipse = panchang.astronomy.SearchLocalSolarEclipse(start, observer)

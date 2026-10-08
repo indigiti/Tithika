@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-import sys, json, math
-from datetime import datetime, date, timedelta, timezone
+import sys, json
+from datetime import datetime, date, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+import panchang
 
 DAY_SEQUENCES = {
     6: ["Udveg","Chara","Labh","Amrit","Kaal","Shubh","Rog","Udveg"],
@@ -32,44 +34,16 @@ TYPE_META = {
     "Rog": {"quality":"avoid","label":"Avoid","emoji":"!"},
 }
 
-def norm(v, m): return v % m
-
 def solar_event(local_date: date, lat: float, lon: float, tz: ZoneInfo, sunrise: bool):
-    n = local_date.timetuple().tm_yday
-    lng_hour = lon / 15.0
-    t = n + (((6 if sunrise else 18) - lng_hour) / 24.0)
-    m = (0.9856 * t) - 3.289
-    l = m + (1.916 * math.sin(math.radians(m))) + (0.020 * math.sin(math.radians(2*m))) + 282.634
-    l = norm(l, 360)
-    ra = math.degrees(math.atan(0.91764 * math.tan(math.radians(l))))
-    ra = norm(ra, 360)
-    lq = math.floor(l / 90) * 90
-    raq = math.floor(ra / 90) * 90
-    ra = (ra + (lq - raq)) / 15.0
-    sin_dec = 0.39782 * math.sin(math.radians(l))
-    cos_dec = math.cos(math.asin(sin_dec))
-    cos_h = (math.cos(math.radians(90.833)) - (sin_dec * math.sin(math.radians(lat)))) / (cos_dec * math.cos(math.radians(lat)))
-    if cos_h > 1 or cos_h < -1:
-        return None
-    h = (360 - math.degrees(math.acos(cos_h))) if sunrise else math.degrees(math.acos(cos_h))
-    h /= 15.0
-    local_mean = h + ra - (0.06571 * t) - 6.622
-    ut_hours = norm(local_mean - lng_hour, 24)
-    h_int = int(ut_hours)
-    mins_f = (ut_hours - h_int) * 60
-    m_int = int(mins_f)
-    s_int = int(round((mins_f - m_int)*60))
-    if s_int == 60:
-        s_int = 0; m_int += 1
-    if m_int == 60:
-        m_int = 0; h_int = (h_int + 1) % 24
-    utc_dt = datetime(local_date.year, local_date.month, local_date.day, h_int, m_int, s_int, tzinfo=timezone.utc)
-    local_dt = utc_dt.astimezone(tz)
-    while local_dt.date() < local_date:
-        utc_dt += timedelta(days=1); local_dt = utc_dt.astimezone(tz)
-    while local_dt.date() > local_date:
-        utc_dt -= timedelta(days=1); local_dt = utc_dt.astimezone(tz)
-    return local_dt
+    direction = (
+        panchang.astronomy.Direction.Rise
+        if sunrise else panchang.astronomy.Direction.Set
+    )
+    return panchang.rise_set(
+        local_date, lat, lon, tz,
+        panchang.astronomy.Body.Sun,
+        direction,
+    )
 
 def fmt(dt, hour24=False):
     rounded = dt + timedelta(seconds=30)
@@ -163,7 +137,7 @@ def main():
 
     output = {
         "ok": True,
-        "location": {"city":city,"lat":lat,"lon":lon,"timezone":tz_name},
+        "location": {"city":city,"lat":lat,"lon":lon,"timezone":tz_name,"elevation_m":panchang.observer_elevation()},
         "date": d.isoformat(), "weekday": d.strftime("%A"),
         "date_label": d.strftime("%B %d, %Y").replace(" 0", " "),
         "sunrise": sunrise.isoformat(), "sunset": sunset.isoformat(), "next_sunrise": next_sunrise.isoformat(),
@@ -172,7 +146,7 @@ def main():
         "rahu_kaal": rahu,
         "next_auspicious": upcoming[0] if upcoming else None,
         "generated_at": now.isoformat(),
-        "method": "Sunrise/sunset at 90.833° solar zenith; day and night each divided into 8 equal local periods."
+        "method": "Shared Tithika Astronomy Engine rise/set observer with selected elevation; day and night each divided into 8 equal local periods."
     }
     print(json.dumps(output, ensure_ascii=False))
 

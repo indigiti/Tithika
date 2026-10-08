@@ -78,6 +78,15 @@ jobs:
       - name: Localization regression fixture
         run: php scripts/test-localization.php
 
+      - name: Offline location resolver fixture
+        run: php scripts/test-offline-location.php
+
+      - name: Offline location surface fixture
+        run: php scripts/test-offline-location-surface.php
+
+      - name: Observer elevation semantic fixture
+        run: python scripts/test-elevation.py
+
       - name: Notification Center surface fixture
         run: php scripts/test-notifications-surface.php
 

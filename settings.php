@@ -81,6 +81,21 @@ tithika_render_header(tithika_t('settings.title'));
     </article>
 
     <article class="tk-settings-card span-2">
+      <header><span><?= htmlspecialchars(tithika_t('settings.manual_location')) ?></span><h2><?= htmlspecialchars(tithika_t('settings.manual_location_title')) ?></h2></header>
+      <p class="tk-settings-helper"><?= htmlspecialchars(tithika_t('settings.manual_location_copy')) ?></p>
+      <div class="tk-settings-manual-grid">
+        <label><span><?= htmlspecialchars(tithika_t('settings.city_label')) ?></span><input id="tkManualCity" type="text" maxlength="120" autocomplete="off" placeholder="Pune, Maharashtra, India"></label>
+        <label><span><?= htmlspecialchars(tithika_t('settings.latitude')) ?></span><input id="tkManualLat" type="number" min="-90" max="90" step="0.000001" inputmode="decimal"></label>
+        <label><span><?= htmlspecialchars(tithika_t('settings.longitude')) ?></span><input id="tkManualLon" type="number" min="-180" max="180" step="0.000001" inputmode="decimal"></label>
+        <label><span><?= htmlspecialchars(tithika_t('settings.timezone')) ?></span><input id="tkManualTimezone" type="text" maxlength="80" autocomplete="off" placeholder="Asia/Kolkata"></label>
+        <label><span><?= htmlspecialchars(tithika_t('settings.elevation')) ?></span><input id="tkManualElevation" type="number" min="-500" max="9000" step="1" inputmode="decimal" value="0"></label>
+      </div>
+      <div class="tk-settings-actions tk-settings-manual-actions">
+        <button type="button" class="primary" id="tkSaveManualLocation"><?= htmlspecialchars(tithika_t('settings.save_manual')) ?></button>
+      </div>
+    </article>
+
+    <article class="tk-settings-card span-2">
       <header><span><?= htmlspecialchars(tithika_t('settings.notifications')) ?></span><h2><?= htmlspecialchars(tithika_t('settings.notifications_title')) ?></h2></header>
       <p class="tk-settings-helper"><?= htmlspecialchars(tithika_t('settings.notifications_copy')) ?></p>
       <div class="tk-settings-actions">
