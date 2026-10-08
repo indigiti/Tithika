@@ -9,6 +9,84 @@ function out(array $data, int $status = 200, bool $cacheable = false): never {
     exit;
 }
 
+function tithikaLocationIndex(): array {
+    static $rows;
+    if ($rows !== null) return $rows;
+    $path = __DIR__ . '/config/location-index.php';
+    $rows = is_file($path) ? require $path : [];
+    return is_array($rows) ? $rows : [];
+}
+
+function tithikaHaversineKm(float $lat1, float $lon1, float $lat2, float $lon2): float {
+    $r = 6371.0088;
+    $p1 = deg2rad($lat1); $p2 = deg2rad($lat2);
+    $dp = deg2rad($lat2 - $lat1);
+    $dl = deg2rad($lon2 - $lon1);
+    $a = sin($dp/2)**2 + cos($p1) * cos($p2) * sin($dl/2)**2;
+    return 2 * $r * asin(min(1.0, sqrt($a)));
+}
+
+function tithikaLocationLabel(array $row): string {
+    return implode(', ', array_values(array_filter([
+        (string)($row['city'] ?? ''),
+        (string)($row['state'] ?? ''),
+        (string)($row['country'] ?? ''),
+    ])));
+}
+
+function tithikaLocalSearch(string $query, int $limit = 6): array {
+    $needle = mb_strtolower(trim($query));
+    if ($needle === '') return [];
+    $scored = [];
+    foreach (tithikaLocationIndex() as $row) {
+        $label = tithikaLocationLabel($row);
+        $hay = mb_strtolower($label);
+        $city = mb_strtolower((string)($row['city'] ?? ''));
+        $score = null;
+        if ($city === $needle) $score = 0;
+        elseif (str_starts_with($city, $needle)) $score = 1;
+        elseif (str_contains($city, $needle)) $score = 2;
+        elseif (str_contains($hay, $needle)) $score = 3;
+        if ($score === null) continue;
+        $scored[] = [$score, strlen($label), $row];
+    }
+    usort($scored, static fn($a,$b) => [$a[0],$a[1]] <=> [$b[0],$b[1]]);
+    $out = [];
+    foreach (array_slice($scored, 0, max(1,$limit)) as $item) {
+        $row = $item[2];
+        $out[] = [
+            'label' => tithikaLocationLabel($row),
+            'display_name' => tithikaLocationLabel($row),
+            'lat' => (float)$row['lat'],
+            'lon' => (float)$row['lon'],
+            'timezone' => (string)$row['timezone'],
+            'elevation' => isset($row['elevation']) ? (float)$row['elevation'] : null,
+            'source' => 'offline-index',
+        ];
+    }
+    return $out;
+}
+
+function tithikaNearestLocal(float $lat, float $lon): ?array {
+    $best = null; $bestKm = INF;
+    foreach (tithikaLocationIndex() as $row) {
+        $km = tithikaHaversineKm($lat,$lon,(float)$row['lat'],(float)$row['lon']);
+        if ($km < $bestKm) { $bestKm = $km; $best = $row; }
+    }
+    if (!$best) return null;
+    $best['distance_km'] = $bestKm;
+    return $best;
+}
+
+function tithikaRegionalTimezone(float $lat, float $lon): ?string {
+    if ($lat >= 6.0 && $lat <= 37.5 && $lon >= 68.0 && $lon <= 98.0) return 'Asia/Kolkata';
+    if ($lat >= 26.0 && $lat <= 31.0 && $lon >= 80.0 && $lon <= 89.0) return 'Asia/Kathmandu';
+    if ($lat >= 5.5 && $lat <= 10.2 && $lon >= 79.0 && $lon <= 82.2) return 'Asia/Colombo';
+    if ($lat >= 20.5 && $lat <= 26.8 && $lon >= 88.0 && $lon <= 92.8) return 'Asia/Dhaka';
+    if ($lat >= 23.0 && $lat <= 37.2 && $lon >= 60.0 && $lon <= 78.5) return 'Asia/Karachi';
+    return null;
+}
+
 function curlJson(string $url): array {
     if (!function_exists('curl_init')) throw new RuntimeException('PHP cURL extension is required for city lookup.');
     $ch = curl_init($url);
@@ -41,6 +119,13 @@ function readPayload(): array {
     if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
         out(['ok'=>false,'error'=>'Invalid coordinates'], 422);
     }
+    if (array_key_exists('elevation', $payload)) {
+        $elevation = filter_var($payload['elevation'], FILTER_VALIDATE_FLOAT);
+        if ($elevation === false || $elevation < -500 || $elevation > 9000) {
+            out(['ok'=>false,'error'=>'Invalid elevation'], 422);
+        }
+        $payload['elevation'] = (float)$elevation;
+    }
     return $payload;
 }
 
@@ -49,7 +134,12 @@ function runPythonEngine(string $relativeScript, array $payload): array {
     if (!is_file($script)) throw new RuntimeException('Calculation engine not found');
     $python = getenv('PYTHON_BIN') ?: 'python3';
     $desc = [0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']];
-    $proc = proc_open([$python, $script], $desc, $pipes, __DIR__, null, ['bypass_shell'=>true]);
+    $env = getenv();
+    if (!is_array($env)) $env = [];
+    $elevation = (float)($payload['elevation'] ?? 0.0);
+    $elevation = max(-500.0, min(9000.0, $elevation));
+    $env['TITHIKA_ELEVATION_METERS'] = (string)$elevation;
+    $proc = proc_open([$python, $script], $desc, $pipes, __DIR__, $env, ['bypass_shell'=>true]);
     if (!is_resource($proc)) throw new RuntimeException('Unable to start Python calculation engine');
     fwrite($pipes[0], json_encode($payload, JSON_UNESCAPED_UNICODE));
     fclose($pipes[0]);
@@ -74,12 +164,27 @@ try {
         $lat = filter_input(INPUT_GET, 'lat', FILTER_VALIDATE_FLOAT);
         $lon = filter_input(INPUT_GET, 'lon', FILTER_VALIDATE_FLOAT);
         if ($lat === false || $lon === false || $lat === null || $lon === null) out(['ok'=>false,'error'=>'Invalid coordinates'], 422);
-        $url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=1&lat=' . rawurlencode((string)$lat) . '&lon=' . rawurlencode((string)$lon);
-        $r = curlJson($url); $a = $r['address'] ?? [];
-        $city = $a['city'] ?? $a['town'] ?? $a['village'] ?? $a['municipality'] ?? $a['county'] ?? 'Current location';
-        $state = $a['state'] ?? ''; $country = $a['country'] ?? '';
-        $label = implode(', ', array_values(array_filter([$city, $state, $country])));
-        out(['ok'=>true,'label'=>$label ?: ($r['display_name'] ?? 'Current location')]);
+        $nearest = tithikaNearestLocal((float)$lat,(float)$lon);
+        if ($nearest && (float)$nearest['distance_km'] <= 80.0) {
+            out([
+                'ok'=>true,
+                'label'=>tithikaLocationLabel($nearest),
+                'timezone'=>(string)$nearest['timezone'],
+                'elevation'=>$nearest['elevation'] ?? null,
+                'source'=>'offline-index',
+                'distance_km'=>round((float)$nearest['distance_km'],1),
+            ], 200, true);
+        }
+        try {
+            $url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=1&lat=' . rawurlencode((string)$lat) . '&lon=' . rawurlencode((string)$lon);
+            $r = curlJson($url); $a = $r['address'] ?? [];
+            $city = $a['city'] ?? $a['town'] ?? $a['village'] ?? $a['municipality'] ?? $a['county'] ?? 'Current location';
+            $state = $a['state'] ?? ''; $country = $a['country'] ?? '';
+            $label = implode(', ', array_values(array_filter([$city, $state, $country])));
+            out(['ok'=>true,'label'=>$label ?: ($r['display_name'] ?? 'Current location'),'source'=>'nominatim']);
+        } catch (Throwable $e) {
+            out(['ok'=>true,'label'=>'Current location','source'=>'coordinate-only']);
+        }
     }
 
     if ($action === 'timezone') {
@@ -88,32 +193,63 @@ try {
         if ($lat === false || $lon === false || $lat === null || $lon === null) {
             out(['ok'=>false,'error'=>'Invalid coordinates'], 422);
         }
-        $url = 'https://timeapi.io/api/timezone/coordinate?latitude=' . rawurlencode((string)$lat) . '&longitude=' . rawurlencode((string)$lon);
-        $r = curlJson($url);
-        $timezone = trim((string)($r['timeZone'] ?? $r['timezone'] ?? ''));
-        if ($timezone === '' || !in_array($timezone, timezone_identifiers_list(), true)) {
-            out(['ok'=>false,'error'=>'Timezone could not be resolved'], 502);
+        $nearest = tithikaNearestLocal((float)$lat,(float)$lon);
+        if ($nearest && (float)$nearest['distance_km'] <= 250.0) {
+            out(['ok'=>true,'timezone'=>(string)$nearest['timezone'],'source'=>'offline-index'], 200, true);
         }
-        out(['ok'=>true,'timezone'=>$timezone], 200, true);
+        $regional = tithikaRegionalTimezone((float)$lat,(float)$lon);
+        if ($regional !== null) {
+            out(['ok'=>true,'timezone'=>$regional,'source'=>'offline-region'], 200, true);
+        }
+        try {
+            $url = 'https://timeapi.io/api/timezone/coordinate?latitude=' . rawurlencode((string)$lat) . '&longitude=' . rawurlencode((string)$lon);
+            $r = curlJson($url);
+            $timezone = trim((string)($r['timeZone'] ?? $r['timezone'] ?? ''));
+            if ($timezone === '' || !in_array($timezone, timezone_identifiers_list(), true)) {
+                throw new RuntimeException('Timezone could not be resolved');
+            }
+            out(['ok'=>true,'timezone'=>$timezone,'source'=>'timeapi'], 200, true);
+        } catch (Throwable $e) {
+            out(['ok'=>false,'error'=>'Timezone could not be resolved offline or online'], 502);
+        }
     }
 
     if ($action === 'search') {
         $q = trim((string)($_GET['q'] ?? ''));
         if (mb_strlen($q) < 2) out(['ok'=>true,'results'=>[]]);
-        $url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&addressdetails=1&q=' . rawurlencode($q);
-        $rows = curlJson($url); $results = [];
-        foreach ($rows as $r) {
-            $a = $r['address'] ?? [];
-            $city = $a['city'] ?? $a['town'] ?? $a['village'] ?? $a['municipality'] ?? $r['name'] ?? '';
-            $state = $a['state'] ?? ''; $country = $a['country'] ?? '';
-            $results[] = [
-                'label' => implode(', ', array_values(array_filter([$city, $state, $country]))) ?: ($r['display_name'] ?? ''),
-                'display_name' => $r['display_name'] ?? '',
-                'lat' => (float)$r['lat'],
-                'lon' => (float)$r['lon']
-            ];
+        $results = tithikaLocalSearch($q, 6);
+        if (count($results) < 6) {
+            try {
+                $url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&addressdetails=1&q=' . rawurlencode($q);
+                $rows = curlJson($url);
+                foreach ($rows as $r) {
+                    $a = $r['address'] ?? [];
+                    $city = $a['city'] ?? $a['town'] ?? $a['village'] ?? $a['municipality'] ?? $r['name'] ?? '';
+                    $state = $a['state'] ?? ''; $country = $a['country'] ?? '';
+                    $label = implode(', ', array_values(array_filter([$city, $state, $country]))) ?: ($r['display_name'] ?? '');
+                    $duplicate = false;
+                    foreach ($results as $existing) {
+                        if (abs((float)$existing['lat']-(float)$r['lat']) < 0.02 && abs((float)$existing['lon']-(float)$r['lon']) < 0.02) {
+                            $duplicate = true; break;
+                        }
+                    }
+                    if ($duplicate) continue;
+                    $results[] = [
+                        'label'=>$label,
+                        'display_name'=>$r['display_name'] ?? '',
+                        'lat'=>(float)$r['lat'],
+                        'lon'=>(float)$r['lon'],
+                        'timezone'=>null,
+                        'elevation'=>null,
+                        'source'=>'nominatim',
+                    ];
+                    if (count($results) >= 6) break;
+                }
+            } catch (Throwable $e) {
+                // Offline results remain usable when the external provider is unavailable.
+            }
         }
-        out(['ok'=>true,'results'=>$results]);
+        out(['ok'=>true,'results'=>array_slice($results,0,6),'offline'=>count(tithikaLocalSearch($q,6))>0], 200, true);
     }
 
     if ($action === 'calculate') {
