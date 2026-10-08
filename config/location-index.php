@@ -1,0 +1,70 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * Compact offline-first location index.
+ *
+ * This is intentionally not a replacement for a global gazetteer. It provides
+ * deterministic local search/timezone fallback for major Indian cities and
+ * common international hubs. External geocoding can enrich results when
+ * available, while manual coordinates/timezone remain available for any place.
+ */
+return [
+  ['city'=>'Pune','state'=>'Maharashtra','country'=>'India','lat'=>18.5204,'lon'=>73.8567,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Mumbai','state'=>'Maharashtra','country'=>'India','lat'=>19.0760,'lon'=>72.8777,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Nagpur','state'=>'Maharashtra','country'=>'India','lat'=>21.1458,'lon'=>79.0882,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Nashik','state'=>'Maharashtra','country'=>'India','lat'=>19.9975,'lon'=>73.7898,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Aurangabad','state'=>'Maharashtra','country'=>'India','lat'=>19.8762,'lon'=>75.3433,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Kolhapur','state'=>'Maharashtra','country'=>'India','lat'=>16.7050,'lon'=>74.2433,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'New Delhi','state'=>'Delhi','country'=>'India','lat'=>28.6139,'lon'=>77.2090,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Bengaluru','state'=>'Karnataka','country'=>'India','lat'=>12.9716,'lon'=>77.5946,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Mysuru','state'=>'Karnataka','country'=>'India','lat'=>12.2958,'lon'=>76.6394,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Chennai','state'=>'Tamil Nadu','country'=>'India','lat'=>13.0827,'lon'=>80.2707,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Coimbatore','state'=>'Tamil Nadu','country'=>'India','lat'=>11.0168,'lon'=>76.9558,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Madurai','state'=>'Tamil Nadu','country'=>'India','lat'=>9.9252,'lon'=>78.1198,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Hyderabad','state'=>'Telangana','country'=>'India','lat'=>17.3850,'lon'=>78.4867,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Vijayawada','state'=>'Andhra Pradesh','country'=>'India','lat'=>16.5062,'lon'=>80.6480,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Visakhapatnam','state'=>'Andhra Pradesh','country'=>'India','lat'=>17.6868,'lon'=>83.2185,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Kochi','state'=>'Kerala','country'=>'India','lat'=>9.9312,'lon'=>76.2673,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Thiruvananthapuram','state'=>'Kerala','country'=>'India','lat'=>8.5241,'lon'=>76.9366,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Kozhikode','state'=>'Kerala','country'=>'India','lat'=>11.2588,'lon'=>75.7804,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Ahmedabad','state'=>'Gujarat','country'=>'India','lat'=>23.0225,'lon'=>72.5714,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Surat','state'=>'Gujarat','country'=>'India','lat'=>21.1702,'lon'=>72.8311,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Vadodara','state'=>'Gujarat','country'=>'India','lat'=>22.3072,'lon'=>73.1812,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Jaipur','state'=>'Rajasthan','country'=>'India','lat'=>26.9124,'lon'=>75.7873,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Jodhpur','state'=>'Rajasthan','country'=>'India','lat'=>26.2389,'lon'=>73.0243,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Udaipur','state'=>'Rajasthan','country'=>'India','lat'=>24.5854,'lon'=>73.7125,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Lucknow','state'=>'Uttar Pradesh','country'=>'India','lat'=>26.8467,'lon'=>80.9462,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Varanasi','state'=>'Uttar Pradesh','country'=>'India','lat'=>25.3176,'lon'=>82.9739,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Prayagraj','state'=>'Uttar Pradesh','country'=>'India','lat'=>25.4358,'lon'=>81.8463,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Kanpur','state'=>'Uttar Pradesh','country'=>'India','lat'=>26.4499,'lon'=>80.3319,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Kolkata','state'=>'West Bengal','country'=>'India','lat'=>22.5726,'lon'=>88.3639,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Bhubaneswar','state'=>'Odisha','country'=>'India','lat'=>20.2961,'lon'=>85.8245,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Patna','state'=>'Bihar','country'=>'India','lat'=>25.5941,'lon'=>85.1376,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Ranchi','state'=>'Jharkhand','country'=>'India','lat'=>23.3441,'lon'=>85.3096,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Raipur','state'=>'Chhattisgarh','country'=>'India','lat'=>21.2514,'lon'=>81.6296,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Bhopal','state'=>'Madhya Pradesh','country'=>'India','lat'=>23.2599,'lon'=>77.4126,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Indore','state'=>'Madhya Pradesh','country'=>'India','lat'=>22.7196,'lon'=>75.8577,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Chandigarh','state'=>'Chandigarh','country'=>'India','lat'=>30.7333,'lon'=>76.7794,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Amritsar','state'=>'Punjab','country'=>'India','lat'=>31.6340,'lon'=>74.8723,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Ludhiana','state'=>'Punjab','country'=>'India','lat'=>30.9010,'lon'=>75.8573,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Dehradun','state'=>'Uttarakhand','country'=>'India','lat'=>30.3165,'lon'=>78.0322,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Shimla','state'=>'Himachal Pradesh','country'=>'India','lat'=>31.1048,'lon'=>77.1734,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Srinagar','state'=>'Jammu and Kashmir','country'=>'India','lat'=>34.0837,'lon'=>74.7973,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Jammu','state'=>'Jammu and Kashmir','country'=>'India','lat'=>32.7266,'lon'=>74.8570,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Guwahati','state'=>'Assam','country'=>'India','lat'=>26.1445,'lon'=>91.7362,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Gangtok','state'=>'Sikkim','country'=>'India','lat'=>27.3389,'lon'=>88.6065,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Panaji','state'=>'Goa','country'=>'India','lat'=>15.4909,'lon'=>73.8278,'timezone'=>'Asia/Kolkata'],
+  ['city'=>'Kathmandu','state'=>'Bagmati','country'=>'Nepal','lat'=>27.7172,'lon'=>85.3240,'timezone'=>'Asia/Kathmandu'],
+  ['city'=>'Colombo','state'=>'Western Province','country'=>'Sri Lanka','lat'=>6.9271,'lon'=>79.8612,'timezone'=>'Asia/Colombo'],
+  ['city'=>'Dhaka','state'=>'Dhaka Division','country'=>'Bangladesh','lat'=>23.8103,'lon'=>90.4125,'timezone'=>'Asia/Dhaka'],
+  ['city'=>'Karachi','state'=>'Sindh','country'=>'Pakistan','lat'=>24.8607,'lon'=>67.0011,'timezone'=>'Asia/Karachi'],
+  ['city'=>'Lahore','state'=>'Punjab','country'=>'Pakistan','lat'=>31.5204,'lon'=>74.3587,'timezone'=>'Asia/Karachi'],
+  ['city'=>'Dubai','state'=>'Dubai','country'=>'United Arab Emirates','lat'=>25.2048,'lon'=>55.2708,'timezone'=>'Asia/Dubai'],
+  ['city'=>'Singapore','state'=>'Singapore','country'=>'Singapore','lat'=>1.3521,'lon'=>103.8198,'timezone'=>'Asia/Singapore'],
+  ['city'=>'London','state'=>'England','country'=>'United Kingdom','lat'=>51.5074,'lon'=>-0.1278,'timezone'=>'Europe/London'],
+  ['city'=>'New York','state'=>'New York','country'=>'United States','lat'=>40.7128,'lon'=>-74.0060,'timezone'=>'America/New_York'],
+  ['city'=>'Los Angeles','state'=>'California','country'=>'United States','lat'=>34.0522,'lon'=>-118.2437,'timezone'=>'America/Los_Angeles'],
+  ['city'=>'Toronto','state'=>'Ontario','country'=>'Canada','lat'=>43.6532,'lon'=>-79.3832,'timezone'=>'America/Toronto'],
+  ['city'=>'Sydney','state'=>'New South Wales','country'=>'Australia','lat'=>-33.8688,'lon'=>151.2093,'timezone'=>'Australia/Sydney'],
+];
