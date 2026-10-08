@@ -47,13 +47,10 @@ foreach($routes as $page){
 }
 
 function render_devotion(string $slug): string {
-    $_GET['slug']=$slug;
-    $_SERVER['HTTP_HOST']='tithika.example';
-    $_SERVER['HTTPS']='on';
-    $_SERVER['SCRIPT_NAME']='/tithika/page.php';
-    $_SERVER['REQUEST_URI']='/tithika/'.$slug.'/';
+    $page=tithika_find_page($slug);
+    dc_ok(is_array($page),"Unable to resolve Devotion page: $slug");
     ob_start();
-    include dirname(__DIR__).'/page.php';
+    tithika_render_editorial_content($page);
     return (string)ob_get_clean();
 }
 
