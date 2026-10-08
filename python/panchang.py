@@ -40,7 +40,7 @@ except ImportError:
     }))
     sys.exit(2)
 
-ENGINE_VERSION = "0.3.0"
+ENGINE_VERSION = "0.4.0"
 ASTRONOMY_ENGINE_BLOB = "1a48fdf620540df22fcf421d0df0c2c016999e52"
 
 TITHI_NAMES = [
@@ -228,6 +228,14 @@ def local_midnight(d: date, tz: ZoneInfo) -> datetime:
     return datetime(d.year, d.month, d.day, 0, 0, 0, tzinfo=tz)
 
 
+def observer_elevation(default: float = 0.0) -> float:
+    try:
+        value = float(os.environ.get("TITHIKA_ELEVATION_METERS", default))
+    except (TypeError, ValueError):
+        value = default
+    return max(-500.0, min(9000.0, value))
+
+
 def rise_set(
     d: date,
     lat: float,
@@ -235,8 +243,10 @@ def rise_set(
     tz: ZoneInfo,
     body: astronomy.Body,
     direction: astronomy.Direction,
+    elevation_m: Optional[float] = None,
 ) -> Optional[datetime]:
-    observer = astronomy.Observer(lat, lon, 0.0)
+    height = observer_elevation() if elevation_m is None else max(-500.0, min(9000.0, float(elevation_m)))
+    observer = astronomy.Observer(lat, lon, height)
     start = astronomy_time(local_midnight(d, tz))
     found = astronomy.SearchRiseSet(body, observer, direction, start, 1.5)
     if found is None:
@@ -506,7 +516,8 @@ def main() -> None:
     if sunrise is None or sunset is None or next_sunrise is None:
         raise ValueError("Sunrise/sunset unavailable for this latitude/date")
 
-    observer = astronomy.Observer(lat, lon, 0.0)
+    elevation = observer_elevation()
+    observer = astronomy.Observer(lat, lon, elevation)
     sunrise_time = astronomy_time(sunrise)
     moonrise_event = astronomy.SearchRiseSet(
         astronomy.Body.Moon, observer, astronomy.Direction.Rise, sunrise_time, 1.2
@@ -562,6 +573,7 @@ def main() -> None:
             "lat": lat,
             "lon": lon,
             "timezone": timezone_name,
+            "elevation_m": elevation,
         },
         "date": selected_date.isoformat(),
         "weekday": selected_date.strftime("%A"),
