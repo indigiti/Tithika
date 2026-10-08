@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/devotion.php';
 
 /**
  * Structured editorial content for Devotion, Gallery and Learn.
@@ -122,49 +123,37 @@ function tithika_gallery_items(string $slug, string $title): array {
 }
 
 function tithika_devotion_subject(array $page): array {
-    $slug = $page['slug'];
-    $title = $page['title'];
-    $category = 'Devotional reference';
-    $context = 'This page organizes the subject as a readable devotional reference with links to relevant calendar, festival and ritual tools.';
+    $registry = tithika_devotion_registry();
+    $entry = $registry[$page['slug']] ?? null;
 
-    if (str_contains($slug, '/mantra')) {
-        $category = 'Mantra practice';
-        $context = 'Mantra practice traditionally emphasizes correct text, pronunciation, intention and lineage. Tithika keeps timing/reference context separate from the sacred text itself.';
-    } elseif (str_contains($slug, '/yantra')) {
-        $category = 'Yantra reference';
-        $context = 'Yantra traditions combine sacred geometry with deity-specific worship conventions. This page focuses on orientation and related ritual context rather than presenting a universal consecration procedure.';
-    } elseif (str_contains($slug, '/rituals/')) {
-        $category = 'Ritual and Samskara';
-        $context = 'Ritual practice varies by region, family tradition and Sampradaya. Tithika links the subject to timing tools while keeping the rule profile explicit.';
-    } elseif (str_contains($slug, '/gods/') || str_contains($slug, '/goddesses/')) {
-        $category = 'Deity reference';
-        $context = 'This reference connects the deity tradition with related festivals, Mantra, Puja and calendar observances without merging those distinct practices into one generic rule.';
-    } elseif (str_contains($slug, 'aarti')) {
-        $category = 'Aarti collection';
-        $context = 'Aarti is a devotional offering of light accompanied by praise. Text and sequence can vary by language, temple and household tradition.';
-    } elseif (str_contains($slug, 'chalisa')) {
-        $category = 'Chalisa collection';
-        $context = 'Chalisa compositions are devotional forty-verse traditions. Editions and transliterations can vary, so Tithika treats source text as an editorial layer rather than inventing missing verses.';
-    } elseif (str_contains($slug, 'stotram') || str_contains($slug, 'ashtakam') || str_contains($slug, 'shatkam') || str_contains($slug, 'kavacham')) {
-        $category = 'Stotra collection';
-        $context = 'Stotra traditions include praise hymns, Ashtakam, Shatkam and Kavacha forms. Tithika provides taxonomy and practice context while preserving source-specific text boundaries.';
+    if (!$entry) {
+        return [
+            'intro'=>$page['title'].' is part of Tithika’s devotional reference library.',
+            'kind'=>'reference',
+            'sections'=>[
+                ['title'=>'Practice context','body'=>'This subject requires route-specific editorial review before sacred source text is published.'],
+                ['title'=>'Calendar connection','body'=>'Use the related Panchang, festival or Muhurat tools for local date and timing context.'],
+            ],
+            'items'=>[],
+            'source'=>[
+                'editorial'=>'original-tithika',
+                'sacred_text'=>'not-embedded',
+                'policy'=>'No full sacred text is published without verified public-domain or licensed sourcing.',
+            ],
+            'links'=>['panchang/daily'],
+        ];
     }
 
     return [
-        'intro'=>"{$title} is part of Tithika’s {$category} library. The page is structured for clear reading, related observances and future language/audio editions.",
+        'intro'=>$entry['summary'],
+        'kind'=>$entry['kind'],
         'sections'=>[
-            ['title'=>'Practice context','body'=>$context],
-            ['title'=>'Calendar connection','body'=>'When a devotional practice is associated with a festival, weekday, Vrat or Muhurat, use the linked calculation page for the local date and timing rather than relying on a fixed clock schedule.'],
-            ['title'=>'Editorial approach','body'=>'Tithika distinguishes calculated timing from editorial sacred text. This prevents incomplete or unsourced devotional wording from being presented as an authoritative edition.'],
+            ['title'=>'Practice context','body'=>$entry['practice']],
+            ['title'=>'Calendar connection','body'=>$entry['observance']],
         ],
-        'links'=>array_values(array_filter([
-            str_contains($slug,'ganesha') ? 'festivals/ganesha-chaturthi' : null,
-            str_contains($slug,'lakshmi') || str_contains($slug,'diwali') ? 'festivals/diwali' : null,
-            str_contains($slug,'shiva') ? 'festivals/maha-shivaratri' : null,
-            str_contains($slug,'vivah') ? 'muhurat/vivah' : null,
-            str_contains($slug,'namakarana') ? 'muhurat/griha-pravesh' : null,
-            'panchang/daily',
-        ])),
+        'items'=>$entry['items'],
+        'source'=>$entry['source'],
+        'links'=>$entry['links'],
     ];
 }
 
@@ -230,6 +219,23 @@ function tithika_render_editorial_content(array $page): void {
           <p><?= htmlspecialchars($section['body']) ?></p>
         </section>
       <?php endforeach; ?>
+      <?php if (($page['group'] ?? '') === 'devotion' && !empty($content['items'])): ?>
+        <section>
+          <h3>Corpus index</h3>
+          <div class="tk-devotion-index">
+            <?php foreach ($content['items'] as $item): ?>
+              <span><?= htmlspecialchars((string)$item) ?></span>
+            <?php endforeach; ?>
+          </div>
+        </section>
+      <?php endif; ?>
+      <?php if (($page['group'] ?? '') === 'devotion' && !empty($content['source'])): ?>
+        <aside class="tk-devotion-source">
+          <b>Source & edition policy</b>
+          <span><?= htmlspecialchars((string)($content['source']['editorial'] ?? 'original-tithika')) ?> · <?= htmlspecialchars((string)($content['source']['sacred_text'] ?? 'not-embedded')) ?></span>
+          <p><?= htmlspecialchars((string)($content['source']['policy'] ?? '')) ?></p>
+        </aside>
+      <?php endif; ?>
       <?php if (!empty($content['links'])): ?>
         <nav class="tk-editorial-links" aria-label="Related Tithika tools">
           <?php foreach ($content['links'] as $slug): $linked = tithika_find_page($slug); if (!$linked) continue; ?>
