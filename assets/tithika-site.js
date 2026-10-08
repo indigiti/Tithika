@@ -145,6 +145,14 @@
     'calendars/bengali':'bengali','calendars/odia':'odia','calendars/assamese':'assamese',
     'calendars/iskcon':'iskcon','calendars/nepali':'nepali','calendars/jain':'jain'
   };
+  const regionalPanchangPages=new Set([
+    'panchang/hindi','panchang/tamil','panchang/telugu','panchang/kannada',
+    'panchang/malayalam','panchang/gujarati','panchang/marathi','panchang/bengali',
+    'panchang/odia','panchang/assamese','panchang/iskcon','panchang/nepali'
+  ]);
+  let regionalView=regionalPanchangPages.has(pageSlug)
+    ? (new URLSearchParams(window.location.search).get('view')==='month'?'month':'day')
+    : 'month';
   const RASHIS=['Mesha','Vrishabha','Mithuna','Karka','Simha','Kanya','Tula','Vrishchika','Dhanu','Makara','Kumbha','Meena'];
   const browserTimezone=Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Kolkata';
   const productSettings=window.TithikaSettings?.get?.()||{};
@@ -272,7 +280,7 @@
       if(muhuratReuseModes[pageSlug]) await calculateMuhuratReuse();
       if(utilityModes[pageSlug]) await calculatePanchangUtility();
       if(panchangReuseModes[pageSlug]) await calculatePanchangReuse();
-      if(regionalVariants[pageSlug]) await calculateRegionalCalendar();
+      if(regionalVariants[pageSlug]) await calculateRegionalSurface();
       if($('#tkPhaseSections')) await calculatePhaseCompletion();
     }catch(e){toast(e.message||'Unable to load location context')}
   }
@@ -1845,11 +1853,58 @@
     }).join(''):'<div class="tk-panchang-empty">No completion data available.</div>';
   }
 
+  function regionalMetric(label,value,note=''){
+    return `<article class="tk-panchang-metric"><small>${esc(label)}</small><strong>${esc(value||'—')}</strong><span>${esc(note||'')}</span></article>`;
+  }
+
+  function regionalTimeWindow(value){
+    if(!value)return '—';
+    return [value.start_label,value.end_label].filter(Boolean).join(' – ')||'—';
+  }
+
+  function setRegionalView(mode,updateUrl=false){
+    if(!regionalPanchangPages.has(pageSlug))mode='month';
+    regionalView=mode==='month'?'month':'day';
+    const day=$('#tkRegionalDayView'),month=$('#tkRegionalMonthView');
+    if(day)day.hidden=regionalView!=='day';
+    if(month)month.hidden=regionalView!=='month';
+    $('#tkRegionalDayTab')?.classList.toggle('active',regionalView==='day');
+    $('#tkRegionalMonthTab')?.classList.toggle('active',regionalView==='month');
+    if(updateUrl&&regionalPanchangPages.has(pageSlug)){
+      const url=new URL(window.location.href);
+      url.searchParams.set('view',regionalView);
+      history.replaceState(null,'',url);
+    }
+  }
+
+  async function calculateRegionalSurface(){
+    setRegionalView(regionalView,false);
+    return regionalView==='day'?calculateRegionalDay():calculateRegionalCalendar();
+  }
+
+  async function calculateRegionalDay(){
+    const loading=$('#tkRegionalLoading');
+    if(loading){loading.hidden=false;loading.textContent='Building regional daily Panchang…'}
+    try{
+      const variant=regionalVariants[pageSlug],p={...payload(),view:'day'};
+      const r=await fetch(`${base}api.php?action=regional-calendar&variant=${encodeURIComponent(variant)}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
+      });
+      const j=await r.json();
+      if(!j.ok)throw new Error(j.error||'Regional daily Panchang unavailable');
+      if(loading)loading.hidden=true;
+      renderRegionalDay(j);
+    }catch(e){
+      if(loading){loading.hidden=false;loading.textContent=e.message||'Regional daily Panchang unavailable'}
+      toast(e.message||'Regional daily Panchang unavailable');
+    }
+  }
+
   async function calculateRegionalCalendar(){
     const loading=$('#tkRegionalLoading');
     if(loading){loading.hidden=false;loading.textContent='Building regional calendar…'}
     try{
-      const variant=regionalVariants[pageSlug],p=payload();
+      const variant=regionalVariants[pageSlug],p={...payload(),view:'month'};
       const r=await fetch(`${base}api.php?action=regional-calendar&variant=${encodeURIComponent(variant)}`,{
         method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
       });
@@ -1860,6 +1915,47 @@
     }catch(e){
       if(loading){loading.hidden=false;loading.textContent=e.message||'Regional calendar unavailable'}
       toast(e.message||'Regional calendar unavailable');
+    }
+  }
+
+  function renderRegionalDay(d){
+    const row=d.day||{};
+    const title=$('#tkRegionalTitle');
+    if(title){
+      const regional=[row.regional_month,row.regional_day,row.regional_year].filter(v=>v!==null&&v!==undefined&&v!=='').join(' ');
+      title.textContent=regional||`${d.variant[0].toUpperCase()+d.variant.slice(1)} Panchang`;
+    }
+    const basis=$('#tkRegionalBasis');if(basis)basis.textContent=`${d.engine?.basis||'regional'} · Lahiri`;
+    const note=$('#tkRegionalNote');if(note)note.textContent=d.note||'';
+    const summary=$('#tkRegionalDaySummary');
+    if(summary){
+      const native=row.regional_date_native?row.regional_date_native:(row.regional_month_native||'');
+      summary.innerHTML=[
+        regionalMetric('Regional date',[row.regional_month,row.regional_day].filter(Boolean).join(' '),native||String(row.regional_year||'')),
+        regionalMetric('Tithi',row.tithi,row.paksha||row.tithi_end_label||''),
+        regionalMetric('Nakshatra',row.nakshatra,`Pada ${row.nakshatra_pada||'—'}${row.nakshatra_end_label?' · until '+row.nakshatra_end_label:''}`),
+        regionalMetric('Yoga',row.yoga,row.yoga_end_label?('until '+row.yoga_end_label):''),
+        regionalMetric('Karana',row.karana,row.karana_end_label?('until '+row.karana_end_label):''),
+        regionalMetric('Moon Rashi',row.moon_rashi,''),
+        regionalMetric('Sun Rashi',row.sun_rashi,row.sun_nakshatra||''),
+        regionalMetric('Sunrise / Sunset',`${row.sunrise_label||'—'} · ${row.sunset_label||'—'}`,row.moonrise_label?('Moonrise '+row.moonrise_label):'')
+      ].join('');
+    }
+    const timings=$('#tkRegionalDayTimings');
+    if(timings){
+      const m=row.muhurtas||{};
+      const items=[
+        ['Abhijit Muhurat',regionalTimeWindow(m.abhijit),'Auspicious midday solar window'],
+        ['Rahu Kaal',regionalTimeWindow(m.rahu_kaal),'Daily caution period'],
+        ['Yamaganda',regionalTimeWindow(m.yamaganda),'Daily caution period'],
+        ['Gulika',regionalTimeWindow(m.gulika),'Daily Saturn-period reference']
+      ];
+      timings.innerHTML=items.map(([name,time,note])=>`
+        <article class="tk-observance-event">
+          <div class="tk-observance-date"><b>${esc(time)}</b><span>${esc(row.weekday||d.date||'')}</span></div>
+          <div class="tk-observance-main"><h4>${esc(name)}</h4><p>${esc(note)}</p><small>${esc(d.engine?.basis||'Regional convention')} · Lahiri Panchang core</small></div>
+          <a href="${base}panchang/daily/?date=${encodeURIComponent(d.date||row.date||'')}">Daily Panchang →</a>
+        </article>`).join('');
     }
   }
 
@@ -1887,7 +1983,12 @@
       const input=$('#tkDate');if(!input)return;
       input.value=btn.dataset.regionalDate;
       state.dateTouched=true;
-      calculate();
+      if(regionalPanchangPages.has(pageSlug)){
+        setRegionalView('day',true);
+        calculateRegionalDay();
+      }else{
+        calculate();
+      }
     }));
   }
 
@@ -1957,7 +2058,11 @@
     const input=$('#tkDate');if(!input)return;
     const d=new Date((input.value||isoToday())+'T12:00:00');
     const shift=Number(btn.dataset.shiftDate||0);
-    if(pageSlug==='panchang/month'||specializedMuhuratModes[pageSlug]||regionalVariants[pageSlug]||panchangReuseMonthly.has(pageSlug)){
+    $('#tkRegionalDayTab')?.addEventListener('click',e=>{e.preventDefault();setRegionalView('day',true);calculateRegionalDay()});
+  $('#tkRegionalMonthTab')?.addEventListener('click',e=>{e.preventDefault();setRegionalView('month',true);calculateRegionalCalendar()});
+  setRegionalView(regionalView,false);
+
+  if(pageSlug==='panchang/month'||specializedMuhuratModes[pageSlug]||regionalVariants[pageSlug]||panchangReuseMonthly.has(pageSlug)){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
     }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)||muhuratReuseYearly.has(pageSlug)||vratReuseYearly.has(pageSlug)){
