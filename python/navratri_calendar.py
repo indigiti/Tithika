@@ -172,7 +172,23 @@ def render(slug: str, year: int, lat: float, lon: float,
         raise ValueError("Unsupported Navratri calendar route")
     is_hub = slug in ("calendars/navratri", "festivals/ghatasthapana")
     keys = list(VARIANTS) if is_hub else [SLUG_TO_VARIANT[slug]]
-    variants = [calculate_variant(k, year, lat, lon, tz, hour24) for k in keys]
+    # A four-variant overview only needs the four start-day events; don't
+    # compute 36 extra sunrise/Tithi rows just to render four date cards.
+    if is_hub:
+        variants = []
+        for key in keys:
+            cfg = VARIANTS[key]
+            event = festival_rules.calculate_event(
+                cfg["kind"], year, lat, lon, tz, hour24,
+            )
+            if event is None:
+                raise RuntimeError("One or more Navratri variants have no calculated occurrence")
+            variants.append({
+                "variant": key, "title": cfg["title"], "slug": cfg["slug"],
+                "context": cfg["context"], "year": year, "event": event,
+            })
+    else:
+        variants = [calculate_variant(keys[0], year, lat, lon, tz, hour24)]
     if any(v is None for v in variants):
         raise RuntimeError("One or more Navratri variants have no calculated occurrence")
     if is_hub:

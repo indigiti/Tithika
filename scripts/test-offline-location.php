@@ -30,6 +30,8 @@ loc_ok((float)($nearest['distance_km']??999)<1.0,'Pune nearest distance should b
 $api=(string)file_get_contents(dirname(__DIR__).'/api.php');
 $engine=(string)file_get_contents(dirname(__DIR__).'/includes/engine-runtime.php');
 loc_ok(str_contains($engine,'TITHIKA_ELEVATION_METERS'),'subprocess elevation propagation missing');
+loc_ok(str_contains($engine, '$root = dirname(__DIR__);'), 'engine must resolve scripts from repository root');
+loc_ok(str_contains($engine, 'proc_open([$python, $script], $desc, $pipes, $root,'), 'Python cwd must use repository root');
 loc_ok(str_contains($api,'count($results) === 0'),'offline search should not wait on external enrichment');
 loc_ok(str_contains($api,"'source'=>'offline-index'"),'offline timezone source missing');
 

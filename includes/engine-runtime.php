@@ -20,7 +20,14 @@ function acquireEngineSlot(): mixed {
 }
 
 function runPythonEngine(string $relativeScript, array $payload): array {
-    $script = __DIR__ . '/' . ltrim($relativeScript, '/');
+    // This runner lives in includes/, while all calculation modules live in
+    // the repository-level python/ directory. Keep a single canonical root.
+    $root = dirname(__DIR__);
+    $relative = ltrim($relativeScript, '/');
+    if (!preg_match('~^python/[a-z0-9_/-]+\\.py$~', $relative) || str_contains($relative, '..')) {
+        throw new RuntimeException('Invalid calculation engine path');
+    }
+    $script = $root . '/' . $relative;
     if (!is_file($script)) throw new RuntimeException('Calculation engine not found');
     $python = getenv('PYTHON_BIN') ?: 'python3';
     $desc = [0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']];
@@ -31,7 +38,7 @@ function runPythonEngine(string $relativeScript, array $payload): array {
     $env['TITHIKA_ELEVATION_METERS'] = (string)$elevation;
     $slot = acquireEngineSlot();
     try {
-        $proc = proc_open([$python, $script], $desc, $pipes, __DIR__, $env, ['bypass_shell'=>true]);
+        $proc = proc_open([$python, $script], $desc, $pipes, $root, $env, ['bypass_shell'=>true]);
     } catch (Throwable $e) {
         flock($slot, LOCK_UN); fclose($slot);
         throw $e;
