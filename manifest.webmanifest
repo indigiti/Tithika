@@ -11,5 +11,13 @@
   "categories": [
     "lifestyle",
     "utilities"
+  ],
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
   ]
 }

@@ -101,6 +101,9 @@ $manifest = json_decode((string)file_get_contents(dirname(__DIR__) . '/manifest.
 ok(is_array($manifest), 'manifest invalid JSON');
 ok(($manifest['display'] ?? '') === 'standalone', 'manifest display mode incorrect');
 ok(($manifest['short_name'] ?? '') === 'Tithika', 'manifest short name incorrect');
+ok(!empty($manifest['icons'][0]['src']), 'PWA icon missing');
+ok(is_file(dirname(__DIR__).'/assets/icon.svg'), 'PWA icon asset missing');
+ok(is_file(dirname(__DIR__).'/service-worker.js'), 'PWA service worker missing');
 
 $htaccess = (string)file_get_contents(dirname(__DIR__) . '/.htaccess');
 ok(str_contains($htaccess, 'sitemap\.xml'), 'sitemap rewrite missing');
@@ -121,4 +124,15 @@ tithika_render_header($shell['title'], $shell);
 $thinHeader = ob_get_clean();
 ok(str_contains($thinHeader, '<meta name="robots" content="index,follow,max-image-preview:large">'), 'completed route must be indexable');
 
+// A previous navigation typo passed text-only audits and corrupted every page.
+ok((bool)preg_match('~<a href="/panchang/"[^>]*>[^<]+</a>~', $header), 'navigation anchor closing bracket missing');
+$oldHost = $_SERVER['HTTP_HOST'];
+$oldServer = $_SERVER['SERVER_NAME'] ?? null;
+$_SERVER['HTTP_HOST'] = 'attacker.invalid';
+$_SERVER['SERVER_NAME'] = 'tithika.example';
+ok(tithika_origin() === 'https://tithika.example', 'canonical origin must not trust Host when SERVER_NAME is available');
+$_SERVER['HTTP_HOST'] = 'stage.digiti.in';
+ok(tithika_is_staging(), 'staging origin must be blocked from indexing');
+$_SERVER['HTTP_HOST'] = $oldHost;
+if ($oldServer === null) unset($_SERVER['SERVER_NAME']); else $_SERVER['SERVER_NAME'] = $oldServer;
 echo "SEO/content/accessibility/release hardening fixture passed\n";

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require __DIR__ . '/includes/site.php';
 header('Content-Type: text/plain; charset=utf-8');
+if (tithika_is_staging()) { echo "User-agent: *\nDisallow: /\n"; exit; }
 echo "User-agent: *\n";
 echo "Allow: /\n";
 echo "Disallow: " . tithika_url("config/") . "\n";

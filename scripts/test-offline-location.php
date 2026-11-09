@@ -28,7 +28,8 @@ loc_ok(($nearest['city']??'')==='Pune','Pune coordinates should resolve to Pune'
 loc_ok((float)($nearest['distance_km']??999)<1.0,'Pune nearest distance should be sub-kilometre');
 
 $api=(string)file_get_contents(dirname(__DIR__).'/api.php');
-loc_ok(str_contains($api,'TITHIKA_ELEVATION_METERS'),'subprocess elevation propagation missing');
+$engine=(string)file_get_contents(dirname(__DIR__).'/includes/engine-runtime.php');
+loc_ok(str_contains($engine,'TITHIKA_ELEVATION_METERS'),'subprocess elevation propagation missing');
 loc_ok(str_contains($api,'count($results) === 0'),'offline search should not wait on external enrichment');
 loc_ok(str_contains($api,"'source'=>'offline-index'"),'offline timezone source missing');
 

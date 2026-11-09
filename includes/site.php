@@ -63,12 +63,40 @@ function tithika_pretty_url(string $slug): string {
     return tithika_url($slug . '/');
 }
 
+function tithika_is_staging(): bool {
+    $environment = strtolower(trim((string)(getenv('TITHIKA_ENV') ?: '')));
+    if (in_array($environment, ['staging', 'development', 'test'], true)) return true;
+    $hostname = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+    return (bool) preg_match('/^(?:stage|staging|dev|localhost)(?:[.:-]|$)/', $hostname);
+}
+
 function tithika_origin(): string {
-    $forwarded = strtolower(trim((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')));
-    $scheme = ($forwarded === 'https' || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')) ? 'https' : 'http';
-    $host = (string)($_SERVER['HTTP_HOST'] ?? 'localhost');
-    $host = preg_replace('/[^A-Za-z0-9.\-:\[\]]/', '', $host) ?: 'localhost';
-    return $scheme . '://' . $host;
+    // Production deployments must set a fixed public origin so Host and proxy
+    // headers cannot change canonical, OpenGraph, sitemap or calendar URLs.
+    $configured = trim((string)(getenv('TITHIKA_PUBLIC_ORIGIN') ?: ''));
+    if ($configured !== '') {
+        $parts = parse_url($configured);
+        if (!is_array($parts)
+            || !in_array(strtolower((string)($parts['scheme'] ?? '')), ['https', 'http'], true)
+            || empty($parts['host'])
+            || isset($parts['user']) || isset($parts['pass'])
+            || isset($parts['query']) || isset($parts['fragment'])
+            || !in_array((string)($parts['path'] ?? ''), ['', '/'], true)) {
+            throw new RuntimeException('Invalid TITHIKA_PUBLIC_ORIGIN configuration');
+        }
+        return strtolower($parts['scheme']) . '://' . strtolower($parts['host'])
+            . (isset($parts['port']) ? ':' . $parts['port'] : '');
+    }
+
+    // Backwards-compatible local fallback; never prefer attacker-supplied Host
+    // over the webserver's configured name. Set the origin explicitly in DigiOps.
+    $host = strtolower(trim((string)($_SERVER['SERVER_NAME'] ?? '')));
+    if (!preg_match('/^[a-z0-9.-]+(?::[0-9]{1,5})?$/i', $host)) {
+        $host = strtolower(trim((string)($_SERVER['HTTP_HOST'] ?? 'localhost')));
+    }
+    if (!preg_match('/^[a-z0-9.-]+(?::[0-9]{1,5})?$/i', $host)) $host = 'localhost';
+    $secure = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+    return ($secure ? 'https' : 'http') . '://' . $host;
 }
 
 function tithika_absolute_url(string $path = ''): string {
@@ -239,7 +267,8 @@ function tithika_render_header(string $title, ?array $page = null): void {
     $base = tithika_base_path();
     $description = tithika_seo_description($page);
     $canonical = tithika_current_canonical($page);
-    $indexable = !$page || tithika_is_indexable_page($page);
+    $indexable = (! $page || tithika_is_indexable_page($page)) && !tithika_is_staging();
+    if (tithika_is_staging()) header('X-Robots-Tag: noindex, nofollow');
     $schema = tithika_schema($page, $title . ' — Tithika', $description, $canonical);
     ?>
 <!doctype html>
@@ -276,7 +305,7 @@ function tithika_render_header(string $title, ?array $page = null): void {
     </a>
     <nav class="tk-nav" aria-label="<?= htmlspecialchars(tithika_t('nav.primary')) ?>">
       <?php foreach (array_slice($routes, 0, 6, true) as $key => $group): ?>
-        <a href="<?= htmlspecialchars(tithika_pretty_url($key)) ?>"<?= ($page && $page['group'] === $key) ? ' class="is-active" aria-current="page"' : '' ?><?= htmlspecialchars(tithika_t('nav.' . $key, $group['title'])) ?></a>
+        <a href="<?= htmlspecialchars(tithika_pretty_url($key)) ?>"<?= ($page && $page['group'] === $key) ? ' class="is-active" aria-current="page"' : '' ?>><?= htmlspecialchars(tithika_t('nav.' . $key, $group['title'])) ?></a>
       <?php endforeach; ?>
       <a href="<?= htmlspecialchars(tithika_url('site-map.php')) ?>"><?= htmlspecialchars(tithika_t('nav.all_tools')) ?></a>
       <a href="<?= htmlspecialchars(tithika_url('settings/')) ?>"><?= htmlspecialchars(tithika_t('nav.settings')) ?></a>
@@ -320,6 +349,13 @@ window.TITHIKA_I18N = <?= json_encode(tithika_client_messages(), JSON_UNESCAPED_
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/notifications.js')) ?>" defer></script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/settings.js')) ?>" defer></script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/kundali-workspace.js')) ?>" defer></script>
+<script>
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register(<?= json_encode(tithika_url('service-worker.js')) ?>).catch(function () {});
+  }, {once:true});
+}
+</script>
 </body>
 </html>
 <?php

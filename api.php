@@ -2,6 +2,7 @@
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/includes/location.php';
+require_once __DIR__ . '/includes/engine-runtime.php';
 
 function out(array $data, int $status = 200, bool $cacheable = false): never {
     http_response_code($status);
@@ -34,7 +35,18 @@ function curlJson(string $url): array {
 }
 
 function readPayload(): array {
-    $raw = file_get_contents('php://input') ?: '{}';
+    // Reject oversized inputs before passing them to an expensive Python worker.
+    $maxBytes = 32768;
+    if (isset($_SERVER['CONTENT_LENGTH']) && (int)$_SERVER['CONTENT_LENGTH'] > $maxBytes) {
+        out(['ok'=>false,'error'=>'Request body too large'], 413);
+    }
+    $stream = fopen('php://input', 'rb');
+    if (!is_resource($stream)) out(['ok'=>false,'error'=>'Unable to read request'], 400);
+    $raw = stream_get_contents($stream, $maxBytes + 1);
+    fclose($stream);
+    if ($raw === false) out(['ok'=>false,'error'=>'Unable to read request'], 400);
+    if (strlen($raw) > $maxBytes) out(['ok'=>false,'error'=>'Request body too large'], 413);
+    $raw = $raw ?: '{}';
     $payload = json_decode($raw, true);
     if (!is_array($payload)) out(['ok'=>false,'error'=>'Invalid JSON'], 400);
     $lat = (float)($payload['lat'] ?? 19.0760);
@@ -52,33 +64,6 @@ function readPayload(): array {
     return $payload;
 }
 
-function runPythonEngine(string $relativeScript, array $payload): array {
-    $script = __DIR__ . '/' . ltrim($relativeScript, '/');
-    if (!is_file($script)) throw new RuntimeException('Calculation engine not found');
-    $python = getenv('PYTHON_BIN') ?: 'python3';
-    $desc = [0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']];
-    $env = getenv();
-    if (!is_array($env)) $env = [];
-    $elevation = (float)($payload['elevation'] ?? 0.0);
-    $elevation = max(-500.0, min(9000.0, $elevation));
-    $env['TITHIKA_ELEVATION_METERS'] = (string)$elevation;
-    $proc = proc_open([$python, $script], $desc, $pipes, __DIR__, $env, ['bypass_shell'=>true]);
-    if (!is_resource($proc)) throw new RuntimeException('Unable to start Python calculation engine');
-    fwrite($pipes[0], json_encode($payload, JSON_UNESCAPED_UNICODE));
-    fclose($pipes[0]);
-    $stdout = stream_get_contents($pipes[1]); fclose($pipes[1]);
-    $stderr = stream_get_contents($pipes[2]); fclose($pipes[2]);
-    $exit = proc_close($proc);
-    $data = json_decode($stdout ?: '{}', true);
-    if (!is_array($data)) {
-        throw new RuntimeException('Invalid calculation response' . ($stderr ? ': ' . trim($stderr) : ''));
-    }
-    if ($exit !== 0 || !($data['ok'] ?? false)) {
-        $data['detail'] = $stderr ?: ($data['detail'] ?? '');
-        $data['_exit'] = $exit;
-    }
-    return $data;
-}
 
 $action = $_GET['action'] ?? 'calculate';
 
@@ -562,5 +547,6 @@ try {
 
     out(['ok'=>false,'error'=>'Unknown action'], 404);
 } catch (Throwable $e) {
-    out(['ok'=>false,'error'=>$e->getMessage()], 500);
+    error_log('[Tithika API] ' . $e->getMessage());
+    out(['ok'=>false,'error'=>'Service temporarily unavailable'], 503);
 }
