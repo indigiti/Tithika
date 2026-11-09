@@ -809,7 +809,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <div>
             <span class="tk-card-tag">Certified completion engine</span>
             <h3 id="tkPhaseTitle"><?= htmlspecialchars($page['title']) ?></h3>
-            <p>Route-specific calculation or structured reference data is generated from Tithika's shared Panchang, festival, Jyotish and astronomy substrates. Tradition-specific assumptions remain visible in each result.</p>
+            <p><?= in_array($page['slug'], ['calendars/navratri','calendars/shardiya-navratri','calendars/chaitra-navratri','calendars/magha-gupta-navratri','calendars/ashadha-gupta-navratri','festivals/ghatasthapana'], true) ? 'Explore all four Navratri traditions with calculated Ghatasthapana Muhurat, exact local Tithi periods, day-wise Navdurga context and linked Panchang. Skipped and extended Tithis are clearly labelled.' : 'Route-specific calculation or structured reference data is generated from Tithika\'s shared Panchang, festival, Jyotish and astronomy substrates. Tradition-specific assumptions remain visible in each result.' ?></p>
           </div>
           <div class="tk-panchang-engine" id="tkPhaseEngine">Six-phase completion</div>
         </div>
