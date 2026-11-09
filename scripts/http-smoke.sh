@@ -16,6 +16,11 @@ grep -q 'noindex,follow' <<<"$home"
 daily="$(curl -fsS http://127.0.0.1:18765/panchang/daily/)"
 grep -q 'Daily Panchang' <<<"$daily"
 grep -q 'noindex,follow' <<<"$daily"
+for slug in calendars/navratri calendars/shardiya-navratri calendars/chaitra-navratri calendars/magha-gupta-navratri calendars/ashadha-gupta-navratri festivals/ghatasthapana; do
+  route_html="$(curl -fsS "http://127.0.0.1:18765/$slug/")"
+  grep -q 'tkPhaseSections' <<<"$route_html" || { echo "Navratri calculator missing for $slug"; exit 1; }
+  grep -q 'noindex,follow' <<<"$route_html" || { echo "Staging noindex missing for $slug"; exit 1; }
+done
 curl -fsS http://127.0.0.1:18765/robots.txt | grep -q 'Disallow: /'
 curl -fsS http://127.0.0.1:18765/sitemap.xml | grep -q '<urlset'
 curl -fsS http://127.0.0.1:18765/service-worker.js | grep -q 'tithika-assets'

@@ -38,6 +38,11 @@ for key, wanted in anchors.items():
     assert datetime.fromisoformat(v["days"][7]["tithi_end"]) == s+(e-s)/2
     g = v["event"]["ghatasthapana"]
     assert datetime.fromisoformat(g["start"]) < datetime.fromisoformat(g["end"])
+    abhi = v["event"].get("ghatasthapana_abhijit")
+    if abhi:
+        assert datetime.fromisoformat(abhi["start"]) < datetime.fromisoformat(abhi["end"])
+        assert datetime.fromisoformat(v["event"]["tithi_start"]) <= datetime.fromisoformat(abhi["start"])
+        assert datetime.fromisoformat(abhi["end"]) <= datetime.fromisoformat(v["event"]["tithi_end"])
     doc = n.render(v["slug"], 2026, LAT, LON, TZ)
     assert doc["ok"] and doc["navratri"]["overview"] is False
     assert len(doc["sections"]) == 3

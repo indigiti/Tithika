@@ -68,6 +68,11 @@
     'vrat/mangala-gauri':'mangala-gauri'
   };
   const vratReuseYearly=new Set(Object.keys(vratReuseModes));
+  const navratriFamilyPages=new Set([
+    'calendars/navratri','calendars/shardiya-navratri','calendars/chaitra-navratri',
+    'calendars/magha-gupta-navratri','calendars/ashadha-gupta-navratri',
+    'festivals/ghatasthapana'
+  ]);
   const festivalKinds={
     'festivals/ganesha-chaturthi':'ganesh-chaturthi',
     'festivals/raksha-bandhan':'raksha-bandhan',
@@ -2174,7 +2179,7 @@
     if(pageSlug==='panchang/month'||specializedMuhuratModes[pageSlug]||regionalVariants[pageSlug]||panchangReuseMonthly.has(pageSlug)){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)||muhuratReuseYearly.has(pageSlug)||vratReuseYearly.has(pageSlug)){
+    }else if(navratriFamilyPages.has(pageSlug)||lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)||muhuratReuseYearly.has(pageSlug)||vratReuseYearly.has(pageSlug)){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
