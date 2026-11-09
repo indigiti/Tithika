@@ -1891,6 +1891,10 @@
       '<p class="tk-nv-micro">Tithi: '+esc(e.tithi_start_label||'')+' → '+esc(e.tithi_end_label||'')+'</p>'+
       (alternative?'<p class="tk-nv-micro">Abhijit alternative: '+esc(alternative)+'</p>':'')+
       navratriWarnings(e)+'</div></section>';
+    const guide='<section class="tk-nv-practice-guide"><details><summary>Ghatasthapana / Kalash Sthapana — general preparation</summary>'+
+      '<ol>'+(d.navratri?.kalash_guide||[]).map(step=>'<li>'+esc(step)+'</li>').join('')+'</ol>'+
+      '<p>Reference only: ritual items, mantras and formal Muhurat rules differ between traditions.</p>'+
+      '</details></section>';
     const dayList='<section class="tk-nv-section"><div class="tk-nv-section-title"><div>'+
       '<span class="tk-nv-eyebrow">Calendar · '+esc(v.year)+'</span>'+
       '<h4>Nine Shukla Tithis &amp; Navdurga</h4></div>'+
@@ -1906,6 +1910,8 @@
           '<h5>'+esc(day.title)+'</h5><p>'+esc(day.meaning)+'</p>'+
           '<div class="tk-nv-period"><small>Tithi begins</small><b>'+esc(day.tithi_start_label)+'</b>'+
           '<small>Tithi ends</small><b>'+esc(day.tithi_end_label)+'</b></div>'+
+          '<details class="tk-nv-prayer"><summary>Traditional invocation</summary><p>'+esc(day.invocation||'')+
+          '</p><small>Common Navdurga reference; practice varies.</small></details>'+
           (warn?'<div class="tk-nv-flag">'+esc(day.detail)+'</div>':'')+
           '<a href="'+base+'panchang/daily/?date='+encodeURIComponent(day.date)+'">View daily Panchang <span aria-hidden="true">→</span></a></li>';
       }).join('')+'</ol></section>';
@@ -1922,7 +1928,7 @@
         '<p>'+esc(item.detail)+'</p>'+
         (navratriRoute(item.link_slug)?'<a href="'+esc(navratriRoute(item.link_slug))+'">Detailed observance →</a>':'')+'</article>').join('')+
       '</section>';
-    host.innerHTML=heading+intro+dayList+details+
+    host.innerHTML=heading+intro+guide+dayList+details+
       '<div class="tk-nv-note"><strong>Calculation and interpretation</strong> Local rise-set events and Lahiri Tithis are calculated; ritual-day selection, day colours and regional practices require separate verified rules. No generic calendar dates are silently substituted.</div>';
   }
 

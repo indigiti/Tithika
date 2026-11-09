@@ -32,6 +32,24 @@ GODDESSES = ("Shailaputri", "Brahmacharini", "Chandraghanta",
              "Mahagauri", "Siddhidatri")
 TITHIS = ("Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami",
           "Shashthi", "Saptami", "Ashtami", "Navami", "Dashami")
+INVOCATIONS = (
+    "Om Devi Shailaputryai Namah",
+    "Om Devi Brahmacharinyai Namah",
+    "Om Devi Chandraghantayai Namah",
+    "Om Devi Kushmandayai Namah",
+    "Om Devi Skandamatayai Namah",
+    "Om Devi Katyayanyai Namah",
+    "Om Devi Kalaratryai Namah",
+    "Om Devi Mahagauryai Namah",
+    "Om Devi Siddhidatryai Namah",
+)
+KALASH_GUIDE = (
+    "Prepare a clean puja space and assemble a vessel, water, flowers and customary offerings.",
+    "Make a Sankalpa according to the household or temple tradition.",
+    "Place and worship the Kalash during a locally suitable Pratipada Muhurat.",
+    "Offer flowers and customary prayers to Devi, observing the chosen lineage practice.",
+    "Conclude with Aarti or prayers. Follow priest or family guidance for detailed Vidhi.",
+)
 MEANINGS = (
     "First manifestation of Durga, associated with steadiness and new beginnings.",
     "The contemplative form of Devi, associated with discipline and devotion.",
@@ -101,6 +119,7 @@ def calculate_variant(key: str, year: int, lat: float, lon: float,
         days.append({
             "day": i + 1, "title": GODDESSES[i] + " Puja",
             "goddess": GODDESSES[i], "meaning": MEANINGS[i],
+            "invocation": INVOCATIONS[i],
             "tithi": TITHIS[i], "date": day.isoformat(),
             "weekday": day.strftime("%A"), "selection": status,
             "sunrise_count": sr_count, "detail": message,
@@ -156,6 +175,8 @@ def render(slug: str, year: int, lat: float, lon: float,
     variants = [calculate_variant(k, year, lat, lon, tz, hour24) for k in keys]
     if any(v is None for v in variants):
         raise RuntimeError("One or more Navratri variants have no calculated occurrence")
+    if is_hub:
+        variants.sort(key=lambda item: item["event"]["date"])
     metrics, sections = [], []
     if is_hub:
         title = "Ghatasthapana / Kalash Sthapana" if slug == "festivals/ghatasthapana" else "Four Navratri Calendars"
@@ -216,7 +237,8 @@ def render(slug: str, year: int, lat: float, lon: float,
         summary = v["context"] + ". Dates depend on city, timezone and local Tithi boundaries."
     return {"ok": True, "family": "navratri-calendar", "slug": slug, "title": title,
             "year": year, "summary": summary, "metrics": metrics, "sections": sections,
-            "navratri": {"variants": variants, "overview": is_hub},
+            "navratri": {"variants": variants, "overview": is_hub,
+                         "kalash_guide": list(KALASH_GUIDE)},
             "engine": {"name": "tithika-navratri-calendar",
                        "version": ENGINE_VERSION,
                        "basis": "Lahiri sunrise-Tithi and explicit festival selectors"}}
