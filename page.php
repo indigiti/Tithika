@@ -579,6 +579,16 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           </div>
           <div class="tk-panchang-engine">Festival rule engine · Lahiri</div>
         </div>
+        <?php if ($page['slug'] === 'festivals/navratri'): ?>
+        <nav class="tk-nv-shortcuts" aria-label="Choose Navratri variant">
+          <a href="<?= htmlspecialchars(tithika_pretty_url('calendars/navratri')) ?>">All four Navratris</a>
+          <a href="<?= htmlspecialchars(tithika_pretty_url('calendars/shardiya-navratri')) ?>">Shardiya</a>
+          <a href="<?= htmlspecialchars(tithika_pretty_url('calendars/chaitra-navratri')) ?>">Chaitra</a>
+          <a href="<?= htmlspecialchars(tithika_pretty_url('calendars/magha-gupta-navratri')) ?>">Magha Gupta</a>
+          <a href="<?= htmlspecialchars(tithika_pretty_url('calendars/ashadha-gupta-navratri')) ?>">Ashadha Gupta</a>
+          <a href="<?= htmlspecialchars(tithika_pretty_url('festivals/ghatasthapana')) ?>">Ghatasthapana Muhurat</a>
+        </nav>
+        <?php endif; ?>
         <div id="tkFestivalLoading" class="tk-panchang-loading">Calculating festival rule…</div>
         <div id="tkFestivalNote" class="tk-lunar-note"></div>
         <div id="tkFestivalResult" class="tk-festival-result"></div>
@@ -809,7 +819,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <div>
             <span class="tk-card-tag">Certified completion engine</span>
             <h3 id="tkPhaseTitle"><?= htmlspecialchars($page['title']) ?></h3>
-            <p>Route-specific calculation or structured reference data is generated from Tithika's shared Panchang, festival, Jyotish and astronomy substrates. Tradition-specific assumptions remain visible in each result.</p>
+            <p><?= in_array($page['slug'], ['calendars/navratri','calendars/shardiya-navratri','calendars/chaitra-navratri','calendars/magha-gupta-navratri','calendars/ashadha-gupta-navratri','festivals/ghatasthapana'], true) ? 'Explore all four Navratri traditions with calculated Ghatasthapana Muhurat, exact local Tithi periods, day-wise Navdurga context and linked Panchang. Skipped and extended Tithis are clearly labelled.' : 'Route-specific calculation or structured reference data is generated from Tithika\'s shared Panchang, festival, Jyotish and astronomy substrates. Tradition-specific assumptions remain visible in each result.' ?></p>
           </div>
           <div class="tk-panchang-engine" id="tkPhaseEngine">Six-phase completion</div>
         </div>

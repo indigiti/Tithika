@@ -2,7 +2,7 @@
 
 The executable source of truth is `config/routes.php`.
 
-Current mapped logical pages: **292**.
+Current mapped logical pages: **295**.
 
 ## Product families
 
@@ -40,17 +40,17 @@ Tutorials, Panchang concepts, Choghadiya, Muhurat, Nakshatra, Rahu Kala, FAQ and
 
 Current certified detail-route state:
 
-- **229** verified/live calculation routes
+- **232** verified/live calculation routes
 - **62** structured editorial routes
 - **1** canonical live redirect (`muhurat/choghadiya`)
-- **292** production-quality/indexable detail routes
+- **295** production-quality/indexable detail routes
 - **0** mapped `noindex,follow` shells
 
 The exact contract and promotion queue are documented in `docs/RELEASE_CERTIFICATION.md` and enforced by CI.
 
 ## SEO and release state
 
-The 292-route map is fully exposed through the centralized verified-route registry and structured editorial/reference coverage. All mapped detail routes currently meet the production-quality `index,follow` contract; the XML sitemap is generated from the same quality state.
+The 295-route map is fully exposed through the centralized verified-route registry and structured editorial/reference coverage. All mapped detail routes currently meet the production-quality `index,follow` contract; the XML sitemap is generated from the same quality state.
 
 The shared shell now emits canonical/OpenGraph/Twitter metadata, JSON-LD and breadcrumbs; related links are topic-aware across families. The human site map labels routes as Live, Editorial or Mapped.
 

@@ -12,9 +12,10 @@ expected={
     "rama-navami","hanuman-jayanti","akshaya-tritiya","vat-savitri",
     "durga-puja","ganesh-chaturthi","raksha-bandhan","navratri",
     "dussehra","holi","karwa-chauth","janmashtami","diwali",
+    "navratri-chaitra","navratri-magha-gupta","navratri-ashadha-gupta",
 }
 assert set(festival_rules.SUPPORTED_KINDS)==expected
-assert len(festival_rules.FESTIVAL_RULES)==13
+assert len(festival_rules.FESTIVAL_RULES)==16
 
 for kind,rule in festival_rules.FESTIVAL_RULES.items():
     assert rule["selector"] in festival_rules.SELECTORS,(kind,rule)

@@ -4,7 +4,7 @@ from __future__ import annotations
 import json, sys
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-import panchang, festival_rules, lunar_occurrences, regional_calendar, sankranti
+import panchang, festival_rules, lunar_occurrences, regional_calendar, sankranti, navratri_calendar
 
 ENGINE_VERSION="1.0.0"
 MONTH_SLUGS={
@@ -36,10 +36,7 @@ CALENDAR_THEMES={
  "calendars/mysore-dasara":["Navratri begins","Ayudha Puja","Mahanavami","Vijayadashami"],
  "calendars/saraswati-puja":["Vasant Panchami","Navratri Saraswati Avahana","Saraswati Puja"],
  "calendars/chhath":["Nahay Khay","Kharna","Sandhya Arghya","Usha Arghya"],
- "calendars/navratri":["Chaitra Navratri","Shardiya Navratri"],
- "calendars/shardiya-navratri":["Ghatasthapana","Navdurga days","Durga Ashtami","Maha Navami","Vijayadashami"],
- "calendars/chaitra-navratri":["Ghatasthapana","Navdurga days","Rama Navami"],
- "calendars/dashavatara":["Matsya","Kurma","Varaha","Narasimha","Vamana","Parashurama","Rama","Krishna","Buddha","Kalki"],
+  "calendars/dashavatara":["Matsya","Kurma","Varaha","Narasimha","Vamana","Parashurama","Rama","Krishna","Buddha","Kalki"],
  "calendars/dasha-mahavidya":["Kali","Tara","Tripura Sundari","Bhuvaneshwari","Bhairavi","Chhinnamasta","Dhumavati","Bagalamukhi","Matangi","Kamala"],
  "calendars/dwadasha-siddhividya":["Twelve Siddhavidya observance reference"],
  "calendars/gujarati-diwali":["Dhanteras","Kali Chaudas","Diwali","Bestu Varas","Bhai Bij"],
@@ -153,6 +150,9 @@ def main():
     try: tz=ZoneInfo(tzname)
     except ZoneInfoNotFoundError: tz=ZoneInfo("Asia/Kolkata");tzname="Asia/Kolkata"
     selected=datetime.strptime(p.get("date") or datetime.now(tz).strftime("%Y-%m-%d"),"%Y-%m-%d").date();year=selected.year
+    if slug in navratri_calendar.ALL_SLUGS:
+        print(json.dumps(navratri_calendar.render(slug,year,lat,lon,tz,bool(p.get("hour24",False))),ensure_ascii=False))
+        return
     major=major_events(year,lat,lon,tz); yearly=yearly_events(year,lat,lon,tz);sections=[];title=slug.split("/")[-1].replace("-"," ").title()
     if slug in ("calendars/hindu","calendars/indian","festivals/hindu"):
         title="Hindu Festival Calendar" if slug!="calendars/indian" else "Indian Festival Calendar"

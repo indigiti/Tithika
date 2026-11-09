@@ -68,6 +68,11 @@
     'vrat/mangala-gauri':'mangala-gauri'
   };
   const vratReuseYearly=new Set(Object.keys(vratReuseModes));
+  const navratriFamilyPages=new Set([
+    'calendars/navratri','calendars/shardiya-navratri','calendars/chaitra-navratri',
+    'calendars/magha-gupta-navratri','calendars/ashadha-gupta-navratri',
+    'festivals/ghatasthapana'
+  ]);
   const festivalKinds={
     'festivals/ganesha-chaturthi':'ganesh-chaturthi',
     'festivals/raksha-bandhan':'raksha-bandhan',
@@ -1828,6 +1833,105 @@
     }
   }
 
+
+  function navratriDate(value){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(String(value||'')))return String(value||'');
+    const d=new Date(String(value)+'T12:00:00Z');
+    return new Intl.DateTimeFormat('en-IN',{timeZone:'UTC',day:'numeric',month:'short',year:'numeric'}).format(d);
+  }
+  function navratriRoute(slug){
+    if(!/^(calendars|festivals)\/[a-z0-9-]+$/.test(String(slug||'')))return '';
+    return base+slug+'/';
+  }
+  function navratriWarnings(event){
+    const cautions=Object.entries(event.warnings||{}).filter(([,val])=>val)
+      .map(([name])=>name.replace(/_/g,' '));
+    return cautions.length
+      ? '<p class="tk-nv-caution">Timing review: '+esc(cautions.join(', '))+
+        '. These are traditional considerations; confirm the local practice.</p>'
+      : '';
+  }
+  function renderNavratri(d){
+    const host=$('#tkPhaseSections');
+    if(!host)return;
+    const variants=d.navratri?.variants||[];
+    const overview=d.navratri?.overview===true;
+    const heading='<div class="tk-nv-top"><div><span class="tk-nv-eyebrow">Tithika · Festival Intelligence</span>'+
+      '<h3>'+esc(d.title||'Navratri')+'</h3><p>'+esc(d.summary||'')+'</p></div>'+
+      '<a class="tk-nv-index" href="'+base+'calendars/navratri/">All four Navratris ↗</a></div>';
+    if(overview){
+      host.innerHTML=heading+'<div class="tk-nv-overview">'+variants.map(v=>{
+        const e=v.event||{},g=e.ghatasthapana||{};
+        const timing=[g.start_label,g.end_label].filter(Boolean).join(' – ');
+        return '<article class="tk-nv-variant"><div class="tk-nv-variant-top">'+
+          '<span class="tk-nv-mark" aria-hidden="true">✺</span><span class="tk-nv-chip">'+esc(v.variant.replace(/-/g,' '))+'</span></div>'+
+          '<h4>'+esc(v.title)+'</h4><p>'+esc(v.context)+'</p>'+
+          '<div class="tk-nv-variant-date"><small>Ghatasthapana · '+esc(d.year)+'</small><strong>'+esc(navratriDate(e.date))+'</strong></div>'+
+          '<p class="tk-nv-time">'+esc(timing||'Puja timing unavailable')+'</p>'+navratriWarnings(e)+
+          '<a class="tk-nv-link" href="'+esc(navratriRoute(v.slug))+'">Explore all Tithis <span aria-hidden="true">→</span></a>'+
+          '</article>';
+      }).join('')+'</div>'+
+      '<div class="tk-nv-note"><strong>Calculation basis</strong> Each date uses the selected city and timezone. The Gregorian date can differ by location; regional observance choices may also differ. No fixed annual date list is used.</div>';
+      return;
+    }
+    const v=variants[0],e=v?.event||{},g=e.ghatasthapana||{};
+    if(!v){host.textContent='Navratri calculation unavailable';return}
+    const muhurat=[g.start_label,g.end_label].filter(Boolean).join(' – ');
+    const abhijit=e.ghatasthapana_abhijit||{};
+    const alternative=[abhijit.start_label,abhijit.end_label].filter(Boolean).join(' – ');
+    const caveat=v.variant.includes('gupta')
+      ? 'Gupta Navratri practice often emphasizes Mahavidya worship. Navdurga associations below are reference context, not a claim that every Gupta lineage follows the same nine-day rite.'
+      : 'Navdurga worship and specific observances vary between regions and family traditions.';
+    const intro='<section class="tk-nv-highlight">'+
+      '<div class="tk-nv-highlight-date"><small>Ghatasthapana · '+esc(v.year)+'</small>'+
+      '<strong>'+esc(navratriDate(e.date))+'</strong><span>'+esc(e.weekday||'')+'</span></div>'+
+      '<div><span class="tk-nv-eyebrow">Kalash Sthapana · Shukla Pratipada</span>'+
+      '<h4>'+esc(muhurat||'Muhurat not calculated')+'</h4>'+
+      '<p>'+esc(e.ghatasthapana_basis||'Local Pratipada daylight overlap')+'</p>'+
+      '<p class="tk-nv-micro">Tithi: '+esc(e.tithi_start_label||'')+' → '+esc(e.tithi_end_label||'')+'</p>'+
+      (alternative?'<p class="tk-nv-micro">Abhijit alternative: '+esc(alternative)+'</p>':'')+
+      navratriWarnings(e)+'</div></section>';
+    const guide='<section class="tk-nv-practice-guide"><details><summary>Ghatasthapana / Kalash Sthapana — general preparation</summary>'+
+      '<ol>'+(d.navratri?.kalash_guide||[]).map(step=>'<li>'+esc(step)+'</li>').join('')+'</ol>'+
+      '<p>Reference only: ritual items, mantras and formal Muhurat rules differ between traditions.</p>'+
+      '</details></section>';
+    const dayList='<section class="tk-nv-section"><div class="tk-nv-section-title"><div>'+
+      '<span class="tk-nv-eyebrow">Calendar · '+esc(v.year)+'</span>'+
+      '<h4>Nine Shukla Tithis &amp; Navdurga</h4></div>'+
+      '<span class="tk-nv-chip">City-aware dates</span></div>'+
+      '<p class="tk-nv-explain">'+esc(caveat)+' Dates are assigned using local sunrise when possible; skipped or repeated Tithis are flagged.</p>'+
+      '<ol class="tk-nv-days">'+(v.days||[]).map(day=>{
+        const warn=day.selection!=='sunrise';
+        return '<li class="tk-nv-day"><div class="tk-nv-dayhead">'+
+          '<span class="tk-nv-daynum" aria-label="Tithi '+esc(day.day)+'">'+esc(day.day)+'</span>'+
+          '<time datetime="'+esc(day.date)+'"><strong>'+esc(navratriDate(day.date))+'</strong>'+
+          '<small>'+esc(day.weekday)+'</small></time></div>'+
+          '<span class="tk-nv-eyebrow">Shukla '+esc(day.tithi)+'</span>'+
+          '<h5>'+esc(day.title)+'</h5><p>'+esc(day.meaning)+'</p>'+
+          '<div class="tk-nv-period"><small>Tithi begins</small><b>'+esc(day.tithi_start_label)+'</b>'+
+          '<small>Tithi ends</small><b>'+esc(day.tithi_end_label)+'</b></div>'+
+          '<details class="tk-nv-prayer"><summary>Traditional invocation</summary><p>'+esc(day.invocation||'')+
+          '</p><small>Common Navdurga reference; practice varies.</small></details>'+
+          (warn?'<div class="tk-nv-flag">'+esc(day.detail)+'</div>':'')+
+          '<a href="'+base+'panchang/daily/?date='+encodeURIComponent(day.date)+'">View daily Panchang <span aria-hidden="true">→</span></a></li>';
+      }).join('')+'</ol></section>';
+    const sandhi=v.sandhi||{},dashami=v.dashami||{};
+    const details='<section class="tk-nv-foot">'+
+      '<article><span class="tk-nv-eyebrow">Ashtami → Navami</span><h4>Sandhi Puja</h4>'+
+      '<strong>'+esc([sandhi.start_label,sandhi.end_label].filter(Boolean).join(' – '))+'</strong>'+
+      '<p>48-minute astronomical interval centred on the Ashtami–Navami boundary. Ritual suitability is tradition-specific.</p></article>'+
+      '<article><span class="tk-nv-eyebrow">End of lunar observance</span><h4>Shukla Dashami</h4>'+
+      '<strong>'+esc(navratriDate(dashami.date))+'</strong>'+
+      '<p>Sunrise-Tithi reference. Parana, Navami and Vijayadashami can use different local selection rules.</p></article>'+
+      (v.additional||[]).map(item=>'<article><span class="tk-nv-eyebrow">Related observance</span>'+
+        '<h4>'+esc(item.title)+'</h4><strong>'+esc(navratriDate(item.date))+'</strong>'+
+        '<p>'+esc(item.detail)+'</p>'+
+        (navratriRoute(item.link_slug)?'<a href="'+esc(navratriRoute(item.link_slug))+'">Detailed observance →</a>':'')+'</article>').join('')+
+      '</section>';
+    host.innerHTML=heading+intro+guide+dayList+details+
+      '<div class="tk-nv-note"><strong>Calculation and interpretation</strong> Local rise-set events and Lahiri Tithis are calculated; ritual-day selection, day colours and regional practices require separate verified rules. No generic calendar dates are silently substituted.</div>';
+  }
+
   function renderPhaseCompletion(d){
     const engine=$('#tkPhaseEngine');
     if(engine)engine.textContent=`${d.engine?.name||'Tithika engine'} · ${d.engine?.version||''}`;
@@ -1836,6 +1940,7 @@
     const metrics=$('#tkPhaseMetrics');
     if(metrics)metrics.innerHTML=(d.metrics||[]).map(x=>reuseMetric(x.label,x.value,x.note||'')).join('');
     const host=$('#tkPhaseSections');if(!host)return;
+    if(d.family==='navratri-calendar'){renderNavratri(d);return;}
     const sections=d.sections||[];
     host.innerHTML=sections.length?sections.map(section=>{
       const items=section.items||[];
@@ -1846,7 +1951,9 @@
           const when=[item.date,item.time].filter(Boolean).join(' · ');
           const meta=item.meta?esc(String(item.meta)):'';
           const detail=item.detail?esc(String(item.detail)):'';
-          const link=item.link_date?`<a href="${base}panchang/daily/?date=${encodeURIComponent(item.link_date)}">Panchang →</a>`:'';
+          const link=item.link_slug&&navratriRoute(item.link_slug)
+            ? '<a href="'+esc(navratriRoute(item.link_slug))+'">View detail →</a>'
+            : item.link_date?`<a href="${base}panchang/daily/?date=${encodeURIComponent(item.link_date)}">Panchang →</a>`:'';
           return `<article class="tk-observance-event">
             <div class="tk-observance-date"><b>${esc(item.date||'Reference')}</b><span>${esc(item.time||'')}</span></div>
             <div class="tk-observance-main"><h4>${esc(item.title||'Result')}</h4><p>${meta}</p><small>${detail||when}</small></div>
@@ -2078,7 +2185,7 @@
     if(pageSlug==='panchang/month'||specializedMuhuratModes[pageSlug]||regionalVariants[pageSlug]||panchangReuseMonthly.has(pageSlug)){
       d.setDate(1);
       d.setMonth(d.getMonth()+shift);
-    }else if(lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)||muhuratReuseYearly.has(pageSlug)||vratReuseYearly.has(pageSlug)){
+    }else if(navratriFamilyPages.has(pageSlug)||lunarKinds[pageSlug]||observanceKinds[pageSlug]||festivalKinds[pageSlug]||(planetaryModes[pageSlug]&&planetaryModes[pageSlug]!=='positions')||aspectsModes[pageSlug]||eclipseModes[pageSlug]||dwadashiPages.includes(pageSlug)||mahadwadashiPages.includes(pageSlug)||seasonKinds[pageSlug]||sankrantiPages.includes(pageSlug)||panchangReuseYearly.has(pageSlug)||muhuratReuseYearly.has(pageSlug)||vratReuseYearly.has(pageSlug)){
       d.setFullYear(d.getFullYear()+shift);
     }else{
       d.setDate(d.getDate()+shift);
