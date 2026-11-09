@@ -121,4 +121,15 @@ tithika_render_header($shell['title'], $shell);
 $thinHeader = ob_get_clean();
 ok(str_contains($thinHeader, '<meta name="robots" content="index,follow,max-image-preview:large">'), 'completed route must be indexable');
 
+// A previous navigation typo passed text-only audits and corrupted every page.
+ok(str_contains($header, 'aria-current="page">'), 'navigation anchor closing bracket missing');
+$oldHost = $_SERVER['HTTP_HOST'];
+$oldServer = $_SERVER['SERVER_NAME'] ?? null;
+$_SERVER['HTTP_HOST'] = 'attacker.invalid';
+$_SERVER['SERVER_NAME'] = 'tithika.example';
+ok(tithika_origin() === 'https://tithika.example', 'canonical origin must not trust Host when SERVER_NAME is available');
+$_SERVER['HTTP_HOST'] = 'stage.digiti.in';
+ok(tithika_is_staging(), 'staging origin must be blocked from indexing');
+$_SERVER['HTTP_HOST'] = $oldHost;
+if ($oldServer === null) unset($_SERVER['SERVER_NAME']); else $_SERVER['SERVER_NAME'] = $oldServer;
 echo "SEO/content/accessibility/release hardening fixture passed\n";

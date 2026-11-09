@@ -3,6 +3,7 @@ declare(strict_types=1);
 require __DIR__ . '/includes/site.php';
 
 header('Content-Type: application/xml; charset=utf-8');
+if (tithika_is_staging()) { echo '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>'; exit; }
 $lastmod = gmdate('Y-m-d', max(
     (int)@filemtime(__DIR__ . '/config/routes.php'),
     (int)@filemtime(__DIR__ . '/config/live.php'),
