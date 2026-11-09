@@ -144,3 +144,26 @@ The former 99-route shell queue is complete. All mapped product routes now have 
 6. **Astronomy reference** — declination parallels/contra-parallels, geocentric ecliptic crossings, six Indian Ritus, and sidereal/tropical zodiac reference tables.
 
 The final completion contract is listed in `config/completion.php`. CI requires all 99 former shell routes to be present in `config/live.php`, backed by their family engine files and regression fixtures. The route contract remains **292**, with **292 indexable routes and zero mapped noindex shells**.
+
+
+## Navratri family extension (2026-11-09)
+
+After the original 292-route certification baseline, Tithika adds three
+production indexable routes: Magha Gupta Navratri, Ashadha Gupta Navratri,
+and a consolidated Ghatasthapana / Kalash Sthapana hub.
+
+- Current route contract: **295** detail routes.
+- Current calculation/live registry: **232** routes.
+- Existing structured editorial set remains **62**.
+- Canonical live alias remains **1**.
+- Current completion registry: **102** routes (99 original + 3 additions).
+
+The existing `calendars/navratri`, `calendars/shardiya-navratri`, and
+`calendars/chaitra-navratri` pages now use the new calculated family
+projection, not undated reference rows. All four variants reuse the deterministic
+Lahiri solar/lunar substrate and explicit shared Ghatasthapana selector.
+
+Certification requires 2026 India annual start-date anchors, continuous
+Pratipada–Navami Tithi boundaries, Sandhi intervals, explicit kshaya/vriddhi
+labels, shared PHP route coverage and release CI. Traditional observance-day
+and forbidden-period interpretations remain separate from astronomical facts.

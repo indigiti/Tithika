@@ -505,3 +505,5 @@ html[data-tk-theme="dark"] .tk-kundali-workspace,html[data-tk-theme="dark"] .tk-
 @media(max-width:650px){.tk-nv-overview,.tk-nv-days,.tk-nv-foot,.tk-nv-highlight{grid-template-columns:1fr}
  .tk-nv-highlight-date{border-right:0;border-bottom:1px solid var(--tk-border);padding:0 0 15px}
  .tk-nv-variant{padding:19px}.tk-nv-day{padding:16px}.tk-nv-top{gap:14px}}
+
+.tk-nv-shortcuts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 20px}.tk-nv-shortcuts a{font-size:.78rem;font-weight:700;color:var(--tk-ink);text-decoration:none;border:1px solid var(--tk-border);padding:9px 12px;border-radius:999px;background:var(--tk-surface)}.tk-nv-shortcuts a:hover,.tk-nv-shortcuts a:focus-visible{border-color:#b78037;text-decoration:underline}

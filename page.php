@@ -579,6 +579,16 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           </div>
           <div class="tk-panchang-engine">Festival rule engine · Lahiri</div>
         </div>
+        <?php if ($page['slug'] === 'festivals/navratri'): ?>
+        <nav class="tk-nv-shortcuts" aria-label="Choose Navratri variant">
+          <a href="<?= htmlspecialchars(tithika_pretty_url('calendars/navratri')) ?>">All four Navratris</a>
+          <a href="<?= htmlspecialchars(tithika_pretty_url('calendars/shardiya-navratri')) ?>">Shardiya</a>
+          <a href="<?= htmlspecialchars(tithika_pretty_url('calendars/chaitra-navratri')) ?>">Chaitra</a>
+          <a href="<?= htmlspecialchars(tithika_pretty_url('calendars/magha-gupta-navratri')) ?>">Magha Gupta</a>
+          <a href="<?= htmlspecialchars(tithika_pretty_url('calendars/ashadha-gupta-navratri')) ?>">Ashadha Gupta</a>
+          <a href="<?= htmlspecialchars(tithika_pretty_url('festivals/ghatasthapana')) ?>">Ghatasthapana Muhurat</a>
+        </nav>
+        <?php endif; ?>
         <div id="tkFestivalLoading" class="tk-panchang-loading">Calculating festival rule…</div>
         <div id="tkFestivalNote" class="tk-lunar-note"></div>
         <div id="tkFestivalResult" class="tk-festival-result"></div>
