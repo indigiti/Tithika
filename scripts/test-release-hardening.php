@@ -122,7 +122,7 @@ $thinHeader = ob_get_clean();
 ok(str_contains($thinHeader, '<meta name="robots" content="index,follow,max-image-preview:large">'), 'completed route must be indexable');
 
 // A previous navigation typo passed text-only audits and corrupted every page.
-ok(str_contains($header, 'aria-current="page">'), 'navigation anchor closing bracket missing');
+ok((bool)preg_match('~<a href="/panchang/"[^>]*>[^<]+</a>~', $header), 'navigation anchor closing bracket missing');
 $oldHost = $_SERVER['HTTP_HOST'];
 $oldServer = $_SERVER['SERVER_NAME'] ?? null;
 $_SERVER['HTTP_HOST'] = 'attacker.invalid';

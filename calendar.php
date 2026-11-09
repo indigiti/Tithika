@@ -18,6 +18,7 @@ function calendarPython(array $payload): array {
     $proc=proc_open([$python,$script],$desc,$pipes,__DIR__,null,['bypass_shell'=>true]);
     if(!is_resource($proc)) throw new RuntimeException('Unable to start notification agenda engine');
     fwrite($pipes[0],json_encode($payload,JSON_UNESCAPED_UNICODE)); fclose($pipes[0]);
+    stream_set_timeout($pipes[1], 25);
     $stdout=stream_get_contents($pipes[1]); fclose($pipes[1]);
     $stderr=stream_get_contents($pipes[2]); fclose($pipes[2]);
     $exit=proc_close($proc);
@@ -82,7 +83,8 @@ try {
         'horizon_days'=>$horizon,'tradition'=>$tradition,'hour24'=>true,'categories'=>$categories,
     ]);
 } catch(Throwable $e) {
-    calendarFail($e->getMessage(),500);
+    error_log('[Tithika calendar] '.$e->getMessage());
+    calendarFail('Calendar service temporarily unavailable',503);
 }
 
 $stamp=gmdate('Ymd\THis\Z');

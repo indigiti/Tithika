@@ -79,7 +79,7 @@ function tithika_origin(): string {
         if (!is_array($parts)
             || !in_array(strtolower((string)($parts['scheme'] ?? '')), ['https', 'http'], true)
             || empty($parts['host'])
-            || isset($parts['user'], $parts['pass'])
+            || isset($parts['user']) || isset($parts['pass'])
             || isset($parts['query']) || isset($parts['fragment'])
             || !in_array((string)($parts['path'] ?? ''), ['', '/'], true)) {
             throw new RuntimeException('Invalid TITHIKA_PUBLIC_ORIGIN configuration');

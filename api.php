@@ -34,7 +34,18 @@ function curlJson(string $url): array {
 }
 
 function readPayload(): array {
-    $raw = file_get_contents('php://input') ?: '{}';
+    // Reject oversized inputs before passing them to an expensive Python worker.
+    $maxBytes = 32768;
+    if (isset($_SERVER['CONTENT_LENGTH']) && (int)$_SERVER['CONTENT_LENGTH'] > $maxBytes) {
+        out(['ok'=>false,'error'=>'Request body too large'], 413);
+    }
+    $stream = fopen('php://input', 'rb');
+    if (!is_resource($stream)) out(['ok'=>false,'error'=>'Unable to read request'], 400);
+    $raw = stream_get_contents($stream, $maxBytes + 1);
+    fclose($stream);
+    if ($raw === false) out(['ok'=>false,'error'=>'Unable to read request'], 400);
+    if (strlen($raw) > $maxBytes) out(['ok'=>false,'error'=>'Request body too large'], 413);
+    $raw = $raw ?: '{}';
     $payload = json_decode($raw, true);
     if (!is_array($payload)) out(['ok'=>false,'error'=>'Invalid JSON'], 400);
     $lat = (float)($payload['lat'] ?? 19.0760);
@@ -64,11 +75,64 @@ function runPythonEngine(string $relativeScript, array $payload): array {
     $env['TITHIKA_ELEVATION_METERS'] = (string)$elevation;
     $proc = proc_open([$python, $script], $desc, $pipes, __DIR__, $env, ['bypass_shell'=>true]);
     if (!is_resource($proc)) throw new RuntimeException('Unable to start Python calculation engine');
-    fwrite($pipes[0], json_encode($payload, JSON_UNESCAPED_UNICODE));
-    fclose($pipes[0]);
-    $stdout = stream_get_contents($pipes[1]); fclose($pipes[1]);
-    $stderr = stream_get_contents($pipes[2]); fclose($pipes[2]);
-    $exit = proc_close($proc);
+    $deadline = microtime(true) + 25.0;
+    $maxOutput = 2097152;
+    $maxError = 8192;
+    $stdin = json_encode($payload, JSON_UNESCAPED_UNICODE);
+    if ($stdin === false || strlen($stdin) > 32768) {
+        proc_terminate($proc); proc_close($proc);
+        throw new RuntimeException('Invalid or oversized engine payload');
+    }
+    foreach ($pipes as $pipe) stream_set_blocking($pipe, false);
+    $writeOffset = 0;
+    $stdout = '';
+    $stderr = '';
+    $exit = -1;
+    try {
+        while (true) {
+            if (microtime(true) >= $deadline) throw new RuntimeException('Calculation timed out');
+            $read = [$pipes[1], $pipes[2]];
+            $write = isset($pipes[0]) && is_resource($pipes[0]) ? [$pipes[0]] : [];
+            $except = null;
+            $ready = @stream_select($read, $write, $except, 0, 100000);
+            if ($ready === false) throw new RuntimeException('Engine I/O failed');
+            foreach ($read as $pipe) {
+                $chunk = fread($pipe, 16384);
+                if ($chunk === false) continue;
+                if ($pipe === $pipes[1]) $stdout .= $chunk;
+                else $stderr .= $chunk;
+            }
+            if (strlen($stdout) > $maxOutput || strlen($stderr) > $maxError) {
+                throw new RuntimeException('Calculation output exceeds resource limit');
+            }
+            if ($write && isset($pipes[0]) && is_resource($pipes[0])) {
+                $count = fwrite($pipes[0], substr($stdin, $writeOffset, 8192));
+                if ($count === false) throw new RuntimeException('Engine input failed');
+                $writeOffset += $count;
+                if ($writeOffset >= strlen($stdin)) {
+                    fclose($pipes[0]);
+                    unset($pipes[0]);
+                }
+            }
+            $status = proc_get_status($proc);
+            if (!$status['running']) {
+                $exit = (int)$status['exitcode'];
+                // Drain remaining buffered output after worker exit.
+                $stdout .= stream_get_contents($pipes[1]) ?: '';
+                $stderr .= stream_get_contents($pipes[2]) ?: '';
+                if (strlen($stdout) > $maxOutput || strlen($stderr) > $maxError) throw new RuntimeException('Calculation output exceeds resource limit');
+                break;
+            }
+        }
+    } catch (Throwable $e) {
+        proc_terminate($proc);
+        // Do not wait indefinitely for a worker that ignores termination.
+        foreach ($pipes as $pipe) if (is_resource($pipe)) fclose($pipe);
+        proc_close($proc);
+        throw $e;
+    }
+    foreach ($pipes as $pipe) if (is_resource($pipe)) fclose($pipe);
+    proc_close($proc);
     $data = json_decode($stdout ?: '{}', true);
     if (!is_array($data)) {
         throw new RuntimeException('Invalid calculation response' . ($stderr ? ': ' . trim($stderr) : ''));
@@ -562,5 +626,6 @@ try {
 
     out(['ok'=>false,'error'=>'Unknown action'], 404);
 } catch (Throwable $e) {
-    out(['ok'=>false,'error'=>$e->getMessage()], 500);
+    error_log('[Tithika API] ' . $e->getMessage());
+    out(['ok'=>false,'error'=>'Service temporarily unavailable'], 503);
 }
