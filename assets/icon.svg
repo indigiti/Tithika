@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tithika">
+<rect width="512" height="512" rx="112" fill="#162b51"/>
+<circle cx="256" cy="254" r="165" fill="none" stroke="#e6ba62" stroke-width="10" opacity=".65"/>
+<circle cx="256" cy="254" r="129" fill="#233d64" stroke="#e6ba62" stroke-width="4"/>
+<path d="M256 106v36M256 364v36M110 254h36M366 254h36" stroke="#e6ba62" stroke-width="8" stroke-linecap="round"/>
+<text x="256" y="310" fill="#fff5dc" font-family="sans-serif" font-size="154" font-weight="700" text-anchor="middle">ति</text>
+</svg>

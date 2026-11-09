@@ -26,7 +26,7 @@ $remove($out);
 mkdir($public,0755,true);
 mkdir($private.'/build',0755,true);
 
-$publicFiles=['.htaccess','index.php','page.php','api.php','choghadiya.php','intelligence.php','settings.php','notifications.php','calendar.php','robots.php','sitemap.php','site-map.php','manifest.webmanifest'];
+$publicFiles=['.htaccess','index.php','page.php','api.php','choghadiya.php','intelligence.php','settings.php','notifications.php','calendar.php','robots.php','sitemap.php','site-map.php','manifest.webmanifest','service-worker.js'];
 $publicDirs=['assets','config','includes','python'];
 $privateDirs=['scripts','docs'];
 foreach($privateDirs as $name) $copy($root.'/'.$name,$private.'/'.$name);

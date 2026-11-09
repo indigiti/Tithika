@@ -101,6 +101,9 @@ $manifest = json_decode((string)file_get_contents(dirname(__DIR__) . '/manifest.
 ok(is_array($manifest), 'manifest invalid JSON');
 ok(($manifest['display'] ?? '') === 'standalone', 'manifest display mode incorrect');
 ok(($manifest['short_name'] ?? '') === 'Tithika', 'manifest short name incorrect');
+ok(!empty($manifest['icons'][0]['src']), 'PWA icon missing');
+ok(is_file(dirname(__DIR__).'/assets/icon.svg'), 'PWA icon asset missing');
+ok(is_file(dirname(__DIR__).'/service-worker.js'), 'PWA service worker missing');
 
 $htaccess = (string)file_get_contents(dirname(__DIR__) . '/.htaccess');
 ok(str_contains($htaccess, 'sitemap\.xml'), 'sitemap rewrite missing');

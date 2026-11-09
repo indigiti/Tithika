@@ -349,6 +349,13 @@ window.TITHIKA_I18N = <?= json_encode(tithika_client_messages(), JSON_UNESCAPED_
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/notifications.js')) ?>" defer></script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/settings.js')) ?>" defer></script>
 <script src="<?= htmlspecialchars(tithika_asset_url('assets/kundali-workspace.js')) ?>" defer></script>
+<script>
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register(<?= json_encode(tithika_url('service-worker.js')) ?>).catch(function () {});
+  }, {once:true});
+}
+</script>
 </body>
 </html>
 <?php
