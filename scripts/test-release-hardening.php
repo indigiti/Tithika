@@ -138,7 +138,7 @@ if ($oldServer === null) unset($_SERVER['SERVER_NAME']); else $_SERVER['SERVER_N
 
 // Verify failure and recovery remain visible to the user instead of leaving
 // the static "Building verified result…" skeleton on calendar pages.
-const phpEngine = (string)file_get_contents(dirname(__DIR__).'/includes/engine-runtime.php');
+$phpEngine = (string)file_get_contents(dirname(__DIR__).'/includes/engine-runtime.php');
 ok(str_contains($phpEngine, '$root = dirname(__DIR__);'), 'worker root regression');
 $siteJs = (string)file_get_contents(dirname(__DIR__).'/assets/tithika-site.js');
 ok(str_contains($siteJs, "if(navratriFamilyPages.has(pageSlug) && $('#tkPhaseSections'))"), 'Navratri must not depend on unrelated solar API');
