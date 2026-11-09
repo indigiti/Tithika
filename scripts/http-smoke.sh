@@ -35,4 +35,26 @@ status="$(get_status -H 'Content-Type: application/json' --data-binary @<(head -
 [[ "$status" == 413 ]] || { echo "Expected oversized JSON 413; got $status"; exit 1; }
 status="$(get_status 'http://127.0.0.1:18765/api.php?action=does-not-exist')"
 [[ "$status" == 404 ]] || { echo "Expected unknown API 404; got $status"; exit 1; }
-echo "HTTP smoke passed: homepage, dynamic route, staging SEO, assets, 400/413/404 gates."
+
+# Previously only malformed requests were tested: a broken subprocess path
+# passed all those gates and took every live calculator offline.
+payload='{"lat":19.076,"lon":72.8777,"city":"Mumbai, India","timezone":"Asia/Kolkata","date":"2026-11-09","hour24":false}'
+assert_json() {
+  local response="$1" family="$2"
+  printf '%s' "$response" | python3 -c '
+import json,sys
+body=json.load(sys.stdin)
+assert body.get("ok") is True, body
+if len(sys.argv)>1 and sys.argv[1] != "-":
+    assert body.get("family") == sys.argv[1], body
+' "$family"
+}
+solar="$(curl --silent --show-error --fail --max-time 30 -H 'Content-Type: application/json' --data "$payload" 'http://127.0.0.1:18765/api.php?action=calculate')"
+assert_json "$solar" "-"
+navratri="$(curl --silent --show-error --fail --max-time 30 -H 'Content-Type: application/json' --data "${payload%?},\"slug\":\"calendars/navratri\"}" 'http://127.0.0.1:18765/api.php?action=phase-completion')"
+assert_json "$navratri" "navratri-calendar"
+printf '%s' "$navratri" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert len(d["navratri"]["variants"])==4; assert d["navratri"]["overview"]'
+detail="$(curl --silent --show-error --fail --max-time 30 -H 'Content-Type: application/json' --data "${payload%?},\"slug\":\"calendars/shardiya-navratri\"}" 'http://127.0.0.1:18765/api.php?action=phase-completion')"
+assert_json "$detail" "navratri-calendar"
+printf '%s' "$detail" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert len(d["navratri"]["variants"][0]["days"])==9'
+echo "HTTP smoke passed: routes, SEO, PWA, API rejection and real Python-backed calendar responses."

@@ -251,6 +251,12 @@
   }
 
   async function calculate(){
+    // A festival calendar must not remain blank when the unrelated
+    // Choghadiya/solar-context API fails or times out.
+    if(navratriFamilyPages.has(pageSlug) && $('#tkPhaseSections')){
+      await calculatePhaseCompletion();
+      return;
+    }
     try{
       const r=await fetch(`${base}api.php?action=calculate`,{
         method:'POST',headers:{'Content-Type':'application/json'},
@@ -291,7 +297,15 @@
       if(panchangReuseModes[pageSlug]) await calculatePanchangReuse();
       if(regionalVariants[pageSlug]) await calculateRegionalSurface();
       if($('#tkPhaseSections')) await calculatePhaseCompletion();
-    }catch(e){toast(e.message||'Unable to load location context')}
+    }catch(e){
+      if($('#tkPhaseSections')){
+        // Keep every completion page independently usable if the separate
+        // solar dashboard request fails.
+        await calculatePhaseCompletion();
+      }else{
+        toast(e.message||'Unable to load location context');
+      }
+    }
   }
 
   function renderSolar(d){
@@ -1824,12 +1838,24 @@
         method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)
       });
       const j=await r.json();
-      if(!j.ok)throw new Error(j.error||'Completion engine unavailable');
+      if(!r.ok || !j.ok)throw new Error(j.error||'Completion engine unavailable');
       if(loading)loading.hidden=true;
       renderPhaseCompletion(j);
     }catch(e){
-      if(loading){loading.hidden=false;loading.textContent=e.message||'Completion engine unavailable'}
-      toast(e.message||'Completion engine unavailable');
+      const reason=e?.message||'Completion engine unavailable';
+      if(loading){
+        loading.hidden=false;
+        loading.textContent='';
+        const message=document.createElement('span');
+        message.textContent='Calendar could not load: '+reason+'. ';
+        const retry=document.createElement('button');
+        retry.type='button';
+        retry.className='tk-phase-retry';
+        retry.textContent='Retry';
+        retry.addEventListener('click',()=>calculatePhaseCompletion(),{once:true});
+        loading.append(message,retry);
+      }
+      toast(reason);
     }
   }
 
