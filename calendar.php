@@ -10,22 +10,11 @@ function calendarFail(string $message, int $status=400): never {
     exit;
 }
 
+require_once __DIR__ . '/includes/engine-runtime.php';
+
 function calendarPython(array $payload): array {
-    $script=__DIR__.'/python/notification_agenda.py';
-    if(!is_file($script)) throw new RuntimeException('Notification agenda engine not found');
-    $python=getenv('PYTHON_BIN') ?: 'python3';
-    $desc=[0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']];
-    $proc=proc_open([$python,$script],$desc,$pipes,__DIR__,null,['bypass_shell'=>true]);
-    if(!is_resource($proc)) throw new RuntimeException('Unable to start notification agenda engine');
-    fwrite($pipes[0],json_encode($payload,JSON_UNESCAPED_UNICODE)); fclose($pipes[0]);
-    stream_set_timeout($pipes[1], 25);
-    $stdout=stream_get_contents($pipes[1]); fclose($pipes[1]);
-    $stderr=stream_get_contents($pipes[2]); fclose($pipes[2]);
-    $exit=proc_close($proc);
-    $data=json_decode($stdout ?: '{}',true);
-    if(!is_array($data) || $exit!==0 || !($data['ok']??false)){
-        throw new RuntimeException((string)($data['error']??trim($stderr)?:'Calendar generation failed'));
-    }
+    $data = runPythonEngine('python/notification_agenda.py', $payload);
+    if (!($data['ok'] ?? false)) throw new RuntimeException('Notification agenda engine failed');
     return $data;
 }
 
