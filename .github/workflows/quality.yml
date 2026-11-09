@@ -205,6 +205,9 @@ jobs:
       - name: Major festival regression fixtures
         run: python scripts/test-festivals.py
 
+      - name: Four Navratri calendar semantic regression
+        run: python scripts/test-navratri-calendars.py
+
       - name: Festival rule registry fixture
         run: python scripts/test-festival-rule-registry.py
 

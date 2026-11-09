@@ -17,14 +17,14 @@ $live = tithika_live_slugs();
 $indexable = array_values(array_filter($flat, 'tithika_is_indexable_page'));
 $noindex = array_values(array_filter($flat, fn($p) => !tithika_is_indexable_page($p)));
 
-certify(count($flat) === 292, 'route contract must remain 292');
-certify(count($live) === 229, 'verified live route count must be 229');
-certify(count($indexable) === 292, 'production indexable route count must be 292');
+certify(count($flat) === 295, 'route contract must remain 295');
+certify(count($live) === 232, 'verified live route count must be 232');
+certify(count($indexable) === 295, 'production indexable route count must be 295');
 certify(count($noindex) === 0, 'mapped noindex route count must be zero');
 
 $completion = require dirname(__DIR__) . '/config/completion.php';
-certify(count($completion) === 99, 'final completion route set must remain 99');
-certify(count(array_unique($completion)) === 99, 'final completion route set must be unique');
+certify(count($completion) === 102, 'completion route set must be 102 including three new Navratri pages');
+certify(count(array_unique($completion)) === 102, 'completion route set must be unique');
 foreach ($completion as $slug) {
     certify(isset($flat[$slug]), "completion route missing from manifest: {$slug}");
     certify(in_array($slug, $live, true), "completion route not promoted: {$slug}");
@@ -40,6 +40,8 @@ foreach (['panchang/nepali','calendars/nepali','calendars/jain','panchang/sunris
 foreach ([
     'python/nepali_calendar.py',
     'python/jain_calendar.py',
+    'python/navratri_calendar.py',
+    'scripts/test-navratri-calendars.py',
     'python/vendor/nepali_bs_calendar.json',
     'python/vendor/nepali_bs_calendar.LICENSE',
     'scripts/test-nepali-calendar.py',

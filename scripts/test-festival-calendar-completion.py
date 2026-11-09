@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)));sys.path.insert(0,os.path.join(ROOT,"python"))
 import festival_calendar_completion as x
 tz=ZoneInfo("Asia/Kolkata");lat,lon=18.5204,73.8567
-major=x.major_events(2026,lat,lon,tz);assert len(major)==13
+major=x.major_events(2026,lat,lon,tz);assert len(major)==16
 assert any(r["title"].startswith("Diwali") for r in major)
 yearly=x.yearly_events(2026,lat,lon,tz)
 assert len(yearly)>55,len(yearly)
