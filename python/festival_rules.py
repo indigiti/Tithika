@@ -405,19 +405,39 @@ def select_ghatasthapana(ctx):
     if not selected:
         return None, {}
     d = selected["date"]
-    mid = selected["overlap"][0] + (
-        selected["overlap"][1] - selected["overlap"][0]
-    ) / 2
-    state = panchang.state_at(mid)
+    alternatives = choose_by_period(
+        ctx["start"], ctx["end"],
+        lambda day: (
+            solar_day_parts(day, ctx["lat"], ctx["lon"], ctx["tz"]) or {}
+        ).get("abhijit"),
+    )
+    # Test the full Muhurat interval for named cautions, not only its midpoint.
+    chitra = intervals_for_name(
+        selected["overlap"][0], selected["overlap"][1],
+        "nakshatra_id", "nakshatra", "Chitra",
+    )
+    vaidhriti = intervals_for_name(
+        selected["overlap"][0], selected["overlap"][1],
+        "yoga_id", "yoga", "Vaidhriti",
+    )
     warnings = {
-        "chitra_nakshatra": state["nakshatra"] == "Chitra",
-        "vaidhriti_yoga": state["yoga"] == "Vaidhriti",
+        "chitra_nakshatra": bool(chitra),
+        "vaidhriti_yoga": bool(vaidhriti),
     }
     return selected, {
         "ghatasthapana": window(
             selected["overlap"][0], selected["overlap"][1],
             d, ctx["hour24"],
         ),
+        "ghatasthapana_abhijit": (
+            window(alternatives["overlap"][0], alternatives["overlap"][1],
+                   alternatives["date"], ctx["hour24"])
+            if alternatives else None
+        ),
+        "caution_intervals": {
+            "chitra": [window(a,b,d,ctx["hour24"]) for a,b in chitra],
+            "vaidhriti": [window(a,b,d,ctx["hour24"]) for a,b in vaidhriti],
+        },
         "ghatasthapana_basis": (
             "Pratipada overlap with first third of local daylight"
             if period == "first_third" else

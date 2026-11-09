@@ -1872,6 +1872,8 @@
     const v=variants[0],e=v?.event||{},g=e.ghatasthapana||{};
     if(!v){host.textContent='Navratri calculation unavailable';return}
     const muhurat=[g.start_label,g.end_label].filter(Boolean).join(' – ');
+    const abhijit=e.ghatasthapana_abhijit||{};
+    const alternative=[abhijit.start_label,abhijit.end_label].filter(Boolean).join(' – ');
     const caveat=v.variant.includes('gupta')
       ? 'Gupta Navratri practice often emphasizes Mahavidya worship. Navdurga associations below are reference context, not a claim that every Gupta lineage follows the same nine-day rite.'
       : 'Navdurga worship and specific observances vary between regions and family traditions.';
@@ -1882,6 +1884,7 @@
       '<h4>'+esc(muhurat||'Muhurat not calculated')+'</h4>'+
       '<p>'+esc(e.ghatasthapana_basis||'Local Pratipada daylight overlap')+'</p>'+
       '<p class="tk-nv-micro">Tithi: '+esc(e.tithi_start_label||'')+' → '+esc(e.tithi_end_label||'')+'</p>'+
+      (alternative?'<p class="tk-nv-micro">Abhijit alternative: '+esc(alternative)+'</p>':'')+
       navratriWarnings(e)+'</div></section>';
     const dayList='<section class="tk-nv-section"><div class="tk-nv-section-title"><div>'+
       '<span class="tk-nv-eyebrow">Calendar · '+esc(v.year)+'</span>'+

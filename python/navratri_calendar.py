@@ -185,7 +185,12 @@ def render(slug: str, year: int, lat: float, lon: float,
              "note": "Computed as Shukla Pratipada overlap with the first third of local daylight, or a labelled Abhijit alternative. Ritual exclusions and local customs require confirmation.",
              "items": [_row("Ghatasthapana", e["date"], start,
                              e.get("ghatasthapana_basis", "") +
-                             (" · Check " + caution if caution else ""))]},
+                             (" · Check " + caution if caution else ""))] +
+                      ([_row("Abhijit alternative", e["date"],
+                             " – ".join(filter(None, [e["ghatasthapana_abhijit"].get("start_label"),
+                                                     e["ghatasthapana_abhijit"].get("end_label")])),
+                             "Reference only; validate tradition-specific exclusions.")]
+                       if e.get("ghatasthapana_abhijit") else [])},
             {"title": "Nine Shukla Paksha Tithis and Navdurga",
              "note": "Nine Tithis are not necessarily nine distinct civil days. Repeated or skipped sunrise Tithis are labelled.",
              "items": [
