@@ -21,7 +21,7 @@ import choghadiya
 import lagna
 import panchang
 
-ENGINE_VERSION = "0.2.0"
+ENGINE_VERSION = "0.3.0"
 
 FESTIVAL_RULES = {
     "rama-navami": {
@@ -71,6 +71,24 @@ FESTIVAL_RULES = {
         "month": "Ashwina", "paksha": "Shukla Paksha",
         "tithi_id": 0, "start_angle": 0.0, "end_angle": 12.0,
         "selector": "ghatasthapana", "profile": "navratri",
+    },
+    "navratri-chaitra": {
+        "title": "Chaitra (Vasanta) Navratri",
+        "month": "Chaitra", "paksha": "Shukla Paksha",
+        "tithi_id": 0, "start_angle": 0.0, "end_angle": 12.0,
+        "selector": "ghatasthapana", "profile": "navratri-chaitra",
+    },
+    "navratri-magha-gupta": {
+        "title": "Magha Gupta Navratri",
+        "month": "Magha", "paksha": "Shukla Paksha",
+        "tithi_id": 0, "start_angle": 0.0, "end_angle": 12.0,
+        "selector": "ghatasthapana", "profile": "navratri-magha-gupta",
+    },
+    "navratri-ashadha-gupta": {
+        "title": "Ashadha Gupta Navratri",
+        "month": "Ashadha", "paksha": "Shukla Paksha",
+        "tithi_id": 0, "start_angle": 0.0, "end_angle": 12.0,
+        "selector": "ghatasthapana", "profile": "navratri-ashadha-gupta",
     },
     "dussehra": {
         "title": "Vijayadashami",
@@ -151,6 +169,7 @@ def solar_day_parts(d, lat, lon, tz):
         "aparahna": (sunrise + day * 3 / 5, sunrise + day * 4 / 5),
         "sayahna": (sunrise + day * 4 / 5, sunset),
         "first_third": (sunrise, sunrise + day / 3),
+        "abhijit": (sunrise + day * 7 / 15, sunrise + day * 8 / 15),
         "vijay": (sunrise + day * 10 / 15, sunrise + day * 11 / 15),
     }
 
@@ -366,12 +385,23 @@ def select_purnima_sunrise(ctx):
 
 
 def select_ghatasthapana(ctx):
+    # First local daylight third while Shukla Pratipada is current.
+    # When no overlap exists, report an Abhijit-based alternative explicitly.
+    period = "first_third"
     selected = choose_by_period(
         ctx["start"], ctx["end"],
         lambda d: (
             solar_day_parts(d, ctx["lat"], ctx["lon"], ctx["tz"]) or {}
-        ).get("first_third"),
+        ).get(period),
     )
+    if not selected:
+        period = "abhijit"
+        selected = choose_by_period(
+            ctx["start"], ctx["end"],
+            lambda d: (
+                solar_day_parts(d, ctx["lat"], ctx["lon"], ctx["tz"]) or {}
+            ).get(period),
+        )
     if not selected:
         return None, {}
     d = selected["date"]
@@ -379,15 +409,26 @@ def select_ghatasthapana(ctx):
         selected["overlap"][1] - selected["overlap"][0]
     ) / 2
     state = panchang.state_at(mid)
+    warnings = {
+        "chitra_nakshatra": state["nakshatra"] == "Chitra",
+        "vaidhriti_yoga": state["yoga"] == "Vaidhriti",
+    }
     return selected, {
         "ghatasthapana": window(
             selected["overlap"][0], selected["overlap"][1],
             d, ctx["hour24"],
         ),
-        "warnings": {
-            "chitra_nakshatra": state["nakshatra"] == "Chitra",
-            "vaidhriti_yoga": state["yoga"] == "Vaidhriti",
-        },
+        "ghatasthapana_basis": (
+            "Pratipada overlap with first third of local daylight"
+            if period == "first_third" else
+            "Pratipada overlap with Abhijit; primary morning window absent"
+        ),
+        "ghatasthapana_status": (
+            "review-tradition-specific-exclusions"
+            if any(warnings.values()) else
+            "computed-window"
+        ),
+        "warnings": warnings,
     }
 
 
@@ -572,6 +613,8 @@ def qualified_occurrence(kind, year, tz):
         if month.get("purnimanta") != rule["month"]:
             continue
         if start_dt.year > year + 1 or end_dt.year < year - 1:
+            continue
+        if kind.startswith("navratri-") and start_dt.year != year:
             continue
         return start_dt, end_dt, month
     return None
