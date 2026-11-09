@@ -63,6 +63,24 @@ function readPayload(): array {
     return $payload;
 }
 
+function acquireEngineSlot(): mixed {
+    // Shared per-server admission control limits PHP-FPM Python fan-out.
+    // Use a private writable temp directory, never a public document root.
+    $directory = rtrim((string)(getenv('TITHIKA_LOCK_DIR') ?: sys_get_temp_dir()), '/')
+        . '/tithika-engine-slots';
+    if (!is_dir($directory) && !@mkdir($directory, 0700, true) && !is_dir($directory)) {
+        throw new RuntimeException('Calculation capacity unavailable');
+    }
+    $limit = max(1, min(16, (int)(getenv('TITHIKA_MAX_ENGINE_WORKERS') ?: 4)));
+    for ($i = 0; $i < $limit; $i++) {
+        $handle = @fopen($directory . '/worker-' . $i . '.lock', 'c');
+        if (!is_resource($handle)) continue;
+        if (flock($handle, LOCK_EX | LOCK_NB)) return $handle;
+        fclose($handle);
+    }
+    throw new RuntimeException('Calculation capacity exhausted');
+}
+
 function runPythonEngine(string $relativeScript, array $payload): array {
     $script = __DIR__ . '/' . ltrim($relativeScript, '/');
     if (!is_file($script)) throw new RuntimeException('Calculation engine not found');
@@ -73,14 +91,24 @@ function runPythonEngine(string $relativeScript, array $payload): array {
     $elevation = (float)($payload['elevation'] ?? 0.0);
     $elevation = max(-500.0, min(9000.0, $elevation));
     $env['TITHIKA_ELEVATION_METERS'] = (string)$elevation;
-    $proc = proc_open([$python, $script], $desc, $pipes, __DIR__, $env, ['bypass_shell'=>true]);
-    if (!is_resource($proc)) throw new RuntimeException('Unable to start Python calculation engine');
+    $slot = acquireEngineSlot();
+    try {
+        $proc = proc_open([$python, $script], $desc, $pipes, __DIR__, $env, ['bypass_shell'=>true]);
+    } catch (Throwable $e) {
+        flock($slot, LOCK_UN); fclose($slot);
+        throw $e;
+    }
+    if (!is_resource($proc)) {
+        flock($slot, LOCK_UN); fclose($slot);
+        throw new RuntimeException('Unable to start Python calculation engine');
+    }
     $deadline = microtime(true) + 25.0;
     $maxOutput = 2097152;
     $maxError = 8192;
     $stdin = json_encode($payload, JSON_UNESCAPED_UNICODE);
     if ($stdin === false || strlen($stdin) > 32768) {
         proc_terminate($proc); proc_close($proc);
+        flock($slot, LOCK_UN); fclose($slot);
         throw new RuntimeException('Invalid or oversized engine payload');
     }
     foreach ($pipes as $pipe) stream_set_blocking($pipe, false);
@@ -129,17 +157,19 @@ function runPythonEngine(string $relativeScript, array $payload): array {
         // Do not wait indefinitely for a worker that ignores termination.
         foreach ($pipes as $pipe) if (is_resource($pipe)) fclose($pipe);
         proc_close($proc);
+        flock($slot, LOCK_UN); fclose($slot);
         throw $e;
     }
     foreach ($pipes as $pipe) if (is_resource($pipe)) fclose($pipe);
     proc_close($proc);
+    flock($slot, LOCK_UN); fclose($slot);
     $data = json_decode($stdout ?: '{}', true);
     if (!is_array($data)) {
         throw new RuntimeException('Invalid calculation response' . ($stderr ? ': ' . trim($stderr) : ''));
     }
     if ($exit !== 0 || !($data['ok'] ?? false)) {
-        $data['detail'] = $stderr ?: ($data['detail'] ?? '');
-        $data['_exit'] = $exit;
+        error_log('[Tithika calculation] engine=' . basename($script) . ' exit=' . $exit . ' ' . substr($stderr, 0, 500));
+        $data = ['ok'=>false, 'error'=>'Calculation unavailable'];
     }
     return $data;
 }
