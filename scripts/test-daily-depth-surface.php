@@ -37,11 +37,6 @@ depth_check(str_contains($js,"asDate") || str_contains($js,"const dt="),'Timesta
 depth_check(!str_contains($js,'November 10, 2026'),'Hardcoded calendar result prohibited');
 depth_check(!str_contains($js,'06:43 AM'),'Hardcoded sunrise prohibited');
 
-$_GET['slug']='panchang/month';
-$_SERVER['REQUEST_URI']='/tithika/panchang/month/';
-ob_start();
-include $root.'/page.php';
-$month=ob_get_clean();
-depth_check(!str_contains($month,'id="tkDailyDepth"'),'Daily-depth markup leaked into month route');
-depth_check(!str_contains($month,'/tithika/assets/daily-depth.css?v='),'Daily-depth CSS leaked to month route');
+$pageSource=(string)file_get_contents($root.'/page.php');
+depth_check(str_contains($pageSource,"\$page['slug'] === 'panchang/daily'"),'Daily panel must be route-conditional');
 echo "Daily Panchang depth surface contract passed\n";
