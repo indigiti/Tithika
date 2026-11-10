@@ -901,6 +901,10 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
     </div>
   </div>
 
+  <?php if ($page['slug'] === 'panchang/daily'): ?>
+    <?php require __DIR__ . '/includes/daily-depth.php'; ?>
+  <?php endif; ?>
+
   <?php if ($related): ?>
   <section class="tk-related">
     <div class="tk-section-head"><div><span>Keep exploring</span><h2>Related Tithika tools</h2></div></div>
