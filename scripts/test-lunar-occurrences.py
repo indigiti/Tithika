@@ -47,7 +47,7 @@ maha_dates={
     event["observance"]["mahadwadashi"]["date"]: event
     for event in maha_events
 }
-for expected in ("2026-05-27","2026-08-24","2026-11-21"):
+for expected in ("2026-05-27","2026-07-11","2026-11-21"):
     assert expected in maha_dates,(expected,sorted(maha_dates))
     obs=maha_dates[expected]["observance"]
     assert obs["vaishnava"]["date"]==expected
@@ -55,6 +55,16 @@ for expected in ("2026-05-27","2026-08-24","2026-11-21"):
     assert obs["vaishnava"]["basis"]=="mahadwadashi-override"
     assert obs["iskcon"]["basis"]=="iskcon-mahadwadashi-override"
     assert obs["vaishnava"]["parana"] is not None
+
+# Vyanjuli is sunrise-boundary sensitive. In Mumbai the August Pavitropana
+# fast is Aug 23 without a Mahadwadashi override; Pune crosses the second
+# Dwadashi sunrise and is covered separately by the Pune recurrence fixture.
+aug_event=next(
+    event for event in ek["events"]
+    if event["start"].startswith("2026-08-23")
+)
+assert aug_event["observance"]["iskcon"]["date"]=="2026-08-23",aug_event["observance"]
+assert aug_event["observance"]["mahadwadashi"]["active"] is False,aug_event["observance"]
 
 july_event=next(
     event for event in ek["events"]
