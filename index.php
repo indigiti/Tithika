@@ -111,6 +111,9 @@ tithika_render_header(tithika_t('home.page_title'));
     <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('jyotish/horoscope-analysis')) ?>">
       <b><?= htmlspecialchars(tithika_t('home.feature_jyotish_title')) ?></b><p><?= htmlspecialchars(tithika_t('home.feature_jyotish_copy')) ?></p><span><?= htmlspecialchars(tithika_t('home.feature_jyotish_action')) ?></span>
     </a>
+    <a class="tk-home-feature" lang="mr" href="<?= htmlspecialchars(tithika_pretty_url('festivals/mahakumbh')) ?>">
+      <b>सिंहस्थ महाकुंभ</b><p>स्नान दिनदर्शिका, नाशिक–त्र्यंबकेश्वर यात्रा मार्गदर्शक आणि कुंभ ज्ञानकोश.</p><span>मार्गदर्शक उघडा →</span>
+    </a>
     <a class="tk-home-feature" href="<?= htmlspecialchars(tithika_pretty_url('festivals/diwali')) ?>">
       <b><?= htmlspecialchars(tithika_t('home.feature_festival_title')) ?></b><p><?= htmlspecialchars(tithika_t('home.feature_festival_copy')) ?></p><span><?= htmlspecialchars(tithika_t('home.feature_festival_action')) ?></span>
     </a>
