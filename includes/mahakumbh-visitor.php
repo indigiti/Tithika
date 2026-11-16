@@ -259,6 +259,7 @@ function tk_kumbh_render(string $key): void {
         $raw = $_GET['q'] ?? '';
         $query = is_string($raw) ? mb_substr(trim($raw),0,100) : '';
         $q = $query;
+        $questionId = is_string($_GET['question'] ?? null) && ctype_digit($_GET['question']) ? (int)$_GET['question'] : 0;
         if (in_array(mb_strtolower($q), ['kushavarta','kushawarta','kushavart'], true)) $q = 'कुशावर्त';
         $groups = [];
         foreach (tk_kumbh_records('faq') as $group) {
@@ -283,9 +284,9 @@ function tk_kumbh_render(string $key): void {
             <?php foreach ($groups as $group): ?>
                 <section class="tk-km-topic" id="topic-<?= $group['id'] ?>"><h2><?= tk_kumbh_e($group['title']) ?></h2>
                 <?php foreach ($group['questions'] as $item): ?>
-                    <details class="tk-km-disclosure"<?= $query !== '' ? ' open' : '' ?>>
+                    <details class="tk-km-disclosure"<?= ($query !== '' || $questionId === (int)$item['id']) ? ' open' : '' ?>>
                         <summary><?= tk_kumbh_e($item['q']) ?></summary>
-                        <div class="tk-km-answer" id="q-<?= (int)$item['id'] ?>"><p><?= tk_kumbh_e($item['a']) ?></p><a href="<?= tk_kumbh_e(tk_kumbh_url('faq').'#q-'.(int)$item['id']) ?>">या प्रश्नाचा दुवा</a></div>
+                        <div class="tk-km-answer" id="q-<?= (int)$item['id'] ?>"><p><?= tk_kumbh_e($item['a']) ?></p><a href="<?= tk_kumbh_e(tk_kumbh_url('faq').'?question='.(int)$item['id'].'#q-'.(int)$item['id']) ?>">या प्रश्नाचा दुवा</a></div>
                     </details>
                 <?php endforeach; ?>
                 <p class="tk-km-topic-source"><?php tk_kumbh_source($group['source'],'विषयाचा संदर्भ'); ?></p></section>
