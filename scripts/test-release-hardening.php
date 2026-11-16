@@ -80,6 +80,16 @@ ob_start();
 tk_kumbh_render('faq');
 $faqHtml = (string)ob_get_clean();
 ok(str_contains($faqHtml, 'कुशावर्त म्हणजे काय?') && !str_contains($faqHtml, 'कुंभमेळा म्हणजे काय?'), 'Roman alias FAQ search failed');
+ok(str_contains($venueHtml, 'aria-current="true">त्र्यंबकेश्वर') && str_contains($venueHtml, 'id="parvakal"'), 'calendar should expose current venue and Parvakal section');
+ok(str_contains($eventHtml, '१२ सप्टेंबर २०२७'), 'event date must use the Marathi display format');
+ok(str_contains($faqHtml, 'value="Kushawarta"'), 'FAQ should preserve the typed spelling');
+$_GET = ['question'=>'1'];
+ob_start();
+tk_kumbh_render('faq');
+$faqTopicHtml = (string)ob_get_clean();
+ok(substr_count($faqTopicHtml, 'class="tk-km-topic"') === 12, 'FAQ should list all topic groups');
+ok(substr_count($faqTopicHtml, 'class="tk-km-disclosure" open') === 1, 'shared question must open its answer only');
+ok(str_contains($faqTopicHtml, '?question=1#q-1'), 'FAQ share link must retain the question anchor');
 $_GET = $savedGet;
 
 ok($editorialCount >= 60, 'editorial coverage unexpectedly small');
