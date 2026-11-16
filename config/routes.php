@@ -171,6 +171,11 @@ return [
         'icon' => '🪷',
         'description' => 'Festival collections, month views, deity traditions and observance guides.',
         'pages' => [
+            ['slug'=>'festivals/mahakumbh','title'=>'कुंभक्षेत्रे','template'=>'article'],
+            ['slug'=>'festivals/mahakumbh/prayagraj','title'=>'प्रयागराज','template'=>'article'],
+            ['slug'=>'festivals/mahakumbh/haridwar','title'=>'हरिद्वार','template'=>'article'],
+            ['slug'=>'festivals/mahakumbh/ujjain','title'=>'उज्जैन','template'=>'article'],
+            ['slug'=>'festivals/mahakumbh/nashik-trimbakeshwar','title'=>'नाशिक–त्र्यंबकेश्वर','template'=>'article'],
             ['slug'=>'festivals/top-10','title'=>'Top 10 Hindu Festivals','template'=>'collection'],
             ['slug'=>'festivals/top-20','title'=>'Top 20 Hindu Festivals','template'=>'collection'],
             ['slug'=>'festivals/top-25','title'=>'Top 25 Hindu Festivals','template'=>'collection'],

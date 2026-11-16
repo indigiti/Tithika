@@ -157,7 +157,10 @@ function tithika_devotion_subject(array $page): array {
     ];
 }
 
+require_once __DIR__ . '/mahakumbh.php';
+
 function tithika_editorial_content(array $page): ?array {
+    if ($guide = tithika_mahakumbh_content($page['slug'])) return $guide;
     $group = $page['group'] ?? '';
     if ($group === 'learn') {
         $learn = tithika_learn_content();
@@ -208,7 +211,7 @@ function tithika_render_editorial_content(array $page): void {
     }
 
     ?>
-    <article class="tk-editorial">
+    <article class="tk-editorial" lang="<?= htmlspecialchars($content['lang'] ?? 'en') ?>">
       <header>
         <span class="tk-card-tag">Editorial reference</span>
         <p class="tk-editorial-lead"><?= htmlspecialchars($content['intro']) ?></p>
@@ -236,6 +239,9 @@ function tithika_render_editorial_content(array $page): void {
           <p><?= htmlspecialchars((string)($content['source']['policy'] ?? '')) ?></p>
         </aside>
       <?php endif; ?>
+      <?php foreach ($content['references'] ?? [] as $ref): ?>
+        <p><a href="<?= htmlspecialchars($ref['url']) ?>"><?= htmlspecialchars($ref['title']) ?></a></p>
+      <?php endforeach; ?>
       <?php if (!empty($content['links'])): ?>
         <nav class="tk-editorial-links" aria-label="Related Tithika tools">
           <?php foreach ($content['links'] as $slug): $linked = tithika_find_page($slug); if (!$linked) continue; ?>
