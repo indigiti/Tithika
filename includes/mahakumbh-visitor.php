@@ -58,11 +58,18 @@ function tk_kumbh_notices(string $now): array {
 function tk_kumbh_place(string $venue): string {
     return ['nashik'=>'नाशिक','trimbakeshwar'=>'त्र्यंबकेश्वर','edition'=>'सिंहस्थ आवृत्ती'][$venue] ?? '';
 }
+function tk_kumbh_date_label(string $iso, bool $monthOnly = false): string {
+    $months = [1=>'जानेवारी','फेब्रुवारी','मार्च','एप्रिल','मे','जून','जुलै','ऑगस्ट','सप्टेंबर','ऑक्टोबर','नोव्हेंबर','डिसेंबर'];
+    [$year,$month,$day] = array_map('intval', explode('-', $iso));
+    $label = ($monthOnly ? '' : $day.' ').$months[$month].' '.$year;
+    return strtr($label, ['0'=>'०','1'=>'१','2'=>'२','3'=>'३','4'=>'४','5'=>'५','6'=>'६','7'=>'७','8'=>'८','9'=>'९']);
+}
+
 function tk_kumbh_calendar(string $today): void {
     $data = tk_kumbh_data();
     $venue = $_GET['venue'] ?? 'all';
     if (!in_array($venue, ['all','nashik','trimbakeshwar'], true)) $venue = 'all';
-    $eventId = $_GET['event'] ?? '';
+    $eventId = is_string($_GET['event'] ?? null) ? $_GET['event'] : '';
     $rows = $data['events'];
     foreach ($data['parvakal'] as $place=>$dates) {
         foreach (explode(' ', $dates) as $date) $rows[] = [$date,'parva-'.$place.'-'.$date,$place,'पर्वकाळ',null];
@@ -71,60 +78,99 @@ function tk_kumbh_calendar(string $today): void {
     $single = null;
     foreach ($rows as $row) if ($row[1] === $eventId) $single = $row;
     ?>
-    <p>प्रमुख स्नान, इतर कार्यक्रम आणि केंद्रनिहाय पर्वकाळ. सार्वजनिक प्रवेशवेळ वेगळी असू शकते.</p>
-    <p><?php tk_kumbh_source('snan-calendar','महाराष्ट्र प्राधिकरणाची दिनदर्शिका'); ?> · <?php tk_kumbh_source('live-event-schedule','अद्ययावत कार्यक्रम'); ?> · स्रोत तपासला: <?= tk_kumbh_e($data['source_checked']) ?></p>
+    <div class="tk-km-sourcebar">
+        <div><strong>अधिकृत स्रोत</strong> · <span>तपासणी: <?= tk_kumbh_e(tk_kumbh_date_label($data['source_checked'])) ?></span></div>
+        <div><?php tk_kumbh_source('snan-calendar','मूळ दिनदर्शिका'); ?> · <?php tk_kumbh_source('live-event-schedule','अद्ययावत कार्यक्रम'); ?></div>
+    </div>
     <?php if ($single): ?>
-        <section class="tk-kumbh-card">
+        <section class="tk-km-event-detail">
+            <p class="tk-km-eyebrow"><?= $single[0] < $today ? 'मागील दिनांक' : 'अधिसूचित दिनांक' ?></p>
             <h2><?= tk_kumbh_e($single[3]) ?></h2>
-            <p><time datetime="<?= tk_kumbh_e($single[0]) ?>"><?= tk_kumbh_e($single[0]) ?></time> · <?= tk_kumbh_e(tk_kumbh_place($single[2])) ?> · <?= $single[0] < $today ? 'मागील दिनांक' : 'अधिसूचित दिनांक' ?></p>
+            <p><time datetime="<?= tk_kumbh_e($single[0]) ?>"><?= tk_kumbh_e(tk_kumbh_date_label($single[0])) ?></time> · <?= tk_kumbh_e(tk_kumbh_place($single[2])) ?></p>
             <p><?= $single[4] ? 'कार्यक्रम वेळ (IST): '.tk_kumbh_e($single[4]) : 'सार्वजनिक प्रवेशवेळ या नोंदीत दिलेली नाही.' ?></p>
             <?php if ($single[2] !== 'edition'): ?><p><?php tk_kumbh_link($single[2]); ?> · <?php tk_kumbh_link('calendar','या केंद्राची दिनदर्शिका','?venue='.$single[2]); ?></p><?php endif; ?>
-            <p><?php tk_kumbh_link('calendar','संपूर्ण दिनदर्शिका'); ?></p>
+            <p><?php tk_kumbh_link('calendar','← संपूर्ण दिनदर्शिका'); ?></p>
         </section>
-    <?php else: ?>
-        <form method="get" action="<?= tk_kumbh_e(tk_kumbh_url('calendar')) ?>" class="tk-kumbh-tools">
-            <label for="tk-kumbh-venue">केंद्र निवडा</label>
-            <select id="tk-kumbh-venue" name="venue">
-                <?php foreach (['all'=>'सर्व','nashik'=>'नाशिक','trimbakeshwar'=>'त्र्यंबकेश्वर'] as $key=>$label): ?>
-                    <option value="<?= tk_kumbh_e($key) ?>"<?= $key === $venue ? ' selected' : '' ?>><?= tk_kumbh_e($label) ?></option>
-                <?php endforeach; ?>
-            </select><button type="submit">दाखवा</button>
-        </form>
-        <?php foreach (['प्रमुख अमृत स्नान व कार्यक्रम','केंद्रनिहाय पर्वकाळ'] as $i=>$title): ?>
-            <h2><?= tk_kumbh_e($title) ?></h2>
-            <ul class="tk-kumbh-dates">
-                <?php foreach ($rows as [$date,$id,$place,$name,$time]):
-                    if (str_starts_with($id,'parva-') !== (bool)$i || ($venue !== 'all' && $venue !== $place && $place !== 'edition')) continue; ?>
-                    <li><time datetime="<?= tk_kumbh_e($date) ?>"><?= tk_kumbh_e($date) ?></time>
-                        <a href="<?= tk_kumbh_e(tk_kumbh_url('calendar').'?event='.rawurlencode($id)) ?>"><?= tk_kumbh_e($name) ?></a>
-                        <span><?= tk_kumbh_e(tk_kumbh_place($place)) ?><?= $date < $today ? ' · मागील' : '' ?></span>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
+    <?php else:
+        $visible = array_filter($rows, static fn(array $row): bool => $venue === 'all' || $row[2] === $venue || $row[2] === 'edition');
+        $main = $months = [];
+        foreach ($visible as $row) {
+            if (str_starts_with($row[1], 'parva-')) $months[substr($row[0], 0, 7)][] = $row;
+            else $main[] = $row;
+        }
+        $next = null;
+        foreach ($main as $row) if ($row[0] >= $today && str_starts_with($row[1], 'amrut-')) { $next = $row; break; }
+        ?>
+        <nav class="tk-km-filters" aria-label="स्नान केंद्रानुसार दिनदर्शिका">
+            <strong>स्नान केंद्र</strong>
+            <?php foreach (['all'=>'सर्व केंद्रे','nashik'=>'नाशिक','trimbakeshwar'=>'त्र्यंबकेश्वर'] as $key=>$label): ?>
+                <a href="<?= tk_kumbh_e(tk_kumbh_url('calendar').($key === 'all' ? '' : '?venue='.$key)) ?>"<?= $key === $venue ? ' aria-current="true"' : '' ?>><?= tk_kumbh_e($label) ?></a>
+            <?php endforeach; ?>
+        </nav>
+        <?php if ($eventId !== ''): ?><p>हा कार्यक्रम सापडला नाही. संपूर्ण दिनदर्शिका खाली दिली आहे.</p><?php endif; ?>
+        <?php if ($next): ?>
+            <section class="tk-km-event-detail"><p class="tk-km-eyebrow">पुढील प्रमुख अमृत स्नान</p><h2><time datetime="<?= tk_kumbh_e($next[0]) ?>"><?= tk_kumbh_e(tk_kumbh_date_label($next[0])) ?></time></h2>
+                <p><?= tk_kumbh_e($next[3].' · '.tk_kumbh_place($next[2])) ?> · <?php tk_kumbh_link('calendar','स्नानाचा तपशील →','?event='.rawurlencode($next[1])); ?></p>
+            </section>
+        <?php endif; ?>
+        <h2>प्रमुख अमृत स्नान व कार्यक्रम</h2>
+        <?php tk_kumbh_date_rows($main, $today); ?>
+        <h2 id="parvakal">केंद्रनिहाय पर्वकाळ</h2>
+        <p>त्या महिन्यातील पर्वकाळ पाहण्यासाठी महिना उघडा.</p>
+        <?php
+        $openMonth = array_key_first($months);
+        foreach ($months as $month=>$entries) {
+            if ($entries[count($entries)-1][0] >= $today) { $openMonth = $month; break; }
+        }
+        foreach ($months as $month=>$entries): ?>
+            <details class="tk-km-disclosure"<?= $month === $openMonth ? ' open' : '' ?>>
+                <summary><?= tk_kumbh_e(tk_kumbh_date_label($month.'-01', true)) ?></summary>
+                <?php tk_kumbh_date_rows($entries, $today); ?>
+            </details>
         <?php endforeach; ?>
     <?php endif;
 }
+
+function tk_kumbh_date_rows(array $rows, string $today): void { ?>
+    <ul class="tk-kumbh-dates tk-km-timeline" role="list">
+    <?php foreach ($rows as [$date,$id,$place,$name,$time]): ?>
+        <li<?= str_starts_with($id,'amrut-') ? ' class="tk-km-amrut"' : '' ?>>
+            <time datetime="<?= tk_kumbh_e($date) ?>"><?= tk_kumbh_e(tk_kumbh_date_label($date)) ?></time>
+            <a href="<?= tk_kumbh_e(tk_kumbh_url('calendar').'?event='.rawurlencode($id)) ?>"><?= tk_kumbh_e($name) ?></a>
+            <span><?= tk_kumbh_e(tk_kumbh_place($place)) ?><?= $date < $today ? ' · मागील' : '' ?></span>
+        </li>
+    <?php endforeach; ?>
+    </ul>
+<?php }
+
 function tk_kumbh_render(string $key): void {
     $now = new DateTimeImmutable('now', new DateTimeZone('Asia/Kolkata'));
     $today = $now->format('Y-m-d');
     $notices = tk_kumbh_notices($now->format('Y-m-d\TH:i:s'));
     ?>
-    <div class="tk-kumbh<?= $key === '' ? ' tk-kumbh-portal' : '' ?>" lang="<?= $key === 'english' ? 'en' : 'mr' ?>">
+    <div class="tk-kumbh<?= $key === '' ? ' tk-kumbh-portal' : ' tk-kumbh-inner' ?>" lang="<?= $key === 'english' ? 'en' : 'mr' ?>">
     <?php if ($key === ''): ?>
         <div class="tk-km-utility">
             <p>Tithika · स्वतंत्र माहिती मार्गदर्शक</p>
             <div><?php tk_kumbh_link('help','सूचना व मदत'); ?> <span aria-hidden="true">·</span> <?php tk_kumbh_link('english','English'); ?></div>
         </div>
     <?php elseif ($key !== 'english'): ?>
-        <p class="tk-kumbh-disclosure">Tithika · स्वतंत्र माहिती मार्गदर्शक. हे शासकीय संकेतस्थळ नाही.</p>
-        <nav class="tk-kumbh-nav" aria-label="सिंहस्थ विभाग">
-            <?php tk_kumbh_link('','कुंभक्षेत्रे'); foreach (tk_kumbh_pages() as $k=>$p) tk_kumbh_link($k,$k === 'english' ? 'English essentials' : $p[0]); ?>
+        <div class="tk-km-utility"><div><?php tk_kumbh_link('','← सिंहस्थ महाकुंभ'); ?></div><p>स्वतंत्र माहिती मार्गदर्शक · शासकीय संकेतस्थळ नाही</p></div>
+        <nav class="tk-km-inner-nav" aria-label="सिंहस्थ विभाग">
+            <?php foreach (['calendar'=>'दिनदर्शिका','nashik'=>'नाशिक','trimbakeshwar'=>'त्र्यंबकेश्वर','faq'=>'ज्ञानकोश','help'=>'मदत'] as $k=>$label): ?>
+                <a href="<?= tk_kumbh_e(tk_kumbh_url($k)) ?>"<?= $k === $key ? ' aria-current="page"' : '' ?>><?= tk_kumbh_e($label) ?></a>
+            <?php endforeach; ?>
+            <details><summary>आणखी</summary><div><?php foreach (['scriptures','history','media','english'] as $k) tk_kumbh_link($k); ?></div></details>
         </nav>
     <?php endif; ?>
     <?php if ($key === '' || $key === 'help'): foreach ($notices as $n): ?>
         <aside class="tk-kumbh-card"><strong><?= tk_kumbh_e($n['authority']) ?></strong> · <?= tk_kumbh_e($n['title']) ?> · <?php tk_kumbh_source($n['url'],'मूळ सूचना'); ?></aside>
     <?php endforeach; endif; ?>
-    <?php if ($key !== ''): ?><h1><?= tk_kumbh_e(tk_kumbh_pages()[$key][0]) ?></h1><?php endif; ?>
+    <?php if ($key !== ''): ?><header class="tk-km-inner-title">
+        <h1><?= tk_kumbh_e(tk_kumbh_pages()[$key][0]) ?></h1>
+        <?php if ($key === 'calendar'): ?><p>अमृत स्नान, प्रमुख कार्यक्रम आणि केंद्रनिहाय पर्वकाळ. सार्वजनिक प्रवेशवेळ वेगळी असू शकते.</p><?php endif; ?>
+        <?php if ($key === 'faq'): ?><p>७२ मराठी प्रश्नोत्तरे. विषय निवडा किंवा प्रश्न शोधा.</p><?php endif; ?>
+    </header><?php endif; ?>
     <?php if ($key === ''): ?>
         <header class="tk-km-masthead">
             <p class="tk-km-eyebrow">◆ &nbsp; TITHIKA · यात्रा विशेष &nbsp; ◆</p>
@@ -211,25 +257,43 @@ function tk_kumbh_render(string $key): void {
         <div class="tk-kumbh-nav"><?php tk_kumbh_link('calendar','केंद्राची दिनदर्शिका','?venue='.$key); tk_kumbh_link('help'); tk_kumbh_link('scriptures',$nashik ? 'पंचवटीचा ग्रंथसंदर्भ' : 'कुशावर्ताचा ग्रंथसंदर्भ',$nashik ? '#panchavati' : '#kushavarta'); ?></div>
     <?php elseif ($key === 'faq'):
         $raw = $_GET['q'] ?? '';
-        $q = is_string($raw) ? mb_substr(trim($raw),0,100) : '';
+        $query = is_string($raw) ? mb_substr(trim($raw),0,100) : '';
+        $q = $query;
+        $questionId = is_string($_GET['question'] ?? null) && ctype_digit($_GET['question']) ? (int)$_GET['question'] : 0;
         if (in_array(mb_strtolower($q), ['kushavarta','kushawarta','kushavart'], true)) $q = 'कुशावर्त';
+        $groups = [];
+        foreach (tk_kumbh_records('faq') as $group) {
+            $group['id'] = (int)$group['questions'][0]['id'];
+            $group['questions'] = array_filter($group['questions'], static fn(array $item): bool => $q === '' || mb_stripos($group['title'].' '.$item['q'].' '.$item['a'],$q) !== false);
+            if ($group['questions']) $groups[] = $group;
+        }
         ?>
-        <form method="get" action="<?= tk_kumbh_e(tk_kumbh_url('faq')) ?>" class="tk-kumbh-tools">
-            <label for="tk-kumbh-q">प्रश्न शोधा</label><input type="search" id="tk-kumbh-q" name="q" value="<?= tk_kumbh_e($q) ?>" maxlength="100" placeholder="उदा. कुशावर्त किंवा Kushavarta">
-            <button type="submit">शोधा</button><?php tk_kumbh_link('faq','सर्व प्रश्न'); ?>
+        <form method="get" action="<?= tk_kumbh_e(tk_kumbh_url('faq')) ?>" class="tk-kumbh-tools tk-km-search">
+            <label for="tk-kumbh-q">प्रश्न शोधा</label>
+            <div><input type="search" id="tk-kumbh-q" name="q" value="<?= tk_kumbh_e($query) ?>" maxlength="100" placeholder="उदा. कुशावर्त किंवा Kushavarta">
+            <button type="submit">शोधा</button></div>
+            <?php if ($query !== '') tk_kumbh_link('faq','सर्व प्रश्न'); ?>
         </form>
-        <?php $count = 0; foreach (tk_kumbh_records('faq') as $group):
-            $matched = array_filter($group['questions'], static fn(array $item): bool => $q === '' || mb_stripos($group['title'].' '.$item['q'].' '.$item['a'],$q) !== false);
-            if (!$matched) continue; $count += count($matched); ?>
-            <section><h2><?= tk_kumbh_e($group['title']) ?></h2>
-            <?php foreach ($matched as $item): ?>
-                <article class="tk-kumbh-card" id="q-<?= (int)$item['id'] ?>">
-                    <h3><a href="#q-<?= (int)$item['id'] ?>"><?= tk_kumbh_e($item['q']) ?></a></h3><p><?= tk_kumbh_e($item['a']) ?></p>
-                </article>
+        <?php if ($query !== '' && $groups): ?><p>जुळलेले प्रश्न: <?= array_sum(array_map(static fn(array $g): int => count($g['questions']), $groups)) ?></p><?php endif; ?>
+        <?php if ($groups): ?>
+        <div class="tk-km-knowledge">
+            <nav aria-label="ज्ञानकोशाचे विषय"><strong>विषय</strong>
+                <?php foreach ($groups as $group): ?><a href="#topic-<?= $group['id'] ?>"><?= tk_kumbh_e($group['title']) ?></a><?php endforeach; ?>
+            </nav>
+            <div>
+            <?php foreach ($groups as $group): ?>
+                <section class="tk-km-topic" id="topic-<?= $group['id'] ?>"><h2><?= tk_kumbh_e($group['title']) ?></h2>
+                <?php foreach ($group['questions'] as $item): ?>
+                    <details class="tk-km-disclosure"<?= ($query !== '' || $questionId === (int)$item['id']) ? ' open' : '' ?>>
+                        <summary><?= tk_kumbh_e($item['q']) ?></summary>
+                        <div class="tk-km-answer" id="q-<?= (int)$item['id'] ?>"><p><?= tk_kumbh_e($item['a']) ?></p><a href="<?= tk_kumbh_e(tk_kumbh_url('faq').'?question='.(int)$item['id'].'#q-'.(int)$item['id']) ?>">या प्रश्नाचा दुवा</a></div>
+                    </details>
+                <?php endforeach; ?>
+                <p class="tk-km-topic-source"><?php tk_kumbh_source($group['source'],'विषयाचा संदर्भ'); ?></p></section>
             <?php endforeach; ?>
-            <p><?php tk_kumbh_source($group['source'],'विषयाचा संदर्भ'); ?></p></section>
-        <?php endforeach; if (!$count): ?><p>या शोधाशी जुळणारा प्रश्न सापडला नाही.</p><?php endif; ?>
-        <p><?php tk_kumbh_link('scriptures'); ?> · <?php tk_kumbh_link('history'); ?> · <?php tk_kumbh_link('calendar'); ?></p>
+            </div>
+        </div>
+        <?php else: ?><p>या शोधाशी जुळणारा प्रश्न सापडला नाही.</p><?php endif; ?>
     <?php elseif ($key === 'scriptures'): ?>
         <p>गौतमीमाहात्म्याचे अध्यायक्रमांक स्वतंत्र आवृत्तीचे आहेत. इतर आवृत्त्यांत क्रम बदलू शकतो. ग्रंथातील धार्मिक फलश्रुती हा ऐतिहासिक किंवा वैद्यकीय पुरावा नाही.</p>
         <?php foreach (tk_kumbh_records('scriptures') as $card): ?>
