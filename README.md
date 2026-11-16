@@ -4,7 +4,7 @@ A modern, location-aware Vedic calendar, Panchang and Muhurat platform built wit
 
 ## Product architecture
 
-Tithika currently maps **295 logical pages** across 10 product families:
+Tithika currently maps **297 logical pages** across 10 product families:
 
 - Panchang
 - Calendars
@@ -79,7 +79,7 @@ Purnima and Amavasya remain exact astronomical occurrence surfaces for festival/
 
 ### Shared festival rule engine
 
-All 16 currently supported major-festival selectors now use one declarative rule registry instead of a monolithic selector switch. Shared selectors cover sunrise, Madhyahna, Aparahna, Pradosh, Nishita, moonrise, Sandhi, Ghatasthapana, Bhadra-aware Purnima and auspicious Choghadiya windows.
+All 18 currently supported major-festival selectors now use one declarative rule registry instead of a monolithic selector switch. Shared selectors cover sunrise, Madhyahna, Aparahna, Pradosh, Nishita, moonrise, Sandhi, Ghatasthapana, Bhadra-aware Purnima and auspicious Choghadiya windows.
 
 Current migrated festivals include Ganesh Chaturthi, Raksha Bandhan, Navratri, Vijayadashami, Holi, Karwa Chauth, Janmashtami, Rama Navami, Hanuman Jayanti, Akshaya Tritiya, Vat Savitri, Durga Puja and Diwali.
 
@@ -317,7 +317,7 @@ index.php                     modern Tithika home
 site-map.php                  browsable map of all routes
 page.php                      shared mapped-page renderer
 
-config/routes.php             295-page product/route manifest
+config/routes.php             297-page product/route manifest
 config/live.php               centralized verified/live route registry
 includes/site.php             shared shell + SEO/schema/route helpers
 includes/content.php          structured Devotion/Learn/Gallery content
@@ -430,3 +430,4 @@ The Choghadiya engine uses local sunrise/sunset and weekday-specific day/night s
 29. Deterministic Vrat recurrence batch (7 routes). ✓
 
 See `docs/DRIKPANCHANG_AUDIT.md` and `docs/TITHIKA_PAGE_MAP.md` for the full implementation plan.
+DigiOps deploys the packaged release separately from GitHub CI. After staging rollout, verify `/tithika/build-id.json` against the intended main commit and smoke-test the festival API. Month Panchang overlays cover selected calculated festivals, not every observance.

@@ -21,7 +21,7 @@ import choghadiya
 import lagna
 import panchang
 
-ENGINE_VERSION = "0.3.0"
+ENGINE_VERSION = "0.4.0"
 
 FESTIVAL_RULES = {
     "rama-navami": {
@@ -101,6 +101,18 @@ FESTIVAL_RULES = {
         "month": "Phalguna", "paksha": "Shukla Paksha",
         "tithi_id": 14, "start_angle": 168.0, "end_angle": 180.0,
         "selector": "pradosh", "profile": "holi",
+    },
+    "sakat-chauth": {
+        "title": "Sakat Chauth",
+        "month": "Magha", "paksha": "Krishna Paksha",
+        "tithi_id": 18, "start_angle": 216.0, "end_angle": 228.0,
+        "selector": "moonrise", "profile": "sakat-chauth",
+    },
+    "chhath-puja": {
+        "title": "Chhath Puja",
+        "month": "Kartika", "paksha": "Shukla Paksha",
+        "tithi_id": 5, "start_angle": 60.0, "end_angle": 72.0,
+        "selector": "chhath-sunset", "profile": "kartika-chhath",
     },
     "karwa-chauth": {
         "title": "Karwa Chauth",
@@ -204,8 +216,10 @@ def month_info_for(start_dt, end_dt):
     return panchang.lunar_month_info(ref, state)
 
 
-def search_windows(year, rule, tz):
-    cursor = panchang.astronomy_time(datetime(year - 1, 12, 1, tzinfo=tz))
+def search_windows(year, rule, tz, bounds=None):
+    start = (datetime.combine(bounds[0] - timedelta(days=4), datetime.min.time(), tz)
+             if bounds else datetime(year - 1, 12, 1, tzinfo=tz))
+    cursor = panchang.astronomy_time(start)
     rows = []
     for _ in range(18):
         start_event = panchang.astronomy.SearchMoonPhase(
@@ -220,6 +234,8 @@ def search_windows(year, rule, tz):
             break
         start_dt = panchang.datetime_from_astronomy(start_event, tz)
         end_dt = panchang.datetime_from_astronomy(end_event, tz)
+        if bounds and start_dt.date() >= bounds[1] + timedelta(days=3):
+            break
         rows.append((start_dt, end_dt, month_info_for(start_dt, end_dt)))
         if start_dt.year > year and start_dt.month > 1:
             break
@@ -608,12 +624,29 @@ def select_moonrise(ctx):
                     window(sunrise, moonrise, d, ctx["hour24"])
                     if sunrise else None
                 ),
-                "puja_muhurat_status": "evening-window-selected-by-moonrise",
+                **({"puja_muhurat_status": "evening-window-selected-by-moonrise"}
+                   if ctx["kind"] == "karwa-chauth" else {}),
             }
     return None, {}
 
 
+def select_chhath_sunset(ctx):
+    for d in candidate_dates(ctx["start"], ctx["end"]):
+        sunset = set_(d, ctx["lat"], ctx["lon"], ctx["tz"])
+        if sunset is None or not ctx["start"] <= sunset < ctx["end"]:
+            continue
+        sunrise = rise(d + timedelta(days=1), ctx["lat"], ctx["lon"], ctx["tz"])
+        return {"date": d, "score": 1}, {
+            "sunset": sunset.isoformat(),
+            "sunset_label": panchang.transition_label(sunset, d, ctx["hour24"]),
+            "next_sunrise": sunrise.isoformat() if sunrise else None,
+            "next_sunrise_label": panchang.transition_label(sunrise, d, ctx["hour24"]) if sunrise else None,
+        }
+    return None, {}
+
+
 SELECTORS = {
+    "chhath-sunset": select_chhath_sunset,
     "madhyahna": select_madhyahna,
     "sunrise": select_sunrise,
     "auspicious-choghadiya": select_auspicious_choghadiya,
@@ -643,10 +676,38 @@ def qualified_occurrence(kind, year, tz):
 def calculate_event(kind, year, lat, lon, tz, hour24):
     if kind not in FESTIVAL_RULES:
         raise ValueError("Unsupported festival kind")
+
     rule = FESTIVAL_RULES[kind]
+    if kind in {"sakat-chauth", "chhath-puja"}:
+        first = datetime(year, 1, 1).date()
+        last = datetime(year + 1, 1, 1).date()
+        return next(events_in_range(kind, first, last, lat, lon, tz, hour24), None)
     occurrence = qualified_occurrence(kind, year, tz)
-    if not occurrence:
-        return None
+    return event_from_occurrence(kind, occurrence, lat, lon, tz, hour24) if occurrence else None
+
+
+def events_in_range(kind, first, last, lat, lon, tz, hour24):
+    rule = FESTIVAL_RULES[kind]
+    for occurrence in search_windows(first.year, rule, tz, (first, last)):
+        month = occurrence[2]
+        if month.get("purnimanta") != rule["month"] or month.get("adhika"):
+            continue
+        event = event_from_occurrence(kind, occurrence, lat, lon, tz, hour24)
+        if event and first.isoformat() <= event["date"] < last.isoformat():
+            yield event
+
+
+def month_festivals(first, last, lat, lon, tz, hour24):
+    rows = [
+        {key: event[key] for key in ("kind", "date", "title")}
+        for kind in ("diwali", "sakat-chauth", "chhath-puja")
+        for event in events_in_range(kind, first, last, lat, lon, tz, hour24)
+    ]
+    return sorted(rows, key=lambda row: (row["date"], row["kind"]))
+
+
+def event_from_occurrence(kind, occurrence, lat, lon, tz, hour24):
+    rule = FESTIVAL_RULES[kind]
     start_dt, end_dt, month = occurrence
 
     selector = SELECTORS[rule["selector"]]

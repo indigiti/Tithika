@@ -132,6 +132,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <span><i class="purnima"></i>Purnima</span>
           <span><i class="amavasya"></i>Amavasya</span>
         </div>
+        <div id="tkMonthFestivals" aria-live="polite"></div>
         <div class="tk-month-actions">
           <span id="tkMonthSelection">Select a day for details</span>
           <a id="tkMonthDailyLink" href="<?= htmlspecialchars(tithika_pretty_url('panchang/daily')) ?>">Open selected day in Daily Panchang →</a>
@@ -570,7 +571,7 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
         </div>
         <div id="tkJyotishLoading" class="tk-panchang-loading">Calculating birth factors…</div>
         <div id="tkJyotishResult" class="tk-jyotish-result"></div>
-      <?php elseif (in_array($page['slug'], ['festivals/ganesha-chaturthi','festivals/raksha-bandhan','festivals/navratri','festivals/dussehra','festivals/holi','festivals/karwa-chauth','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/diwali'], true)): ?>
+      <?php elseif (in_array($page['slug'], ['festivals/ganesha-chaturthi','festivals/raksha-bandhan','festivals/navratri','festivals/dussehra','festivals/holi','festivals/karwa-chauth','festivals/sakat-chauth','festivals/chhath-puja','festivals/janmashtami','festivals/rama-navami','festivals/hanuman-jayanti','festivals/akshaya-tritiya','festivals/vat-savitri','festivals/durga-puja','festivals/diwali'], true)): ?>
         <div class="tk-panchang-live-head">
           <div>
             <span class="tk-card-tag">Verified festival rule</span>
@@ -588,6 +589,12 @@ echo '<script>window.TITHIKA_PAGE_SLUG=' . json_encode($page['slug'], JSON_UNESC
           <a href="<?= htmlspecialchars(tithika_pretty_url('calendars/ashadha-gupta-navratri')) ?>">Ashadha Gupta</a>
           <a href="<?= htmlspecialchars(tithika_pretty_url('festivals/ghatasthapana')) ?>">Ghatasthapana Muhurat</a>
         </nav>
+        <?php endif; ?>
+        <?php if ($page['slug'] === 'festivals/sakat-chauth'): ?>
+        <p>Sakat Chauth is the Magha Krishna Chaturthi observance in the Purnimanta calendar. This calculation selects the date when Chaturthi is present at local moonrise.</p>
+        <a href="<?= htmlspecialchars(tithika_pretty_url('vrat/sankashti-chaturthi')) ?>">Monthly Sankashti Chaturthi dates →</a>
+        <?php elseif ($page['slug'] === 'festivals/chhath-puja'): ?>
+        <p>The main day is selected when Kartika Shukla Shashthi is present at local sunset. The following morning's sunrise is shown for Usha Arghya.</p>
         <?php endif; ?>
         <div id="tkFestivalLoading" class="tk-panchang-loading">Calculating festival rule…</div>
         <div id="tkFestivalNote" class="tk-lunar-note"></div>
