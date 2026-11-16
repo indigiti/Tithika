@@ -109,8 +109,13 @@ function tk_kumbh_render(string $key): void {
     $today = $now->format('Y-m-d');
     $notices = tk_kumbh_notices($now->format('Y-m-d\TH:i:s'));
     ?>
-    <div class="tk-kumbh" lang="<?= $key === 'english' ? 'en' : 'mr' ?>">
-    <?php if ($key !== 'english'): ?>
+    <div class="tk-kumbh<?= $key === '' ? ' tk-kumbh-portal' : '' ?>" lang="<?= $key === 'english' ? 'en' : 'mr' ?>">
+    <?php if ($key === ''): ?>
+        <div class="tk-km-utility">
+            <p>Tithika · स्वतंत्र माहिती मार्गदर्शक</p>
+            <div><?php tk_kumbh_link('help','सूचना व मदत'); ?> <span aria-hidden="true">·</span> <?php tk_kumbh_link('english','English'); ?></div>
+        </div>
+    <?php elseif ($key !== 'english'): ?>
         <p class="tk-kumbh-disclosure">Tithika · स्वतंत्र माहिती मार्गदर्शक. हे शासकीय संकेतस्थळ नाही.</p>
         <nav class="tk-kumbh-nav" aria-label="सिंहस्थ विभाग">
             <?php tk_kumbh_link('','कुंभक्षेत्रे'); foreach (tk_kumbh_pages() as $k=>$p) tk_kumbh_link($k,$k === 'english' ? 'English essentials' : $p[0]); ?>
@@ -121,27 +126,79 @@ function tk_kumbh_render(string $key): void {
     <?php endforeach; endif; ?>
     <?php if ($key !== ''): ?><h1><?= tk_kumbh_e(tk_kumbh_pages()[$key][0]) ?></h1><?php endif; ?>
     <?php if ($key === ''): ?>
-        <section class="tk-kumbh-hero">
-            <p>नाशिक–त्र्यंबकेश्वर · २०२७</p>
-            <h1>सिंहस्थ महाकुंभ</h1>
-            <p>स्नानाचा दिवस, योग्य तीर्थक्षेत्र आणि अधिकृत सूचना. पुढे गोदावरीच्या परंपरेचा आणि चारही कुंभक्षेत्रांचा परिचय.</p>
-            <div class="tk-kumbh-nav"><?php tk_kumbh_link('calendar'); tk_kumbh_link('','यात्रेचे नियोजन','#choose-venue'); tk_kumbh_link('help'); ?></div>
-        </section>
-        <?php if ($next = tk_kumbh_next($today)): ?>
-            <section class="tk-kumbh-card"><h2>पुढील प्रमुख अमृत स्नान</h2>
-              <p><time datetime="<?= tk_kumbh_e($next[0]) ?>"><?= tk_kumbh_e($next[0]) ?></time> · <?= tk_kumbh_e($next[3].' · '.tk_kumbh_place($next[2])) ?></p>
-              <p><?php tk_kumbh_link('calendar','या स्नानाचा तपशील','?event='.rawurlencode($next[1])); ?> · <?php tk_kumbh_source('snan-calendar','अधिकृत स्रोत'); ?></p>
-            </section>
-        <?php else: ?><p><?php tk_kumbh_link('calendar','या आवृत्तीचे संग्रहित कार्यक्रम'); ?></p><?php endif; ?>
-        <h2 id="choose-venue">स्नान केंद्र निवडा</h2>
-        <div class="tk-kumbh-grid">
-            <section class="tk-kumbh-card"><h3>नाशिक</h3><p>रामतीर्थ व पंचवटी. स्नान आणि प्रवासासाठी नाशिकच्या सूचना वेगळ्या तपासा.</p><?php tk_kumbh_link('nashik'); ?></section>
-            <section class="tk-kumbh-card"><h3>त्र्यंबकेश्वर</h3><p>कुशावर्त तीर्थ, त्र्यंबकेश्वर ज्योतिर्लिंग व ब्रह्मगिरी. प्रवेश सूचना स्वतंत्र आहेत.</p><?php tk_kumbh_link('trimbakeshwar'); ?></section>
+        <header class="tk-km-masthead">
+            <p class="tk-km-eyebrow">◆ &nbsp; TITHIKA · यात्रा विशेष &nbsp; ◆</p>
+            <h1>नाशिक–त्र्यंबकेश्वर<br><span>सिंहस्थ महाकुंभ २०२७</span></h1>
+            <p>गोदावरीच्या तीरावरील श्रद्धा, परंपरा आणि यात्रेचा मराठी मार्गदर्शक.</p>
+        </header>
+        <div class="tk-km-gallery" aria-label="सिंहस्थ तीर्थक्षेत्रांची संग्रहित छायाचित्रे">
+            <?php
+            $photos = [
+                ['trimbakeshwar', 'कुशावर्त · त्र्यंबकेश्वर', 'त्र्यंबकेश्वर येथील कुशावर्त तीर्थ', '8/87', 'Kushawart,_Trimbakeshwar_in_Maharashtra_state,_India.jpg', 'Prashant Kharote', '2014', 640],
+                ['nashik', 'रामकुंड · नाशिक', 'संध्याकाळी रामकुंड परिसरातील गोदावरी नदी', '3/38', 'Ramkund_Nashik.jpg', 'Anup Moray', '2025', 1280],
+                ['trimbakeshwar', 'त्र्यंबकेश्वर परिसर', 'त्र्यंबकेश्वर परिसरातील टेकडी आणि मंदिर', '8/82', 'Trimbakeshwar_temple.jpg', 'Chintuthakur9621', '2016', 960],
+            ];
+            foreach ($photos as $i=>[$route,$label,$alt,$hash,$file,$credit,$year,$size]):
+                $name = rawurlencode($file);
+                $src = "https://upload.wikimedia.org/wikipedia/commons/thumb/{$hash}/{$name}/{$size}px-{$name}";
+            ?>
+                <figure class="tk-km-photo">
+                    <a href="<?= tk_kumbh_e(tk_kumbh_url($route)) ?>" aria-label="<?= tk_kumbh_e($label.' · यात्रा मार्गदर्शक') ?>">
+                        <img src="<?= tk_kumbh_e($src) ?>" alt="<?= tk_kumbh_e($alt) ?>" width="960" height="720" decoding="async" referrerpolicy="no-referrer"<?= $i === 1 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
+                        <span><?= tk_kumbh_e($label) ?></span>
+                    </a>
+                </figure>
+            <?php endforeach; ?>
         </div>
-        <h2>भारतातील चार कुंभक्षेत्रे</h2>
-        <div class="tk-kumbh-nav"><?php foreach (['prayagraj'=>'प्रयागराज','haridwar'=>'हरिद्वार','ujjain'=>'उज्जैन','nashik-trimbakeshwar'=>'नाशिक–त्र्यंबकेश्वर'] as $k=>$label) tk_kumbh_link($k,$label); ?></div>
-        <h2>कुंभाचा अभ्यास</h2>
-        <div class="tk-kumbh-nav"><?php tk_kumbh_link('faq'); tk_kumbh_link('scriptures','सिंहस्थ का म्हणतात?','#simhastha'); tk_kumbh_link('history'); ?></div>
+        <div class="tk-km-event">
+            <?php if ($next = tk_kumbh_next($today)):
+                $date = new DateTimeImmutable($next[0], $now->getTimezone());
+                $days = $now->setTime(0,0)->diff($date)->days;
+                $months = [1=>'जानेवारी','फेब्रुवारी','मार्च','एप्रिल','मे','जून','जुलै','ऑगस्ट','सप्टेंबर','ऑक्टोबर','नोव्हेंबर','डिसेंबर'];
+                $digits = ['०','१','२','३','४','५','६','७','८','९'];
+                $marathi = static fn(string $value): string => str_replace(range(0,9),$digits,$value);
+                ?>
+                <div class="tk-km-date"><b><?= tk_kumbh_e($days ? $marathi((string)$days) : 'आज') ?></b><?php if ($days): ?><small>दिवस बाकी</small><?php endif; ?></div>
+                <div class="tk-km-event-copy"><p class="tk-km-eyebrow">पुढील प्रमुख अमृत स्नान</p><h2><time datetime="<?= tk_kumbh_e($next[0]) ?>"><?= tk_kumbh_e($marathi($date->format('j')).' '.$months[(int)$date->format('n')].' '.$marathi($date->format('Y'))) ?></time></h2><p><?= tk_kumbh_e($next[3].' · '.tk_kumbh_place($next[2])) ?> · <?php tk_kumbh_source('snan-calendar','अधिकृत स्रोत'); ?></p></div>
+                <?php tk_kumbh_link('calendar','स्नानाचा तपशील →','?event='.rawurlencode($next[1])); ?>
+            <?php else: ?>
+                <div class="tk-km-event-copy"><h2>सिंहस्थ दिनदर्शिका</h2><p>या आवृत्तीचे कार्यक्रम आणि पर्वकाळ पहा.</p></div>
+                <?php tk_kumbh_link('calendar','दिनदर्शिका पहा →'); ?>
+            <?php endif; ?>
+        </div>
+        <nav class="tk-km-shortcuts" aria-label="यात्रेचे जलद दुवे">
+            <div><strong>तुम्हाला काय शोधायचे आहे?</strong><small>यात्रेची तयारी इथून सुरू करा</small></div>
+            <?php foreach ([
+                ['calendar','◷','स्नान दिनदर्शिका',''],
+                ['','⌖','यात्रेचे नियोजन','#choose-venue'],
+                ['help','✚','सूचना व मदत',''],
+                ['faq','?','कुंभ ज्ञानकोश',''],
+                ['scriptures','ॐ','ग्रंथसंदर्भ',''],
+                ['','◇','चार कुंभक्षेत्रे','#four-centres'],
+            ] as [$route,$icon,$label,$fragment]): ?>
+                <a href="<?= tk_kumbh_e(tk_kumbh_url($route).$fragment) ?>"><span aria-hidden="true"><?= tk_kumbh_e($icon) ?></span><?= tk_kumbh_e($label) ?></a>
+            <?php endforeach; ?>
+        </nav>
+        <div class="tk-km-editorial">
+            <p class="tk-km-eyebrow">यात्रेची तयारी</p>
+            <h2 id="choose-venue">स्नान केंद्र निवडा</h2>
+            <p>तारीख, स्नानस्थळ आणि प्रवेश सूचना केंद्रानुसार वेगळ्या आहेत.</p>
+            <div class="tk-km-venues">
+                <section><p class="tk-km-eyebrow">०१ · गोदावरी</p><h3>नाशिक</h3><p>रामतीर्थ व पंचवटी. स्नान आणि प्रवासासाठी नाशिकच्या सूचना वेगळ्या तपासा.</p><?php tk_kumbh_link('nashik','नाशिक यात्रा मार्गदर्शक →'); ?></section>
+                <section><p class="tk-km-eyebrow">०२ · ब्रह्मगिरी</p><h3>त्र्यंबकेश्वर</h3><p>कुशावर्त तीर्थ, त्र्यंबकेश्वर ज्योतिर्लिंग व ब्रह्मगिरी. प्रवेश सूचना स्वतंत्र आहेत.</p><?php tk_kumbh_link('trimbakeshwar','त्र्यंबकेश्वर यात्रा मार्गदर्शक →'); ?></section>
+            </div>
+            <h2 id="four-centres">भारतातील चार कुंभक्षेत्रे</h2>
+            <div class="tk-kumbh-nav"><?php foreach (['prayagraj'=>'प्रयागराज','haridwar'=>'हरिद्वार','ujjain'=>'उज्जैन','nashik-trimbakeshwar'=>'नाशिक–त्र्यंबकेश्वर'] as $k=>$label) tk_kumbh_link($k,$label); ?></div>
+            <h2>कुंभाचा अभ्यास</h2>
+            <div class="tk-kumbh-nav"><?php tk_kumbh_link('faq'); tk_kumbh_link('scriptures','सिंहस्थ का म्हणतात?','#simhastha'); tk_kumbh_link('history'); tk_kumbh_link('media'); ?></div>
+            <details class="tk-km-credits">
+                <summary>संग्रहित छायाचित्रे व श्रेय</summary>
+                <p>ही संग्रहित छायाचित्रे आहेत; सध्याची गर्दी किंवा प्रवेशस्थिती दाखवत नाहीत. मांडणीसाठी दृश्य कापले आहे.</p>
+                <ul><?php foreach ($photos as [$route,$label,$alt,$hash,$file,$credit,$year]): ?>
+                    <li><a href="https://commons.wikimedia.org/wiki/File:<?= tk_kumbh_e(rawurlencode($file)) ?>"><?= tk_kumbh_e($label.' — '.$credit.' ('.$year.')') ?></a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a></li>
+                <?php endforeach; ?></ul>
+            </details>
+        </div>
     <?php elseif ($key === 'calendar'): tk_kumbh_calendar($today); ?>
     <?php elseif ($key === 'nashik' || $key === 'trimbakeshwar'): $nashik = $key === 'nashik'; ?>
         <p><?= $nashik ? 'रामतीर्थ हे नाशिकच्या अधिकृत स्नान दिनदर्शिकेतील स्थळ आहे. पंचवटीचा रामायणाशी संबंध स्वतंत्रपणे वाचा.' : 'कुशावर्त तीर्थ हे त्र्यंबकेश्वरच्या अधिकृत स्नान दिनदर्शिकेतील स्थळ. ज्योतिर्लिंग आणि ब्रह्मगिरी ही स्वतंत्र दर्शनस्थळे आहेत.' ?></p>
