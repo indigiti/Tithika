@@ -293,6 +293,9 @@ function tithika_render_header(string $title, ?array $page = null): void {
   <link rel="manifest" href="<?= htmlspecialchars(tithika_url('manifest.webmanifest')) ?>">
   <script src="<?= htmlspecialchars(tithika_asset_url('assets/settings-core.js')) ?>"></script>
   <link rel="stylesheet" href="<?= htmlspecialchars(tithika_asset_url('assets/tithika.css')) ?>">
+  <?php if (tk_kumbh_key($page['slug'] ?? '') !== null): ?>
+    <link rel="stylesheet" href="<?= htmlspecialchars(tithika_asset_url('assets/mahakumbh.css')) ?>">
+  <?php endif; ?>
   <?php if (($page['slug'] ?? '') === 'panchang/daily'): ?>
     <link rel="stylesheet" href="<?= htmlspecialchars(tithika_asset_url('assets/daily-depth.css')) ?>">
   <?php endif; ?>
