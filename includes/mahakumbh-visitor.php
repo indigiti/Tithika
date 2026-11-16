@@ -78,7 +78,7 @@ function tk_kumbh_calendar(string $today): void {
             <h2><?= tk_kumbh_e($single[3]) ?></h2>
             <p><time datetime="<?= tk_kumbh_e($single[0]) ?>"><?= tk_kumbh_e($single[0]) ?></time> · <?= tk_kumbh_e(tk_kumbh_place($single[2])) ?> · <?= $single[0] < $today ? 'मागील दिनांक' : 'अधिसूचित दिनांक' ?></p>
             <p><?= $single[4] ? 'कार्यक्रम वेळ (IST): '.tk_kumbh_e($single[4]) : 'सार्वजनिक प्रवेशवेळ या नोंदीत दिलेली नाही.' ?></p>
-            <?php if ($single[2] !== 'edition') tk_kumbh_link($single[2]); ?>
+            <?php if ($single[2] !== 'edition'): ?><p><?php tk_kumbh_link($single[2]); ?> · <?php tk_kumbh_link('calendar','या केंद्राची दिनदर्शिका','?venue='.$single[2]); ?></p><?php endif; ?>
             <p><?php tk_kumbh_link('calendar','संपूर्ण दिनदर्शिका'); ?></p>
         </section>
     <?php else: ?>
@@ -125,15 +125,15 @@ function tk_kumbh_render(string $key): void {
             <p>नाशिक–त्र्यंबकेश्वर · २०२७</p>
             <h1>सिंहस्थ महाकुंभ</h1>
             <p>स्नानाचा दिवस, योग्य तीर्थक्षेत्र आणि अधिकृत सूचना. पुढे गोदावरीच्या परंपरेचा आणि चारही कुंभक्षेत्रांचा परिचय.</p>
-            <div class="tk-kumbh-nav"><?php tk_kumbh_link('calendar'); tk_kumbh_link('nashik','यात्रेचे नियोजन'); tk_kumbh_link('help'); ?></div>
+            <div class="tk-kumbh-nav"><?php tk_kumbh_link('calendar'); tk_kumbh_link('','यात्रेचे नियोजन','#choose-venue'); tk_kumbh_link('help'); ?></div>
         </section>
         <?php if ($next = tk_kumbh_next($today)): ?>
             <section class="tk-kumbh-card"><h2>पुढील प्रमुख अमृत स्नान</h2>
               <p><time datetime="<?= tk_kumbh_e($next[0]) ?>"><?= tk_kumbh_e($next[0]) ?></time> · <?= tk_kumbh_e($next[3].' · '.tk_kumbh_place($next[2])) ?></p>
-              <p><?php tk_kumbh_link('calendar','संपूर्ण दिनदर्शिका'); ?> · <?php tk_kumbh_source('snan-calendar','अधिकृत स्रोत'); ?></p>
+              <p><?php tk_kumbh_link('calendar','या स्नानाचा तपशील','?event='.rawurlencode($next[1])); ?> · <?php tk_kumbh_source('snan-calendar','अधिकृत स्रोत'); ?></p>
             </section>
         <?php else: ?><p><?php tk_kumbh_link('calendar','या आवृत्तीचे संग्रहित कार्यक्रम'); ?></p><?php endif; ?>
-        <h2>स्नान केंद्र निवडा</h2>
+        <h2 id="choose-venue">स्नान केंद्र निवडा</h2>
         <div class="tk-kumbh-grid">
             <section class="tk-kumbh-card"><h3>नाशिक</h3><p>रामतीर्थ व पंचवटी. स्नान आणि प्रवासासाठी नाशिकच्या सूचना वेगळ्या तपासा.</p><?php tk_kumbh_link('nashik'); ?></section>
             <section class="tk-kumbh-card"><h3>त्र्यंबकेश्वर</h3><p>कुशावर्त तीर्थ, त्र्यंबकेश्वर ज्योतिर्लिंग व ब्रह्मगिरी. प्रवेश सूचना स्वतंत्र आहेत.</p><?php tk_kumbh_link('trimbakeshwar'); ?></section>
@@ -147,7 +147,7 @@ function tk_kumbh_render(string $key): void {
         <p><?= $nashik ? 'रामतीर्थ हे नाशिकच्या अधिकृत स्नान दिनदर्शिकेतील स्थळ आहे. पंचवटीचा रामायणाशी संबंध स्वतंत्रपणे वाचा.' : 'कुशावर्त तीर्थ हे त्र्यंबकेश्वरच्या अधिकृत स्नान दिनदर्शिकेतील स्थळ. ज्योतिर्लिंग आणि ब्रह्मगिरी ही स्वतंत्र दर्शनस्थळे आहेत.' ?></p>
         <h2>कसे पोहोचाल</h2>
         <p><?= $nashik ? 'रेल्वे प्रवासासाठी नाशिक रोडचा पर्याय पहा. रेल्वे स्थानक ते घाट यासाठी त्या दिवसाचे शहरातील मार्ग व वाहन निर्बंध तपासा.' : 'बहुतेक प्रवासांसाठी नाशिक हा प्रवेशबिंदू आहे. तेथून त्र्यंबकेश्वरचा पुढील रस्ता प्रवास आणि परतीची व्यवस्था आधी ठरवा.' ?></p>
-        <p><?php tk_kumbh_source('how-to-reach','अधिकृत रेल्वे, रस्ता व विमान मार्गदर्शक'); ?></p>
+        <p><?php tk_kumbh_source('how-to-reach','अधिकृत रेल्वे, रस्ता व विमान मार्गदर्शक'); ?> · <?php tk_kumbh_source('directions-to-ghats-and-parking','अधिकृत घाट व पार्किंग दिशानिर्देश'); ?></p>
         <h2>प्रवेश, सुविधा व सुलभता</h2>
         <p>पार्किंग, शटल, सार्वजनिक स्नान गेट, वैद्यकीय मदत, पिण्याचे पाणी, शौचालये आणि सुलभ मार्ग यासाठी प्रवासाच्या दिवशी अधिकृत सूचना तपासा. या पानावर अप्रमाणित व्यवस्था दिलेल्या नाहीत.</p>
         <p>ब्राउझरच्या Print पर्यायाने हा मजकूर छापा; छापील प्रत वापरण्यापूर्वी सूचना पुन्हा तपासा.</p>
