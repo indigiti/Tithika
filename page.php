@@ -54,6 +54,14 @@ if (!empty($page['live']) && $page['live'] === 'choghadiya.php') {
     exit;
 }
 
+$kumbh = tk_kumbh_key($page['slug']);
+if ($kumbh !== null) {
+    tithika_render_header($page['title'], $page);
+    tk_kumbh_render($kumbh);
+    tithika_render_footer();
+    return;
+}
+
 $group = $routes[$page['group']];
 $related = tithika_related($page);
 $completionSlugs = require __DIR__ . '/config/completion.php';
