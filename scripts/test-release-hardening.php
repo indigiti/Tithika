@@ -13,7 +13,7 @@ function ok(bool $value, string $message): void {
 }
 
 $flat = tithika_flat_routes();
-ok(tithika_page_count() === 295, 'route count must remain 295');
+ok(tithika_page_count() === 300, 'route count must remain 300');
 ok(count(tithika_live_slugs()) === 232, 'verified live route registry drifted');
 ok(count(array_unique(tithika_live_slugs())) === count(tithika_live_slugs()), 'duplicate live route');
 foreach (tithika_live_slugs() as $slug) {
@@ -28,9 +28,21 @@ foreach ($flat as $page) {
         ok(tithika_has_editorial_content($page), 'editorial content missing: ' . $page['slug']);
     }
 }
+foreach (['', '/prayagraj', '/haridwar', '/ujjain', '/nashik-trimbakeshwar'] as $suffix) {
+    $slug = 'festivals/mahakumbh' . $suffix;
+    ok(isset($flat[$slug]), "Mahakumbh guide missing from route map: {$slug}");
+    $guide = tithika_editorial_content($flat[$slug]);
+    ok(($guide['lang'] ?? '') === 'mr', "Mahakumbh guide must declare Marathi: {$slug}");
+    ok(!empty($guide['sections']) && !empty($guide['references']), "Mahakumbh guide missing sections or sources: {$slug}");
+    foreach ($guide['links'] ?? [] as $link) {
+        ok(isset($flat[$link]), "Mahakumbh guide link is not mapped: {$link}");
+    }
+    ok(tithika_is_indexable_page($flat[$slug]), "Mahakumbh guide not indexable: {$slug}");
+    ok(!in_array($slug, tithika_live_slugs(), true), "Editorial guide must not be registered as a computed route: {$slug}");
+}
 ok($editorialCount >= 60, 'editorial coverage unexpectedly small');
 ok(tithika_indexable_count() === count(array_filter($flat, 'tithika_is_indexable_page')), 'indexable count mismatch');
-ok(tithika_indexable_count() === 295, 'all mapped routes must now be production-quality indexable');
+ok(tithika_indexable_count() === 300, 'all mapped routes must now be production-quality indexable');
 
 foreach ($flat as $page) {
     if (!tithika_is_indexable_page($page)) continue;
