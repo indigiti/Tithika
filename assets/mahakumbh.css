@@ -1,5 +1,5 @@
 .tk-kumbh{--km-ink:#351716;--km-accent:#9b3514;--km-paper:#fff8ec;max-width:76rem;margin:1.5rem auto 3rem;padding:clamp(1rem,3vw,2.5rem);border-radius:1.6rem;background:var(--km-paper);color:var(--km-ink);font-family:"Noto Sans Devanagari",system-ui,sans-serif;line-height:1.7;overflow-wrap:anywhere}
-.tk-kumbh h1,.tk-kumbh h2,.tk-kumbh h3{font-family:"Tiro Devanagari Marathi","Noto Sans Devanagari",system-ui,sans-serif;line-height:1.45;color:inherit}
+.tk-kumbh h1,.tk-kumbh h2,.tk-kumbh h3{font-family:var(--km-heading, Georgia, serif);font-weight:700;line-height:1.33;color:inherit}
 .tk-kumbh h1{font-size:clamp(2rem,5vw,4.5rem);margin:.25em 0}.tk-kumbh h2{font-size:clamp(1.25rem,2.8vw,2rem);margin:1.1em 0 .4em}
 .tk-kumbh a{color:var(--km-accent);text-decoration:underline;text-underline-offset:.18em}
 .tk-kumbh :focus-visible{outline:3px solid #b4461d;outline-offset:4px}.tk-kumbh [id]{scroll-margin-top:6rem}
@@ -22,7 +22,7 @@
 .tk-km-utility p{margin:0}.tk-km-utility a{font-weight:700}.tk-km-utility span{margin:0 .55rem;color:#a85c41}
 .tk-km-masthead{text-align:center;padding:clamp(1.35rem,3vw,2.4rem) 0 clamp(1rem,2vw,1.5rem)}
 .tk-km-eyebrow{margin:0;color:#922f1d;font-size:.78rem;font-weight:800;letter-spacing:.075em}
-.tk-km-masthead h1{margin:.25rem 0 .45rem;font-size:clamp(2.15rem,5vw,4.4rem);font-weight:800;line-height:1.16;color:#711e1a}
+.tk-km-masthead h1{margin:.25rem 0 .45rem;font-size:clamp(2.15rem,5.7vw,5.55rem);font-weight:700;line-height:1.22;color:#711e1a}
 .tk-km-masthead h1 span{color:#8a2a1b}.tk-km-masthead>p:last-child{margin:.7rem auto 0;color:#63342b;max-width:52ch}
 .tk-km-gallery{display:grid;grid-template-columns:1fr 2.55fr 1fr;gap:clamp(.4rem,1vw,.8rem);height:clamp(15rem,29vw,31rem)}
 .tk-km-photo{margin:0;min-width:0;position:relative;border-radius:1rem;overflow:hidden;background:linear-gradient(140deg,#e7b77d,#743428);isolation:isolate}
@@ -43,3 +43,10 @@
 @media(max-width:55rem){.tk-km-shortcuts{grid-template-columns:repeat(3,minmax(0,1fr))}.tk-km-shortcuts>div{grid-column:1/-1}}
 @media(max-width:38rem){.tk-km-gallery{height:auto;grid-template-columns:repeat(2,minmax(0,1fr))}.tk-km-photo{height:7.25rem;border-radius:.65rem}.tk-km-photo:nth-child(2){grid-column:1/-1;grid-row:1;height:clamp(10.5rem,54vw,17rem)}.tk-km-event{width:100%;margin:.75rem auto 0}.tk-km-date{min-width:4.3rem;min-height:4.3rem}.tk-km-event-copy{min-width:0}.tk-km-event>a{width:100%;justify-content:center}.tk-km-venues{grid-template-columns:1fr}.tk-km-utility{font-size:.78rem}}
 @media print{.tk-km-gallery,.tk-km-shortcuts,.tk-km-utility,.tk-km-credits{display:none}.tk-km-event{margin:0;box-shadow:none}.tk-km-date{background:white;color:black}}
+
+/* Dindori typography pairing, scoped to Marathi Mahakumbh content. */
+.tk-kumbh:lang(mr){--km-heading:"Noto Serif Devanagari","Noto Sans Devanagari",serif;font-family:"Noto Sans Devanagari",system-ui,sans-serif}
+.tk-kumbh:lang(mr) :is(button,input,select){font-family:inherit}
+.tk-kumbh:lang(mr) .tk-km-eyebrow{letter-spacing:normal}
+.tk-kumbh:lang(mr) .tk-km-masthead h1 span{font-weight:600}
+@media(max-width:38rem){.tk-kumbh:lang(mr) .tk-km-masthead h1{font-size:clamp(1.8rem,7.8vw,3.2rem);line-height:1.3}}

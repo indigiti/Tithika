@@ -301,6 +301,9 @@ function tithika_render_header(string $title, ?array $page = null): void {
   <script src="<?= htmlspecialchars(tithika_asset_url('assets/settings-core.js')) ?>"></script>
   <link rel="stylesheet" href="<?= htmlspecialchars(tithika_asset_url('assets/tithika.css')) ?>">
   <?php if (tk_kumbh_key($page['slug'] ?? '') !== null): ?>
+    <?php if (tithika_document_language($page) === 'mr'): ?>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&amp;family=Noto+Serif+Devanagari:wght@600;700&amp;display=swap">
+    <?php endif; ?>
     <link rel="stylesheet" href="<?= htmlspecialchars(tithika_asset_url('assets/mahakumbh.css')) ?>">
   <?php endif; ?>
   <?php if (($page['slug'] ?? '') === 'panchang/daily'): ?>
