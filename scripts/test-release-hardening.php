@@ -58,6 +58,9 @@ ok(tithika_document_language($flat['festivals/mahakumbh/english']) === 'en', 'En
 ob_start();
 tk_kumbh_render('');
 $kumbhHtml = (string)ob_get_clean();
+ok(substr_count($kumbhHtml, 'class="tk-km-photo"') === 3, 'Simhastha portal requires three editorial photo panels');
+ok(str_contains($kumbhHtml, 'CC BY-SA 4.0') && str_contains($kumbhHtml, 'संग्रहित छायाचित्रे'), 'portal photo credits and archive labels required');
+ok(str_contains($kumbhHtml, 'id="four-centres"') && str_contains($kumbhHtml, 'class="tk-km-shortcuts"'), 'portal must retain the pilgrimage shortcuts and centre navigation');
 ok(str_contains($kumbhHtml, '/festivals/mahakumbh/#choose-venue') && str_contains($kumbhHtml, 'id="choose-venue"'), 'visit action must lead to the two-venue chooser');
 $savedGet = $_GET;
 $_GET = ['venue'=>'trimbakeshwar'];
