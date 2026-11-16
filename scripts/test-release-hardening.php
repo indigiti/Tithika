@@ -53,6 +53,25 @@ ok(tk_kumbh_next('2027-09-13') === null, 'past snan should not remain active');
 ok(count(array_merge(...array_column(tk_kumbh_records('faq'), 'questions'))) === 72, 'FAQ count mismatch');
 ok(count(tk_kumbh_records('scriptures')) === 16, 'scripture count mismatch');
 
+$savedGet = $_GET;
+$_GET = ['venue'=>'trimbakeshwar'];
+ob_start();
+tk_kumbh_render('calendar');
+$venueHtml = (string)ob_get_clean();
+ok(str_contains($venueHtml, 'amrut-3-trimbakeshwar') && !str_contains($venueHtml, 'amrut-3-nashik'), 'venue filter must isolate the third snan');
+$_GET = ['event'=>'amrut-3-trimbakeshwar'];
+ob_start();
+tk_kumbh_render('calendar');
+$eventHtml = (string)ob_get_clean();
+ok(str_contains($eventHtml, '2027-09-12') && str_contains($eventHtml, 'कुशावर्त तीर्थ'), 'deep link must show the correct event');
+ok(!str_contains($eventHtml, '00:00'), 'unknown public access time must not render midnight');
+$_GET = ['q'=>'Kushawarta'];
+ob_start();
+tk_kumbh_render('faq');
+$faqHtml = (string)ob_get_clean();
+ok(str_contains($faqHtml, 'कुशावर्त म्हणजे काय?') && !str_contains($faqHtml, 'कुंभमेळा म्हणजे काय?'), 'Roman alias FAQ search failed');
+$_GET = $savedGet;
+
 ok($editorialCount >= 60, 'editorial coverage unexpectedly small');
 ok(tithika_indexable_count() === count(array_filter($flat, 'tithika_is_indexable_page')), 'indexable count mismatch');
 ok(tithika_indexable_count() === 309, 'all mapped routes must now be production-quality indexable');
