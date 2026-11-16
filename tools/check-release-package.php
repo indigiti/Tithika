@@ -13,6 +13,8 @@ foreach(['.htaccess','index.php','page.php','api.php','intelligence.php','settin
     must(is_file($root.'/public/'.$path),"payload missing: {$path}");
 }
 must(is_file($root.'/private/build/release.json'),'private release metadata missing');
+$buildId=json_decode((string)file_get_contents($root.'/public/build-id.json'),true);
+must($buildId===['sourceSha'=>$meta['sourceSha']], 'public build ID mismatch');
 foreach(['scripts/test-localization.php','scripts/test-offline-location.php','scripts/test-offline-location-surface.php','scripts/test-elevation.py','scripts/test-devotion-corpus.php','docs/RELEASE_CERTIFICATION.md'] as $path) must(is_file($root.'/private/'.$path), "private payload missing: {$path}");
 must(!is_dir($root.'/public/scripts'),'test scripts must not ship in webroot');
 must(!is_dir($root.'/public/docs'),'internal documentation must not ship in webroot');

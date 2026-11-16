@@ -23,6 +23,8 @@ return [
     'festivals/maha-shivaratri',
     'festivals/diwali',
     'festivals/karwa-chauth',
+    'festivals/sakat-chauth',
+    'festivals/chhath-puja',
     'festivals/janmashtami',
     'festivals/rama-navami',
     'festivals/hanuman-jayanti',

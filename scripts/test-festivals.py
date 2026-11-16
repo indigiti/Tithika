@@ -112,3 +112,15 @@ assert within(durga["sandhi_puja"]["start"], "2026-10-19T10:27:00+05:30", 5)
 assert within(durga["sandhi_puja"]["end"], "2026-10-19T11:15:00+05:30", 5)
 
 print("Major festival fixtures OK: Mumbai 2026 batches 1-2")
+# External Mumbai 2026 comparison (minute-level ephemeris tolerance).
+sakat = run("sakat-chauth")
+assert sakat["date"] == "2026-01-06", sakat
+assert sakat["purnimanta_month"] == "Magha" and not sakat["adhika"], sakat
+assert within(sakat["moonrise"], "2026-01-06T21:28:00+05:30", 6), sakat
+assert within(sakat["tithi_start"], "2026-01-06T08:01:00+05:30", 6), sakat
+assert within(sakat["tithi_end"], "2026-01-07T06:52:00+05:30", 6), sakat
+chhath = run("chhath-puja")
+assert chhath["date"] == "2026-11-15", chhath
+assert chhath["tithi_start"] <= chhath["sunset"] < chhath["tithi_end"], chhath
+assert within(chhath["sunset"], "2026-11-15T18:00:00+05:30", 6), chhath
+assert chhath["next_sunrise"].startswith("2026-11-16T"), chhath

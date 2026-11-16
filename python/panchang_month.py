@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import panchang
+from festival_rules import month_festivals
 
 def main() -> None:
     payload = json.loads(sys.stdin.read() or "{}")
@@ -121,6 +122,7 @@ def main() -> None:
         "first_weekday": calendar.monthrange(selected.year, selected.month)[0],
         "lunar_month_at_start": month_info,
         "days": rows,
+        "festivals": month_festivals(dates[0], sunrise_dates[-1], lat, lon, tz, hour24),
     }, ensure_ascii=False))
 
 if __name__ == "__main__":

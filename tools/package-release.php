@@ -53,4 +53,5 @@ $build=[
 $json=json_encode($build,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES).PHP_EOL;
 file_put_contents($out.'/RELEASE.json',$json);
 file_put_contents($private.'/build/release.json',$json);
+file_put_contents($public.'/build-id.json', json_encode(['sourceSha'=>$sha], JSON_THROW_ON_ERROR).PHP_EOL);
 echo "Tithika DigiOps release built for {$sha}\n";

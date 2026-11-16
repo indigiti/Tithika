@@ -80,6 +80,8 @@
     'festivals/dussehra':'dussehra',
     'festivals/holi':'holi',
     'festivals/karwa-chauth':'karwa-chauth',
+    'festivals/sakat-chauth':'sakat-chauth',
+    'festivals/chhath-puja':'chhath-puja',
     'festivals/janmashtami':'janmashtami',
     'festivals/rama-navami':'rama-navami',
     'festivals/hanuman-jayanti':'hanuman-jayanti',
@@ -251,6 +253,21 @@
   }
 
   async function calculate(){
+    const isFestival=Object.hasOwn(festivalKinds,pageSlug);
+    const isMonth=monthPages.includes(pageSlug);
+    if(isFestival||isMonth){
+      // Keep the requested calendar usable when solar context is unavailable.
+      const primary=isFestival?calculateFestival():calculateMonth();
+      try{
+        const r=await fetch(base+'api.php?action=calculate',{
+          method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload())
+        });
+        const data=await r.json();
+        if(data.ok){state.data=data;renderSolar(data);emitContext();}
+      }catch(_){ /* The primary calculation owns its own error UI. */ }
+      await primary;
+      return;
+    }
     // A festival calendar must not remain blank when the unrelated
     // Choghadiya/solar-context API fails or times out.
     if(navratriFamilyPages.has(pageSlug) && $('#tkPhaseSections')){
@@ -267,7 +284,6 @@
       state.data=j;renderSolar(j);emitContext();
       if(panchangPages.includes(pageSlug)) await calculatePanchang();
       if(lagnaPages.includes(pageSlug)) await calculateLagna();
-      if(monthPages.includes(pageSlug)) await calculateMonth();
       if(planetaryModes[pageSlug]) await calculatePlanetary();
       if(aspectsModes[pageSlug]) await calculateAspects();
       if(eclipseModes[pageSlug]) await calculateEclipses();
@@ -286,7 +302,6 @@
       if(lunarKinds[pageSlug]) await calculateLunarOccurrences();
       if(observanceKinds[pageSlug]) await calculateObservances();
       if(vratReuseModes[pageSlug]) await calculateVratReuse();
-      if(festivalKinds[pageSlug]) await calculateFestival();
       if(dwadashiPages.includes(pageSlug)) await calculateDwadashi();
       if(mahadwadashiPages.includes(pageSlug)) await calculateMahadwadashi();
       if(sankrantiPages.includes(pageSlug)) await calculateSankranti();
@@ -1143,6 +1158,12 @@
     if(row.parana?.after_label)timings.push(['Parana','After '+row.parana.after_label]);
     if(row.dahi_handi_date)timings.push(['Dahi Handi',row.dahi_handi_date]);
     if(row.moonrise_label)timings.push(['Moonrise',row.moonrise_label]);
+    if(row.kind==='sakat-chauth'||row.kind==='chhath-puja'){
+      if(row.sunset_label)timings.push(['Sandhya Arghya · sunset',row.sunset_label]);
+      if(row.next_sunrise_label)timings.push(['Usha Arghya · sunrise',row.next_sunrise_label]);
+      timings.push(['Tithi begins · '+row.tithi_start.slice(0,10),row.tithi_start_label.split(',')[0]]);
+      timings.push(['Tithi ends · '+row.tithi_end.slice(0,10),row.tithi_end_label.split(',')[0]]);
+    }
     if(row.upavasa)timings.push(['Upavasa',row.upavasa.start_label+' – '+row.upavasa.end_label]);
     if(row.rangwali_holi_date)timings.push(['Rangwali Holi',row.rangwali_holi_date]);
     const pending=[];
@@ -1443,6 +1464,13 @@
     const engine=$('#tkMonthEngine');if(engine)engine.textContent=`${d.engine?.ayanamsha||'Lahiri'} · Month engine`;
     const grid=$('#tkMonthGrid');if(!grid)return;
     const selectedDate=payload().date;
+    const festivals=(Array.isArray(d.festivals)?d.festivals:[]).filter(row=>
+      ['sakat-chauth','chhath-puja','diwali'].includes(row.kind));
+    const list=$('#tkMonthFestivals');
+    if(list)list.innerHTML=festivals.length
+      ? '<h4>Selected festivals this month</h4><ul>'+festivals.map(row=>
+          '<li><a href="'+base+'festivals/'+row.kind+'/?date='+encodeURIComponent(row.date)+'">'+esc(row.date)+' · '+esc(row.title)+'</a></li>').join('')+'</ul>'
+      : '';
     const selectedRow=(d.days||[]).find(row=>row.date===selectedDate);
     const selection=$('#tkMonthSelection');
     if(selection)selection.textContent=selectedRow?.available
@@ -1461,6 +1489,7 @@
         <strong>${esc(row.tithi||'—')}</strong>
         <small>${esc(row.paksha||'')}</small>
         <span class="tk-month-nak">${esc(row.nakshatra||'—')}</span>
+        ${festivals.filter(event=>event.date===row.date).map(event=>'<span class="tk-rule-flag">'+esc(event.title)+'</span>').join('')}
       </button>`;
     }).join('');
     grid.innerHTML=html;
@@ -2273,7 +2302,9 @@
   $('#tkPhaseTime')?.addEventListener('change',()=>calculatePhaseCompletion());
 
   const input=$('#tkDate');
-  const queryDate=new URLSearchParams(window.location.search).get('date');
+  const query=new URLSearchParams(window.location.search);
+  const year=query.get('year');
+  const queryDate=query.get('date')||(Object.hasOwn(festivalKinds,pageSlug)&&/^[1-9]\d{3}$/.test(year||'')?year+'-01-01':null);
   if(input&&queryDate&&/^\d{4}-\d{2}-\d{2}$/.test(queryDate)&&!Number.isNaN(Date.parse(queryDate+'T12:00:00Z'))){
     input.value=queryDate;
     state.dateTouched=true;

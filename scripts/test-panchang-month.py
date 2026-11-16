@@ -41,3 +41,14 @@ def within(actual, expected, tolerance_minutes=4):
 assert within(day6["tithi_end"], "2026-10-07T00:35:00+05:30")
 assert within(day6["nakshatra_end"], "2026-10-06T22:18:00+05:30")
 print("Month Panchang fixture OK: Mumbai October 2026")
+
+for date, expected in [
+    ("2026-01-01", {"sakat-chauth": "2026-01-06"}),
+    ("2026-11-01", {"diwali": "2026-11-08", "chhath-puja": "2026-11-15"}),
+]:
+    output = subprocess.check_output(
+        [sys.executable, str(ENGINE)], input=json.dumps(dict(payload, date=date)),
+        text=True, cwd=ROOT,
+    )
+    result = json.loads(output)
+    assert {row["kind"]: row["date"] for row in result["festivals"]} == expected, result["festivals"]

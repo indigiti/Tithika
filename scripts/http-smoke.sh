@@ -58,3 +58,10 @@ detail="$(curl --silent --show-error --fail --max-time 30 -H 'Content-Type: appl
 assert_json "$detail" "navratri-calendar"
 printf '%s' "$detail" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert len(d["navratri"]["variants"][0]["days"])==9'
 echo "HTTP smoke passed: routes, SEO, PWA, API rejection and real Python-backed calendar responses."
+
+for kind in sakat-chauth chhath-puja; do
+  page="$(curl -fsS "http://127.0.0.1:18765/festivals/$kind/?year=2026")"
+  grep -q 'id="tkFestivalResult"' <<<"$page"
+  result="$(curl -fsS --max-time 30 -H 'Content-Type: application/json' --data "$payload" "http://127.0.0.1:18765/api.php?action=festival&kind=$kind")"
+  printf '%s' "$result" | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["ok"] and d["event"]["kind"] == sys.argv[1], d' "$kind"
+done

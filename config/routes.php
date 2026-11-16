@@ -209,6 +209,8 @@ return [
             ['slug'=>'festivals/dussehra','title'=>'Dussehra','template'=>'festival'],
             ['slug'=>'festivals/makar-sankranti','title'=>'Makar Sankranti','template'=>'festival'],
             ['slug'=>'festivals/karwa-chauth','title'=>'Karwa Chauth','template'=>'festival'],
+            ['slug'=>'festivals/sakat-chauth','title'=>'Sakat Chauth','template'=>'festival'],
+            ['slug'=>'festivals/chhath-puja','title'=>'Chhath Puja','template'=>'festival'],
             ['slug'=>'festivals/janmashtami','title'=>'Janmashtami','template'=>'festival'],
             ['slug'=>'festivals/rama-navami','title'=>'Rama Navami','template'=>'festival'],
             ['slug'=>'festivals/hanuman-jayanti','title'=>'Hanuman Jayanti','template'=>'festival'],
