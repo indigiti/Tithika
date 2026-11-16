@@ -223,6 +223,13 @@ function tithika_seo_description(?array $page): string {
     return mb_substr(tithika_template_copy($page['template'], $page['title']), 0, 158);
 }
 
+function tithika_document_language(?array $page): string {
+    $slug = $page['slug'] ?? '';
+    if ($slug === 'festivals/mahakumbh/english') return 'en';
+    if ($slug === 'festivals/mahakumbh' || str_starts_with($slug, 'festivals/mahakumbh/')) return 'mr';
+    return tithika_locale();
+}
+
 function tithika_schema(?array $page, string $title, string $description, string $canonical): array {
     $website = [
         '@type'=>'WebSite',
@@ -244,7 +251,7 @@ function tithika_schema(?array $page, string $title, string $description, string
         'name'=>$title,
         'description'=>$description,
         'isPartOf'=>['@id'=>$website['@id']],
-        'inLanguage'=>tithika_locale(),
+        'inLanguage'=>tithika_document_language($page),
     ];
 
     $graph = [$website, $webpage];
@@ -272,7 +279,7 @@ function tithika_render_header(string $title, ?array $page = null): void {
     $schema = tithika_schema($page, $title . ' — Tithika', $description, $canonical);
     ?>
 <!doctype html>
-<html lang="<?= htmlspecialchars(tithika_locale()) ?>">
+<html lang="<?= htmlspecialchars(tithika_document_language($page)) ?>">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
