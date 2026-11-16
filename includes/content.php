@@ -158,9 +158,14 @@ function tithika_devotion_subject(array $page): array {
 }
 
 require_once __DIR__ . '/mahakumbh.php';
+require_once __DIR__ . '/mahakumbh-visitor.php';
 
 function tithika_editorial_content(array $page): ?array {
     if ($guide = tithika_mahakumbh_content($page['slug'])) return $guide;
+    $kumbh = tk_kumbh_key($page['slug']);
+    if ($kumbh !== null && $kumbh !== '') {
+        return ['type'=>'article','lang'=>$kumbh === 'english' ? 'en' : 'mr','intro'=>tk_kumbh_pages()[$kumbh][1]];
+    }
     $group = $page['group'] ?? '';
     if ($group === 'learn') {
         $learn = tithika_learn_content();

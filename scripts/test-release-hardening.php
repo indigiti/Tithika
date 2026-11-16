@@ -13,7 +13,7 @@ function ok(bool $value, string $message): void {
 }
 
 $flat = tithika_flat_routes();
-ok(tithika_page_count() === 300, 'route count must remain 300');
+ok(tithika_page_count() === 309, 'route count must remain 309');
 ok(count(tithika_live_slugs()) === 232, 'verified live route registry drifted');
 ok(count(array_unique(tithika_live_slugs())) === count(tithika_live_slugs()), 'duplicate live route');
 foreach (tithika_live_slugs() as $slug) {
@@ -40,9 +40,48 @@ foreach (['', '/prayagraj', '/haridwar', '/ujjain', '/nashik-trimbakeshwar'] as 
     ok(tithika_is_indexable_page($flat[$slug]), "Mahakumbh guide not indexable: {$slug}");
     ok(!in_array($slug, tithika_live_slugs(), true), "Editorial guide must not be registered as a computed route: {$slug}");
 }
+foreach (tk_kumbh_pages() as $key => $page) {
+    $slug = 'festivals/mahakumbh/'.$key;
+    ok(isset($flat[$slug]) && tithika_is_indexable_page($flat[$slug]), "Simhastha route not indexable: {$slug}");
+    ok(!tithika_is_live_page($slug), "Simhastha content must not use the calculation registry: {$slug}");
+}
+$kumbh = tk_kumbh_data();
+ok(count(explode(' ', $kumbh['parvakal']['nashik'])) === 65, 'Nashik Parvakal count mismatch');
+ok(count(explode(' ', $kumbh['parvakal']['trimbakeshwar'])) === 41, 'Trimbakeshwar Parvakal count mismatch');
+ok((tk_kumbh_next('2027-08-03')[1] ?? null) === 'amrut-2', 'next snan did not advance');
+ok(tk_kumbh_next('2027-09-13') === null, 'past snan should not remain active');
+ok(count(array_merge(...array_column(tk_kumbh_records('faq'), 'questions'))) === 72, 'FAQ count mismatch');
+ok(count(tk_kumbh_records('scriptures')) === 16, 'scripture count mismatch');
+
+ok(tithika_document_language($flat['festivals/mahakumbh']) === 'mr', 'Marathi hub must declare its page language');
+ok(tithika_document_language($flat['festivals/mahakumbh/english']) === 'en', 'English essentials must declare its page language');
+ob_start();
+tk_kumbh_render('');
+$kumbhHtml = (string)ob_get_clean();
+ok(str_contains($kumbhHtml, '/festivals/mahakumbh/#choose-venue') && str_contains($kumbhHtml, 'id="choose-venue"'), 'visit action must lead to the two-venue chooser');
+$savedGet = $_GET;
+$_GET = ['venue'=>'trimbakeshwar'];
+ob_start();
+tk_kumbh_render('calendar');
+$venueHtml = (string)ob_get_clean();
+ok(str_contains($venueHtml, 'amrut-3-trimbakeshwar') && !str_contains($venueHtml, 'amrut-3-nashik'), 'venue filter must isolate the third snan');
+$_GET = ['event'=>'amrut-3-trimbakeshwar'];
+ob_start();
+tk_kumbh_render('calendar');
+$eventHtml = (string)ob_get_clean();
+ok(str_contains($eventHtml, '2027-09-12') && str_contains($eventHtml, 'कुशावर्त तीर्थ'), 'deep link must show the correct event');
+ok(str_contains($eventHtml, '/festivals/mahakumbh/trimbakeshwar/') && str_contains($eventHtml, '?venue=trimbakeshwar'), 'event must link to the correct guide and venue calendar');
+ok(!str_contains($eventHtml, '00:00'), 'unknown public access time must not render midnight');
+$_GET = ['q'=>'Kushawarta'];
+ob_start();
+tk_kumbh_render('faq');
+$faqHtml = (string)ob_get_clean();
+ok(str_contains($faqHtml, 'कुशावर्त म्हणजे काय?') && !str_contains($faqHtml, 'कुंभमेळा म्हणजे काय?'), 'Roman alias FAQ search failed');
+$_GET = $savedGet;
+
 ok($editorialCount >= 60, 'editorial coverage unexpectedly small');
 ok(tithika_indexable_count() === count(array_filter($flat, 'tithika_is_indexable_page')), 'indexable count mismatch');
-ok(tithika_indexable_count() === 300, 'all mapped routes must now be production-quality indexable');
+ok(tithika_indexable_count() === 309, 'all mapped routes must now be production-quality indexable');
 
 foreach ($flat as $page) {
     if (!tithika_is_indexable_page($page)) continue;

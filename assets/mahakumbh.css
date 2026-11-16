@@ -1,0 +1,17 @@
+.tk-kumbh{--km-ink:#351716;--km-accent:#9b3514;--km-paper:#fff8ec;max-width:76rem;margin:1.5rem auto 3rem;padding:clamp(1rem,3vw,2.5rem);border-radius:1.6rem;background:var(--km-paper);color:var(--km-ink);font-family:"Noto Sans Devanagari",system-ui,sans-serif;line-height:1.7;overflow-wrap:anywhere}
+.tk-kumbh h1,.tk-kumbh h2,.tk-kumbh h3{font-family:"Tiro Devanagari Marathi","Noto Sans Devanagari",system-ui,sans-serif;line-height:1.45;color:inherit}
+.tk-kumbh h1{font-size:clamp(2rem,5vw,4.5rem);margin:.25em 0}.tk-kumbh h2{font-size:clamp(1.25rem,2.8vw,2rem);margin:1.1em 0 .4em}
+.tk-kumbh a{color:var(--km-accent);text-decoration:underline;text-underline-offset:.18em}
+.tk-kumbh :focus-visible{outline:3px solid #b4461d;outline-offset:4px}.tk-kumbh [id]{scroll-margin-top:6rem}
+.tk-kumbh-disclosure{font-size:.9rem;margin:0 0 .75rem}
+.tk-kumbh-nav,.tk-kumbh-tools{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;margin:.8rem 0 1.3rem}
+.tk-kumbh-nav a,.tk-kumbh-tools button{display:inline-flex;align-items:center;min-height:44px;padding:.35rem .8rem;border-radius:.55rem;border:1px solid #d5ad90;background:#fff;color:var(--km-ink);font-weight:650}
+.tk-kumbh-hero{padding:clamp(1.4rem,5vw,5rem);border-radius:1.25rem;background:radial-gradient(ellipse at 90% 10%,#8a3a25,transparent 52%),linear-gradient(135deg,#351716,#5c261d);color:#fff8ec}
+.tk-kumbh-hero p{max-width:50ch}.tk-kumbh-hero .tk-kumbh-nav{margin-bottom:0}.tk-kumbh-hero .tk-kumbh-nav a:first-child,.tk-kumbh-tools button{background:var(--km-accent);color:#fff}
+.tk-kumbh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem}
+.tk-kumbh-card{margin:.8rem 0;padding:1rem 1.2rem;border:1px solid #dfc4a9;border-radius:1rem;background:#fffdf8}.tk-kumbh-card h2,.tk-kumbh-card h3{margin:0}
+.tk-kumbh-tools input,.tk-kumbh-tools select{max-width:100%;min-height:44px;border:1px solid #a98572;padding:.35rem .7rem;border-radius:.5rem;background:#fff;color:var(--km-ink)}
+.tk-kumbh-dates{padding:0;list-style:none}.tk-kumbh-dates li{display:grid;grid-template-columns:8rem minmax(0,1.1fr) minmax(0,1fr);gap:.5rem;padding:.6rem .4rem;border-bottom:1px solid #dfc4a9}
+.tk-kumbh time{font-variant-numeric:tabular-nums;font-weight:700}
+@media(max-width:39rem){.tk-kumbh{margin:.5rem auto 1.5rem;border-radius:.75rem}.tk-kumbh-dates li{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.tk-kumbh-dates li span{grid-column:1/-1;font-size:.9rem}}
+@media print{.tk-header,.tk-footer,.tk-kumbh-nav,.tk-kumbh-tools{display:none!important}.tk-kumbh,.tk-kumbh-card,.tk-kumbh-hero{background:white!important;color:black!important;margin:0;padding:.3rem;border:0}.tk-kumbh a{color:black}}

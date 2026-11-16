@@ -4,7 +4,7 @@ A modern, location-aware Vedic calendar, Panchang and Muhurat platform built wit
 
 ## Product architecture
 
-Tithika currently maps **300 logical pages** across 10 product families:
+Tithika currently maps **309 logical pages** across 10 product families:
 
 - Panchang
 - Calendars
@@ -282,6 +282,10 @@ All Devotion, Gallery and Learn routes now have structured editorial content ins
 - related tool links connecting editorial content back to verified calculation surfaces
 - no copied devotional editions or third-party gallery artwork embedded in the core bundle
 
+### Simhastha Mahakumbh visitor hub
+
+The Marathi-first hub at `/festivals/mahakumbh/` has two venue guides, a source-linked calendar with 106 Parvakal dates, a searchable FAQ and scripture references. It does not calculate official dates or publish a live alert feed. Editorial records are version-controlled under `config/mahakumbh*`; operational details require a verified authority notice. The English essentials page is not a full translation.
+
 ### Stage 10 — performance, mobile, accessibility and release hardening
 
 The production shell now includes:
@@ -317,7 +321,7 @@ index.php                     modern Tithika home
 site-map.php                  browsable map of all routes
 page.php                      shared mapped-page renderer
 
-config/routes.php             300-page product/route manifest
+config/routes.php             309-page product/route manifest
 config/live.php               centralized verified/live route registry
 includes/site.php             shared shell + SEO/schema/route helpers
 includes/content.php          structured Devotion/Learn/Gallery content
