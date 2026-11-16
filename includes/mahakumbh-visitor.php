@@ -111,7 +111,7 @@ function tk_kumbh_render(string $key): void {
     ?>
     <div class="tk-kumbh" lang="<?= $key === 'english' ? 'en' : 'mr' ?>">
     <?php if ($key !== 'english'): ?>
-        <p class="tk-kumbh-disclosure">Tithika · स्वतंत्र माहिती मार्गदर्शक. हा शासकीय संकेतस्थळ नाही.</p>
+        <p class="tk-kumbh-disclosure">Tithika · स्वतंत्र माहिती मार्गदर्शक. हे शासकीय संकेतस्थळ नाही.</p>
         <nav class="tk-kumbh-nav" aria-label="सिंहस्थ विभाग">
             <?php tk_kumbh_link('','कुंभक्षेत्रे'); foreach (tk_kumbh_pages() as $k=>$p) tk_kumbh_link($k,$k === 'english' ? 'English essentials' : $p[0]); ?>
         </nav>
@@ -119,10 +119,11 @@ function tk_kumbh_render(string $key): void {
     <?php if ($key === '' || $key === 'help'): foreach ($notices as $n): ?>
         <aside class="tk-kumbh-card"><strong><?= tk_kumbh_e($n['authority']) ?></strong> · <?= tk_kumbh_e($n['title']) ?> · <?php tk_kumbh_source($n['url'],'मूळ सूचना'); ?></aside>
     <?php endforeach; endif; ?>
+    <?php if ($key !== ''): ?><h1><?= tk_kumbh_e(tk_kumbh_pages()[$key][0]) ?></h1><?php endif; ?>
     <?php if ($key === ''): ?>
         <section class="tk-kumbh-hero">
             <p>नाशिक–त्र्यंबकेश्वर · २०२७</p>
-            <h2>सिंहस्थ महाकुंभ</h2>
+            <h1>सिंहस्थ महाकुंभ</h1>
             <p>स्नानाचा दिवस, योग्य तीर्थक्षेत्र आणि अधिकृत सूचना. पुढे गोदावरीच्या परंपरेचा आणि चारही कुंभक्षेत्रांचा परिचय.</p>
             <div class="tk-kumbh-nav"><?php tk_kumbh_link('calendar'); tk_kumbh_link('nashik','यात्रेचे नियोजन'); tk_kumbh_link('help'); ?></div>
         </section>
